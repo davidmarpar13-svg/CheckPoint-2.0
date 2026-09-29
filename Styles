@@ -1,0 +1,1145 @@
+<style>
+        :root {
+      /* CRISTAL MUCHO MÁS TRANSPARENTE Y SUTIL */
+      --glass-bg: rgba(255, 255, 255, 0.12);
+      --glass-border: rgba(255, 255, 255, 0.25);
+      --text-main: #ffffff;
+      --text-muted: rgba(255, 255, 255, 0.85);
+    }
+
+    /* Diseño del submenú de consolas */
+    .sub-platform-filters {
+        display: flex;
+        gap: 10px;
+        overflow-x: auto;
+        padding: 5px 20px 15px 20px;
+        scrollbar-width: none; /* Oculta la barra en Firefox */
+        transition: opacity 0.3s ease;
+    }
+    .sub-platform-filters::-webkit-scrollbar { display: none; } /* Oculta la barra en Chrome/Safari */
+    .sub-platform-filters.hidden { display: none; }
+
+    .sub-btn {
+        background: rgba(255, 255, 255, 0.08);
+        color: #ccc;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        padding: 6px 16px;
+        border-radius: 20px;
+        cursor: pointer;
+        white-space: nowrap;
+        font-size: 0.8rem;
+        font-family: 'Inter', sans-serif;
+        transition: all 0.2s ease;
+    }
+    .sub-btn.active {
+        background: rgba(255, 255, 255, 0.9);
+        color: #000;
+        font-weight: 600;
+    }
+
+    /* PEGA AQUÍ EL CÓDIGO DE ALINEACIÓN DEL MENÚ SUPERIOR */
+    .clase-de-tu-menu-superior {
+        display: flex;
+        justify-content: flex-start;
+        padding-left: 0;
+        margin-left: 0;
+        gap: 10px;
+    }
+
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            font-family: 'Inter', sans-serif;
+            background-color: #222; /* Fondo exterior oscuro en PC */
+            color: var(--text-main);
+            overflow-x: hidden;
+        }
+
+        #authBackground {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: url('https://firebasestorage.googleapis.com/v0/b/checkpoint-85fae.firebasestorage.app/o/Imagen%20de%20Inicio%20de%20sesi%C3%B3n%2FGemini_Generated_Image_adt0dtadt0dtadt0.jpeg?alt=media&token=d5eb4b89-6310-4729-9bd8-4bda9798995b') no-repeat center center;
+            background-size: cover; z-index: 0; pointer-events: none; transition: opacity 0.5s ease;
+        }
+
+        /* OVERLAY SUTIL PARA QUE NO ENSUCIe LA IMAGEN */
+        #authOverlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(180deg, rgba(0,0,0,0.02) 0%, rgba(0,0,0,0.4) 100%);
+            z-index: 1; pointer-events: none; transition: opacity 0.5s ease;
+        }
+
+        /* 2. CONTENEDOR PRINCIPAL */
+        .app-wrapper {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            min-height: 100vh;
+            margin: 0 auto;
+            background-color: transparent !important; 
+            box-sizing: border-box;
+            padding-bottom: 0 !important;
+        }
+
+        .top-logo {
+            position: absolute; top: 30px; left: 0; width: 100%; text-align: center;
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.85rem; 
+            font-weight: 600; 
+            letter-spacing: 4px; 
+            text-transform: uppercase;
+            color: #2b1d14; /* Marrón oscuro profundo */
+            text-shadow: none;
+        }
+
+        .hero-section { 
+            padding: 0 25px; 
+            margin-bottom: auto; 
+            margin-top: 85px; 
+            text-align: left; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: flex-start; 
+        }
+
+        .main-headline { 
+            font-family: 'Cinzel', serif; 
+            font-size: 1.7rem; font-weight: 600; line-height: 1.25; margin: 0 0 10px 0; 
+            letter-spacing: -0.3px; 
+            color: #4a3324; /* Marrón cálido inspirado en el pelaje del ratón */
+            text-shadow: none; 
+        }
+
+        .sub-headline { 
+            font-family: 'Lora', serif; 
+            font-size: 0.9rem; font-weight: 500; 
+            color: #614a3b; /* Tono marrón tierra más suave y legible */
+            line-height: 1.5; max-width: 400px; margin: 0; 
+            text-shadow: none; 
+        }
+
+        /* PANEL INFERIOR MÁS GLASS Y TRANSPARENTE */
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border-top: 1px solid var(--glass-border); 
+            border-radius: 25px 25px 0 0; 
+            padding: 20px 20px 30px 20px; 
+            width: 100%; box-sizing: border-box;
+            box-shadow: 0 -10px 40px rgba(0,0,0,0.1);
+            animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        
+        @keyframes slideUp {
+            from { transform: translateY(100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .panel-header { display: flex; align-items: center; margin-bottom: 15px; gap: 10px; }
+        .btn-back {
+            background: none; border: none; color: white; cursor: pointer; padding: 0;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .btn-back svg { width: 20px; height: 20px; stroke: white; stroke-width: 2.5; }
+        .card-title { 
+            font-family: 'Cinzel', serif; 
+            font-size: 1.1rem; font-weight: 600; margin: 0; text-shadow: 0 1px 2px rgba(0,0,0,0.3); 
+        }
+
+        .input-group, .input-wrapper { position: relative; margin-bottom: 10px; }
+        .input-group input, .input-wrapper input {
+            width: 100%; padding: 12px 12px 12px 38px; 
+            background: rgba(0, 0, 0, 0.25); border: 1px solid rgba(255, 255, 255, 0.18);
+            color: white; border-radius: 12px; box-sizing: border-box; outline: none;
+            font-size: 0.9rem; font-family: 'Inter', sans-serif; transition: all 0.3s ease; -webkit-appearance: none;
+        }
+        .input-group input::placeholder, .input-wrapper input::placeholder { color: rgba(255, 255, 255, 0.6); }
+        .input-group input:focus, .input-wrapper input:focus { background: rgba(0, 0, 0, 0.4); border-color: rgba(255, 255, 255, 0.6); }
+
+        .icon {
+            position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+            width: 16px; height: 16px; fill: none; stroke: rgba(255, 255, 255, 0.8);
+            stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; pointer-events: none;
+            transition: stroke 0.2s ease;
+        }
+
+        /* Cuando el navegador hace autocompletar (fondo blanco), el icono se vuelve oscuro automáticamente */
+        input:-webkit-autofill + .icon,
+        input:-webkit-autofill:hover + .icon,
+        input:-webkit-autofill:focus + .icon {
+            stroke: #2b1d14 !important;
+        }
+
+        .input-inline { display: flex; gap: 8px; margin-bottom: 10px; }
+        .input-inline .input-wrapper { flex-grow: 1; margin-bottom: 0; }
+        
+        button.primary-btn {
+            width: 100%; padding: 13px; 
+            background: rgba(255, 255, 255, 0.9); 
+            color: #000000; border: none; border-radius: 12px; cursor: pointer;
+            font-weight: 600; font-size: 0.95rem; font-family: 'Inter', sans-serif; transition: transform 0.1s, background 0.3s;
+        }
+        button.primary-btn:active { transform: scale(0.97); background: #ffffff; }
+        
+        button.glass-btn { 
+            background: rgba(255, 255, 255, 0.15); color: white; border: 1px solid rgba(255,255,255,0.35); 
+        }
+        button.glass-btn:active { background: rgba(255, 255, 255, 0.25); }
+        
+        button.arrow-btn {
+            width: 45px; flex-shrink: 0; 
+            background: rgba(255, 255, 255, 0.2); 
+            border: 1px solid rgba(255, 255, 255, 0.4); 
+            border-radius: 12px; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: 0.1s; color: white;
+        }
+        button.arrow-btn:active { transform: scale(0.95); background: rgba(255, 255, 255, 0.35); }
+        button.arrow-btn svg { width: 20px; height: 20px; stroke: white; stroke-width: 2.5; fill: none; } 
+
+        .text-link { text-align: center; margin-top: 12px; font-size: 0.8rem; color: var(--text-muted); cursor: pointer; font-family: 'Lora', serif; }
+        .text-link:hover { color: white; }
+        .terms-container { font-size: 0.70rem; display: flex; gap: 8px; margin-top: 8px; align-items: flex-start; color: var(--text-muted); line-height: 1.4; font-family: 'Lora', serif; }
+        .terms-container input[type="checkbox"] { margin-top: 2px; accent-color: white; }
+        
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6); z-index: 100; display: flex; justify-content: center; align-items: center;
+            padding: 20px; box-sizing: border-box; backdrop-filter: blur(5px);
+        }
+        .modal-content {
+            display: flex; flex-direction: column; width: 100%; max-width: 400px; max-height: 85vh; padding: 20px;
+            border-radius: 20px !important; margin: 0;
+            background: rgba(255, 255, 255, 0.15); border: 1px solid rgba(255,255,255,0.25);
+        }
+        .modal-scroll-area {
+            overflow-y: auto; flex-grow: 1; padding-right: 10px; font-size: 0.85rem; color: rgba(255,255,255,0.9); line-height: 1.6;
+            margin: 12px 0; max-height: 250px; font-family: 'Lora', serif;
+        }
+        .modal-scroll-area::-webkit-scrollbar { width: 4px; }
+        .modal-scroll-area::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.4); border-radius: 4px; }
+        .modal-scroll-area h4 { color: white; margin-top: 0; font-family: 'Cinzel', serif; }
+
+        .hidden { display: none !important; }
+
+/* --- ESTILOS DEL DASHBOARD & GLASS --- */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+        }
+
+        #dashboardPanel:not(.hidden) {
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+            background-color: #F9F7F1; 
+        }
+
+        .dashboard-scroll {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 15px;
+            padding-bottom: 80px !important; /* Reducido para la nueva barra */
+            width: 100%;
+            box-sizing: border-box;
+            background-color: #F9F7F1;
+        }
+
+        .dashboard-top-bar {
+            width: 100%;
+            text-align: center;
+            padding: 25px 0 10px 0;
+            font-family: 'Outfit', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+            letter-spacing: 5px;
+            text-transform: uppercase;
+            color: #2b1d14; /* Mismo tono marrón elegante que usas */
+            background-color: #F9F7F1; /* Fondo crema para que se fusione */
+            flex-shrink: 0;
+            z-index: 10;
+        }
+
+        .section-header {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    margin-bottom: 12px;
+    /* La línea gap: 12px; ha sido eliminada */
+}
+        
+        .section-title { 
+            font-family: 'Outfit', sans-serif; 
+            font-size: 0.85rem; 
+            font-weight: 700; 
+            text-transform: uppercase; 
+            letter-spacing: 1.5px; 
+            color: #2b1d14; 
+            margin: 0; 
+            margin-right: 12px;
+        }
+        
+        .section-link { 
+            font-family: 'Inter', sans-serif; 
+            font-size: 0.7rem; 
+            color: #614a3b; 
+            font-weight: 600; 
+            text-transform: uppercase; 
+            cursor: pointer; 
+        }
+
+        /* Carrusel Hype (Móvil) */
+        .hype-carousel { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 10px; scroll-snap-type: x mandatory; width: 100%; box-sizing: border-box; }
+        .hype-carousel::-webkit-scrollbar { display: none; }
+        .hype-card { min-width: 85%; height: 190px; border-radius: 16px; position: relative; overflow: hidden; scroll-snap-align: center; flex-shrink: 0; background: #e0dcd0; }
+        .hype-card img { width: 100%; height: 100%; object-fit: cover; opacity: 0.9; }
+        .hype-date { position: absolute; top: 12px; left: 12px; background: rgba(255,255,255,0.85); backdrop-filter: blur(10px); padding: 4px 8px; border-radius: 6px; font-size: 0.7rem; font-weight: 600; color: #b36b00; border: 1px solid rgba(0,0,0,0.1); }
+        .hype-info { position: absolute; bottom: 0; left: 0; width: 100%; padding: 40px 12px 12px; background: linear-gradient(to top, rgba(0,0,0,0.8), transparent); box-sizing: border-box; }
+        .hype-info h3 { margin: 0; font-family: 'Outfit', sans-serif; font-size: 1.1rem; color: white; text-transform: uppercase; font-weight: 700; }
+        .hype-info p { margin: 3px 0 0; font-size: 0.70rem; color: rgba(255,255,255,0.8); }
+
+        .category-trigger {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            color: #8c857e;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.70rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+        }
+        .category-trigger svg {
+            width: 14px;
+            height: 14px;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 2.5;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+        /* Estado oculto: Cuando se abre el menú, la palabra original desaparece hacia la izquierda */
+        .category-trigger.hidden-trigger {
+            opacity: 0;
+            transform: translateX(-15px);
+            pointer-events: none;
+            position: absolute;
+        }
+
+        /* Oculta temporalmente el título principal para ganar todo el ancho en móvil */
+        .section-title.hide-title {
+            opacity: 0;
+            transform: translateX(-20px);
+            pointer-events: none;
+            width: 0;
+            margin: 0;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        /* 3. MENÚ HORIZONTAL CON ICONOS (Estilo App Moderna) */
+        .horizontal-menu-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            overflow-x: auto;
+            width: 100%;
+            opacity: 0;
+            transform: translateX(15px); /* Entra suavemente desde la derecha */
+            pointer-events: none;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            scrollbar-width: none; /* Oculta barra en Firefox */
+            -ms-overflow-style: none; /* Oculta barra en IE/Edge */
+        }
+        .horizontal-menu-container::-webkit-scrollbar { display: none; } /* Oculta barra en Chrome/Safari */
+        
+        .horizontal-menu-container.show {
+            opacity: 1;
+            transform: translateX(0);
+            pointer-events: auto;
+        }
+
+        /* Diseño de cada píldora con icono */
+        .h-menu-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            background: rgba(255, 255, 255, 0.55);
+            border: 1px solid rgba(0,0,0,0.05);
+            border-radius: 20px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.70rem;
+            font-weight: 600;
+            color: #614a3b;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex-shrink: 0;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+        .h-menu-item svg {
+            width: 14px;
+            height: 14px;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 2.2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+        .h-menu-item.selected, .h-menu-item:hover {
+            background: #2b1d14;
+            color: #F9F7F1;
+            border-color: #2b1d14;
+            transform: scale(1.02);
+        }
+        /* Grid Populares (Móvil: 3 columnas) */
+        .popular-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; width: 100%; }
+        .grid-card { aspect-ratio: 3/4; border-radius: 10px; overflow: hidden; background: rgba(0,0,0,0.05); box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .grid-card img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s; }
+        .grid-card:active img { transform: scale(0.95); }
+
+        /* Barra Inferior (Móvil) */
+        .bottom-nav.glass-panel { 
+            position: fixed; 
+            bottom: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 60px; /* Más bajita al no tener texto */
+            display: flex; 
+            justify-content: space-around; 
+            align-items: center; 
+            padding: 0 10px; 
+            box-sizing: border-box;
+            /* Cristal muy translúcido y brillante */
+            background: rgba(255, 255, 255, 0.55); 
+            backdrop-filter: blur(25px); 
+            -webkit-backdrop-filter: blur(25px);
+            border-top: 1px solid rgba(255, 255, 255, 0.8); 
+            box-shadow: 0 -5px 25px rgba(0, 0, 0, 0.04);
+            border-radius: 0;
+            z-index: 9999;
+        }
+        /* BOTONES: Líneas finas y toque minimalista */
+        .nav-item { 
+            background: none; 
+            border: none; 
+            color: #a09a96; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            cursor: pointer; 
+            width: 50px; 
+            height: 50px;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); 
+        }
+        
+        .nav-item svg { 
+            width: 24px; 
+            height: 24px; 
+            stroke: currentColor; 
+            fill: none; 
+            stroke-width: 1.2; /* LÍNEAS MUCHO MÁS FINAS Y ELEGANTES */
+            stroke-linecap: round; 
+            stroke-linejoin: round; 
+            transition: all 0.3s ease;
+        }
+
+        /* BOTÓN ACTIVO: Negro y elegante (sin engrosar en exceso) */
+        .nav-item.active { 
+            color: #000000; 
+            transform: translateY(-3px); 
+        }
+        .nav-item.active svg {
+            stroke-width: 1.5; /* Solo un pelín más marcado al activarse, no brusco */
+            filter: drop-shadow(0px 4px 6px rgba(0,0,0,0.15)); /* Pequeña sombra para darle relieve */
+        }
+
+        /* =========================================
+           ADAPTACIÓN PARA ORDENADORES (PC)
+           ========================================= */
+        @media (min-width: 768px) {
+    body, html {
+        background-color: #111; /* Fondo oscuro alrededor de la app */
+    }
+    
+    /* Centrar la app con una sombra elegante */
+    .app-wrapper {
+        max-width: 450px;
+        border-left: 1px solid rgba(255,255,255,0.1);
+        border-right: 1px solid rgba(255,255,255,0.1);
+        box-shadow: 0 0 50px rgba(0,0,0,0.8);
+    }
+    
+    /* Centrar el ratón y asegurar que se vea la parte de abajo de la imagen */
+    #authBackground, #authOverlay {
+        width: 100%;
+        max-width: 450px;
+        left: 50%;
+        transform: translateX(-50%);
+        background-position: center bottom; /* Obliga a la foto a mostrar el ratón */
+    }
+    
+    /* Centrar la barra de navegación */
+    .bottom-nav.glass-panel {
+        max-width: 450px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 9999;
+    }
+}
+
+        /* VISTA BÚSQUEDA (LUPA) */
+        .glass-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(5, 5, 5, 0.85); backdrop-filter: blur(25px); z-index: 100; padding: 20px; box-sizing: border-box; display: flex; flex-direction: column; }
+        .search-header { display: flex; gap: 10px; align-items: center; margin-top: 0px; }
+        .search-giant { flex-grow: 1; margin: 0; }
+        .search-giant input { padding: 18px 18px 18px 45px; font-size: 1.1rem; border-radius: 16px; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); }
+        .search-giant .icon { width: 20px; height: 20px; left: 15px; stroke: white; }
+        .btn-close-search { background: none; border: none; color: white; font-family: 'Inter', sans-serif; font-size: 0.95rem; cursor: pointer; }
+        
+        .search-tabs { display: flex; margin-top: 25px; gap: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; overflow-x: auto; }
+        .search-tabs::-webkit-scrollbar { display: none; }
+       .tab-btn {
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: #555555; /* Gris oscuro para que se lea perfectamente sobre el blanco */
+  font-family: 'Outfit', sans-serif;
+  font-weight: 500;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 4px 0 8px 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 0;
+  transition: all 0.3s ease;
+  outline: none;
+  white-space: nowrap;
+}
+
+.tab-btn:hover {
+  color: #000000; /* Negro puro al pasar el dedo o el ratón por encima */
+}
+
+.tab-btn.active {
+  color: #111111; /* Casi negro para el botón seleccionado */
+  border-bottom: 2px solid #111111; /* Raya inferior casi negra */
+  font-weight: 700; /* Texto más grueso para que destaque mucho más */
+  background: transparent;
+}
+
+.tab-btn svg {
+  stroke: currentColor; /* Esto hace que el icono copie automáticamente el gris o el negro del texto */
+}
+        .search-results-area { flex-grow: 1; overflow-y: auto; margin-top: 20px; }
+
+.horizontal-menu-container {
+    display: flex;
+    justify-content: flex-start;
+    padding-left: 0;
+    margin-left: 0;
+    gap: 10px;
+}
+
+        /* FILTROS DE PLATAFORMA */
+        .platform-filters {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+            overflow-x: auto;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+        .platform-filters::-webkit-scrollbar { display: none; }
+        
+        .platform-btn {
+            background: rgba(255, 255, 255, 0.4);
+            border: 1px solid rgba(0,0,0,0.05);
+            border-radius: 12px;
+            padding: 4px 12px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: #614a3b;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+        .platform-btn.active {
+            background: #2b1d14;
+            color: #F9F7F1;
+        }
+
+/* Indicador animado Pull-to-Refresh */
+.ptr-container {
+    height: 0;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: height 0.25s ease, opacity 0.25s ease;
+    opacity: 0;
+    width: 100%;
+}
+.ptr-container.visible {
+    opacity: 1;
+}
+.bottom-loader {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 15px 0 85px 0;
+    width: 100%;
+}
+.bottom-loader.hidden {
+    display: none;
+}
+.ptr-spinner {
+    width: 22px;
+    height: 22px;
+    border: 3px solid rgba(150, 150, 150, 0.2); /* Borde gris transparente */
+    border-top-color: #888888; /* Rueda gris visible */
+    border-radius: 50%;
+    animation: ptrSpin 0.7s linear infinite;
+}
+.loading-text {
+    color: #888888;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.85rem;
+    font-style: italic;
+    margin-left: 12px;
+}
+@keyframes ptrSpin {
+    to { transform: rotate(360deg); }
+}
+
+/* ==========================================================================
+   STATS RPG - PESTAÑAS DEL PERFIL
+   ========================================================================== */
+/* Diseño minimalista para las pestañas */
+.stat-btn { 
+    background: transparent; 
+    border: none; 
+    border-bottom: 3px solid transparent; /* Línea invisible por defecto */
+    transition: border-color 0.3s ease, color 0.3s ease; 
+}
+
+.stat-btn.active-tab { 
+    border-bottom: 3px solid #111; /* Línea negra al seleccionar */
+    background: transparent; /* Fondo transparente */
+}
+
+/* Animación para el contenido de las pestañas */
+@keyframes fadeIn { 
+    from { 
+        opacity: 0; 
+        transform: translateY(5px); 
+    } 
+    to { 
+        opacity: 1; 
+        transform: translateY(0); 
+    } 
+}
+
+                    .ach-category-title { font-family: 'Cinzel', serif; font-size: 0.85rem; color: #111; font-weight: 700; border-bottom: 2px dashed #eee; padding-bottom: 4px; margin-bottom: 12px; text-align: center; }
+                    .ach-row { display: flex; justify-content: space-between; gap: 8px; }
+                    .ach-item { flex: 1; display: flex; flex-direction: column; align-items: center; text-align: center; cursor: pointer; transition: transform 0.2s; }
+                    .ach-item:active { transform: scale(0.92); }
+                    .ach-locked { filter: grayscale(100%); opacity: 0.4; }
+                    .ach-icon-wrapper { position: relative; width: 40px; height: 40px; margin-bottom: 8px; display: flex; justify-content: center; align-items: center; }
+                    
+                    .shape-lvl1 { width: 100%; height: 100%; border-radius: 50%; border: 2px solid #9c27b0; background: rgba(156, 39, 176, 0.08); display: flex; justify-content: center; align-items: center; }
+                    .shape-lvl2 { width: 100%; height: 100%; border-radius: 10px; border: 2px solid #2980b9; background: rgba(41, 128, 185, 0.08); display: flex; justify-content: center; align-items: center; }
+                    .shape-lvl3 { width: 34px; height: 34px; border-radius: 8px; border: 2px solid #f1c40f; background: rgba(241, 196, 15, 0.15); display: flex; justify-content: center; align-items: center; transform: rotate(45deg); box-shadow: 0 4px 10px rgba(241,196,15,0.3); margin: 3px auto; }
+                    .shape-lvl3 svg { transform: rotate(-45deg); }
+                    
+                    .ach-title { font-family: 'Cinzel', serif; font-weight: 700; font-size: 0.65rem; color: #111; line-height: 1.1; margin-bottom: 3px; height: 20px; display: flex; align-items: center; justify-content: center; }
+                    .ach-desc { font-family: 'Outfit', sans-serif; font-size: 0.55rem; color: #777; line-height: 1.2; }
+                    .padlock-icon { position: absolute; bottom: -4px; right: -4px; background: #222; border: 2px solid white; border-radius: 50%; width: 16px; height: 16px; display: flex; justify-content: center; align-items: center; z-index: 5; }
+
+                .menu-section-title { font-family: 'Outfit', sans-serif; font-size: 0.65rem; color: #888; text-transform: uppercase; letter-spacing: 1.5px; padding: 15px 20px 5px 20px; font-weight: 800; }
+                .menu-item { display: flex; align-items: center; gap: 15px; padding: 12px 20px; cursor: pointer; transition: background 0.2s; font-family: 'Outfit', sans-serif; font-size: 0.9rem; color: #333; font-weight: 500; }
+                .menu-item:hover, .menu-item:active { background: rgba(0,0,0,0.04); }
+                .menu-item svg { width: 20px; height: 20px; color: #555; }
+                .menu-item-arrow { margin-left: auto; width: 16px; height: 16px; color: #aaa; }
+           
+
+/* ========================================== */
+/* ESTILOS DE LA PANTALLA DETALLE (LUMINOSO Y LIMPIO) */
+/* ========================================== */
+
+/* Forzamos el fondo blanco de la pantalla */
+/* 1. Fondo del modal en gris oscuro puro (Nada de blanco) */
+#gameDetailScreen {
+    background: #121212 !important;
+}
+
+/* 2. Contenedor inferior transparente para que deje ver el gris oscuro */
+.game-content-wrapper {
+    position: relative !important; 
+    z-index: 10 !important; 
+    background: transparent !important;
+    width: 85% !important; /* Estrecha el contenido para crear márgenes laterales */
+    max-width: 800px !important;
+    margin: 0 auto !important; 
+    text-align: center !important; 
+    padding: 20px 0 !important;
+}
+
+.game-detail-bg {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    background-size: cover !important; 
+    background-position: center top !important;
+    background-repeat: no-repeat !important;
+    filter: none !important; 
+    opacity: 1 !important; 
+    
+    /* REINCORPORAMOS LA MÁSCARA: Empieza a fundir la imagen al 40% (donde estaba el corte) y la desvanece suavemente hasta el fondo */
+    -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 40%, rgba(0,0,0,0) 100%) !important;
+    mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 40%, rgba(0,0,0,0) 100%) !important;
+    z-index: 0;
+}
+
+/* 🌟 Marca de agua (Arreglada para que vaya DETRÁS) */
+.game-watermark {
+    position: absolute !important;
+    top: 250px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: 'Cinzel', serif;
+    font-size: 130px; /* Tamaño fijo para no romper la pantalla */
+    font-weight: 900;
+    color: rgba(0,0,0,0.03); /* Súper sutil */
+    z-index: 0 !important; /* Detrás del todo */
+    white-space: nowrap;
+    pointer-events: none;
+    letter-spacing: -2px;
+    user-select: none;
+}
+
+/* 🌟 Elementos que van por DELANTE de la marca de agua (z-index 5) */
+.game-cover-img { position: relative; z-index: 5; width: 170px; border-radius: 12px; box-shadow: 0 15px 35px rgba(0,0,0,0.2); border: 1px solid rgba(0,0,0,0.05); margin-bottom: 25px; object-fit: cover; aspect-ratio: 3/4; background: #eee; }
+.game-title { position: relative; z-index: 5; font-family: 'Cinzel', serif; font-size: 2.2rem; font-weight: 800; text-align: center; margin: 0 0 10px 0; color: #111; line-height: 1.1; }
+.game-rating { position: relative; z-index: 5; font-family: 'Outfit', sans-serif; font-size: 0.9rem; color: #e67e22; font-weight: 800; margin-bottom: 20px; }
+.status-bar { position: relative; z-index: 5; display: flex; justify-content: center; align-items: center; gap: 20px; font-family: 'Outfit', sans-serif; font-size: 0.75rem; font-weight: 800; letter-spacing: 1px; margin-bottom: 25px; border-top: 1px solid #eee; border-bottom: 1px solid #eee; padding: 10px 0; width: 100%; max-width: 400px; }
+.action-icons-row { position: relative; z-index: 5; display: flex; justify-content: center; gap: 35px; margin-bottom: 40px; }
+.game-tabs { position: relative; z-index: 5; display: flex; justify-content: center; gap: 30px; border-bottom: 1px solid #eee; width: 100%; margin-bottom: 30px; }
+/* Estructuras Internas (Fichas sin fondo negro) */
+.tab-section {
+    display: none; /* Solo ocultamos la pestaña general, NO la galería */
+    width: 100%;
+    text-align: left;
+    font-family: 'Outfit', sans-serif;
+    animation: fadeIn 0.3s ease;
+    background: transparent !important;
+}
+
+.tab-section.active { 
+    display: block; 
+}
+
+/* Botón de Atrás (Glassmorphism) */
+.btn-back-game {
+    position: fixed; top: 20px; left: 20px;
+    width: 45px; height: 45px; 
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; z-index: 50; transition: all 0.2s;
+    background: transparent !important; /* Quitamos el fondo */
+    border: none !important; /* Quitamos el borde */
+    box-shadow: none !important; /* Quitamos la sombra de la caja */
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+.btn-back-game:hover { 
+    transform: scale(1.15); 
+    background: transparent !important; 
+}
+.btn-back-game svg { 
+    stroke: #ffffff !important; 
+    filter: drop-shadow(0px 3px 0px #000000) !important; 
+}
+.action-icon-btn { background: transparent; border: none; color: #666; display: flex; flex-direction: column; align-items: center; gap: 8px; font-family: 'Outfit', sans-serif; font-size: 0.65rem; font-weight: 800; cursor: pointer; transition: color 0.2s; }
+.action-icon-btn svg { width: 26px; height: 26px; stroke: currentColor; fill: none; stroke-width: 1.5; }
+.action-icon-btn:hover { color: #111; }
+.action-icon-btn.active-yellow { color: #e67e22; }
+.action-icon-btn.active-green { color: #2ecc71; }
+.game-tab-btn { background: transparent; border: none; color: #aaa; font-family: 'Outfit', sans-serif; font-size: 0.8rem; font-weight: 800; padding: 10px 5px; cursor: pointer; position: relative; transition: color 0.2s; letter-spacing: 1px; }
+.game-tab-btn.active { color: #111; }
+.game-tab-btn.active::after { content: ''; position: absolute; bottom: -1px; left: 0; width: 100%; height: 2px; background: #111; }
+
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+.game-description { font-size: 0.95rem; color: #555; line-height: 1.6; margin-bottom: 40px; font-weight: 500; }
+.game-meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; font-size: 0.85rem; }
+.meta-title { color: #888; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; font-weight: 800; display: flex; align-items: center; gap: 5px; margin-bottom: 5px; }
+.meta-title svg { width: 12px; height: 12px; }
+.meta-value { color: #222; font-weight: 700; }
+
+
+.game-detail-bg::after {
+    content: '' !important;
+    display: block !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    
+    /* Cortina que oscurece el fondo gradualmente, dejando ver parte de la foto original */
+    background: linear-gradient(to bottom, rgba(18,18,18,0) 25%, rgba(18,18,18,0.85) 85%) !important;
+    z-index: 1;
+}
+
+/* 2. Contenedor invisible (Garantizamos que NO haya luces radiales) */
+.glass-header-panel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    z-index: 10;
+    padding: 50px 20px 0px 20px;
+    margin: 0 auto 10px auto;
+    max-width: 800px;
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
+/* 3. Carátula (También con sombra dura para que vaya a juego) */
+#gdCover {
+    border-radius: 12px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.8) !important; /* Sin el borde rgba(255,255,255,0.1) */
+    border: none !important; 
+    transform: scale(1.05);
+}
+
+#gdTitle {
+    font-size: 2.2rem !important;
+    font-weight: 900 !important;
+    color: #ffffff !important;
+    text-align: center;
+    -webkit-text-stroke: 0px !important;
+    /* Sombra reducida a 1px y un poco más transparente */
+    text-shadow: 1px 1px 0px rgba(0, 0, 0, 0.85) !important; 
+    margin: 25px 0 10px 0;
+    line-height: 1.1;
+}
+
+.game-rating {
+    color: #ffffff !important;
+    font-weight: 600 !important;
+    /* Sombra reducida a 1px */
+    text-shadow: 1px 1px 0px rgba(0, 0, 0, 0.85) !important; 
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* 5. Barra de estado */
+.status-bar {
+    background: transparent !important;
+    border: none !important;
+    padding: 5px;
+    display: flex; /* <-- CLAVE: Sin !important */
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin: 15px auto 25px auto !important;
+}
+
+.status-bar::before,
+.status-bar::after {
+    display: none !important;
+}
+
+.status-bar span {
+    color: #ffffff !important;
+    font-weight: 800 !important;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    /* Sombra reducida a 1px */
+    text-shadow: 1px 1px 0px rgba(0, 0, 0, 0.85) !important; 
+}
+
+#gdStatusNotOwned {
+    color: #ffffff !important; 
+    /* Sombra reducida a 1px */
+    text-shadow: 1px 1px 0px rgba(0, 0, 0, 0.85) !important; 
+}
+
+#gdStatusNotOwned a {
+    color: #ffffff !important; 
+    font-weight: 800 !important; 
+    cursor: pointer; 
+    text-decoration: none; 
+    /* Sombra reducida a 1px */
+    text-shadow: 1px 1px 0px rgba(0, 0, 0, 0.85) !important; 
+}
+
+#gdStatusNotOwned a svg {
+    stroke: #b026ff !important; 
+    margin-right: 5px; 
+    /* Aplicamos la misma reducción sutil a la bolsa morada */
+    filter: drop-shadow(1px 1px 0px rgba(0, 0, 0, 0.85)) !important;
+}
+
+/* 6. Botones flotantes con relieve */
+.action-icons-row {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    gap: 40px !important; 
+    width: 100% !important;
+    margin-top: 5px;
+}
+
+.action-icon-btn {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    display: flex !important;
+    flex-direction: column !important; 
+    align-items: center !important;
+    gap: 8px !important;
+    color: #ffffff !important; 
+    font-size: 0.75rem !important;
+    font-weight: 800 !important;
+    width: 80px; 
+    text-shadow: 2px 2px 0px #000000 !important; 
+    cursor: pointer;
+}
+
+.action-icon-btn svg {
+    stroke: #ffffff !important; 
+    width: 28px !important;
+    height: 28px !important;
+    /* Relieve duro para los iconos (0 difuminado) */
+    filter: drop-shadow(2px 2px 0px #000000) !important; 
+}
+
+/* Ajustes de las pestañas con relieve */
+.game-tabs {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    justify-content: space-around;
+    border-bottom: none !important; /* <-- Aquí eliminamos la línea oscura */
+    margin-top: 20px;
+    margin-bottom: 30px;
+}
+.game-tab-btn {
+    background: none;
+    border: none;
+    color: #dddddd; 
+    font-weight: 700;
+    padding: 10px 0;
+    text-shadow: 2px 2px 0px #000000 !important;
+}
+
+.game-tab-btn.active {
+    color: #ffffff;
+    text-shadow: 2px 2px 0px #000000 !important;
+}
+
+.game-tab-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: #ffffff;
+    box-shadow: 2px 2px 0px #000000;
+}
+
+/* Alineación perfecta a la izquierda para datos y sinopsis */
+#gdDescription, 
+.game-description,
+.game-meta-grid {
+    color: #ffffff !important;
+    text-align: left !important;
+    width: 100% !important;
+    padding: 0 15px !important;
+    box-sizing: border-box !important;
+    line-height: 1.6 !important;
+}
+
+/* Espaciado para que la ficha técnica (que ahora va arriba) respire bien */
+.game-meta-grid { 
+    margin-top: 10px !important; 
+    margin-bottom: 25px !important; 
+}
+
+/* 2. Forzar color a toda la cuadrícula de datos (Plataformas, Géneros...) */
+.game-meta-grid, 
+.game-meta-grid div {
+    color: #ffffff !important;
+}
+
+/* 3. Títulos pequeños (PLATAFORMAS, GÉNEROS, LANZAMIENTO...) */
+.game-meta-grid small, 
+.game-meta-grid .meta-label,
+.game-meta-grid svg {
+    color: #cccccc !important; /* Gris muy claro para los títulos */
+    stroke: #cccccc !important;
+    fill: none !important;
+    font-weight: 800 !important;
+    letter-spacing: 1px !important;
+    text-shadow: 1px 1px 0px #000000, 2px 2px 0px #000000 !important;
+}
+
+/* 4. Valores (Xbox Series, Adventure, Ninja Theory...) */
+.game-meta-grid span, 
+.game-meta-grid .meta-value {
+    color: #ffffff !important; /* Blanco puro para los datos */
+    font-weight: 700 !important;
+    text-shadow: 1px 1px 0px #000000, 2px 2px 0px #000000 !important;
+}
+
+/* Quitamos sombras del RESTO de textos del modal, dejando la sombra negra al título y botones principales */
+.action-icon-btn,
+.game-tab-btn,
+.game-tab-btn.active,
+#gdDescription,
+.game-description,
+.game-meta-grid,
+.game-meta-grid div,
+.game-meta-grid span,
+.game-meta-grid .meta-value,
+.game-meta-grid small,
+.game-meta-grid .meta-label {
+    text-shadow: none !important;
+    -webkit-text-stroke: 0px !important;
+    box-shadow: none !important;
+}
+
+/* Limpiamos también los iconos SVG para que no tengan sombra negra debajo */
+.action-icon-btn svg,
+.game-meta-grid svg {
+    filter: none !important;
+}
+
+/* Nos aseguramos de que la línea indicadora de la pestaña no tenga sombra */
+.game-tab-btn.active::after {
+    box-shadow: none !important;
+}
+
+/* --- FICHA TÉCNICA ICONOS --- */
+.ficha-item { display: flex; flex-direction: column; gap: 5px; }
+.ficha-label {
+    display: flex; align-items: center; gap: 8px;
+    color: rgba(255, 255, 255, 0.6); font-size: 11px;
+    letter-spacing: 1px; text-transform: uppercase;
+}
+.ficha-label svg { width: 16px; height: 16px; opacity: 0.8; }
+
+/* --- RESEÑAS --- */
+.reviews-empty {
+    display: flex; flex-direction: column; align-items: center;
+    justify-content: center; text-align: center; padding: 60px 20px;
+}
+.reviews-empty svg { width: 48px; height: 48px; margin-bottom: 15px; }
+.reviews-empty p { font-size: 16px; font-weight: 600; margin: 0 0 5px 0; color: rgba(255,255,255,0.9); }
+.reviews-empty span { font-size: 13px; color: rgba(255,255,255,0.5); }
+.reviews-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px;
+}
+.reviews-header h4 { margin: 0; font-size: 14px; letter-spacing: 0.5px; }
+.reviews-filter {
+    display: flex; align-items: center; gap: 8px; background: rgba(0, 0, 0, 0.3);
+    padding: 6px 12px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.1);
+}
+.reviews-filter svg { width: 14px; height: 14px; color: rgba(255,255,255,0.7); }
+.reviews-filter select {
+    background: transparent; color: white; border: none;
+    font-family: inherit; font-size: 13px; outline: none; cursor: pointer;
+}
+.reviews-filter select option { background: #1a1a1a; color: white; }
+
+/* --- TARJETAS DE RESEÑAS DINÁMICAS --- */
+.reviews-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    padding-bottom: 20px;
+}
+
+.review-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 16px;
+    backdrop-filter: blur(10px);
+    transition: background 0.2s ease;
+}
+
+.review-card:hover {
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.review-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.reviewer-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+    font-size: 13px;
+    letter-spacing: 0.5px;
+    color: white;
+}
+
+.reviewer-avatar {
+    width: 28px;
+    height: 28px;
+    background: linear-gradient(135deg, #2ecc71, #27ae60);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 12px;
+}
+
+.review-rating {
+    color: #f1c40f;
+    font-size: 14px;
+    letter-spacing: 1px;
+}
+
+.review-text {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.7);
+    line-height: 1.6;
+    margin-bottom: 12px;
+}
+
+.review-footer {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.review-footer svg {
+    width: 14px;
+    height: 14px;
+}
+    </style>
