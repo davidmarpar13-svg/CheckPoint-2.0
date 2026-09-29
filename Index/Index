@@ -1,0 +1,1187 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Checkpoint</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Lora:ital,wght@0,400;0,500;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600&display=swap" rel="stylesheet">
+    
+    <?!= include('Styles'); ?>
+</head>
+<body>
+<!-- ========================================== -->
+    <!-- CAJA 1: PANTALLA DE INICIO (CHECKPOINT)    -->
+    <!-- ========================================== -->
+    <div id="authBackground"></div>
+    <div id="authOverlay"></div>
+
+    <div id="termsModal" class="modal-overlay hidden">
+        <div class="glass-card modal-content">
+            <h3 style="margin: 0; color: white; font-family: 'Cinzel', serif; font-size: 1.1rem;">Términos de servicio</h3>
+            <div class="modal-scroll-area" id="termsScrollArea">
+                <h4>1. Aceptación de los Términos</h4>
+                <p>Al acceder y utilizar Checkpoint, aceptas estar sujeto a estos términos de servicio. Si no estás de acuerdo con alguna parte, no podrás utilizar la aplicación.</p>
+                <h4>2. Uso de la Cuenta</h4>
+                <p>Eres responsable de salvaguardar la contraseña que utilizas para acceder a Checkpoint. Queda estrictamente prohibido compartir cuentas.</p>
+                <h4>3. Contenido Generado por el Usuario</h4>
+                <p>Nuestra plataforma permite publicar reseñas y comentarios. Eres el único responsable del contenido que publicas. Nos reservamos el derecho de eliminar contenido ofensivo, spam o que viole derechos de terceros.</p>
+                <h4>4. Datos de Videojuegos</h4>
+                <p>Los datos de los videojuegos y carátulas son proporcionados a través de la API de IGDB (Twitch). Checkpoint no reclama propiedad sobre estas marcas o imágenes.</p>
+                <h4>5. Privacidad de Datos</h4>
+                <p>Tus correos electrónicos y listas personales se almacenan de forma segura y en ningún momento serán vendidos a terceros con fines publicitarios.</p>
+                <p><i>Fin del documento. Por favor, desplázate hasta aquí para aceptar.</i></p>
+            </div>
+            <button id="btnAcceptTerms" class="primary-btn" disabled style="opacity: 0.4;">Desplázate abajo para aceptar</button>
+            <button id="btnCloseTerms" class="primary-btn glass-btn" style="margin-top: 8px; color: black; background: rgba(255,255,255,0.85); text-shadow: none;">Cancelar</button>
+        </div>
+    </div>
+
+
+    <div class="app-wrapper">
+        <div class="top-logo" id="topLogo">Checkpoint</div>
+        <div class="hero-section" id="heroText">
+            <h1 class="main-headline">Tus juegos,<br>tus historias,<br>en un solo lugar.</h1>
+            <p class="sub-headline">Conecta con otros jugadores, añadede y reseña, descubre nuevas comunidades de tus juegos favoritos y únete a ellas.</p>
+        </div>
+
+        <div class="glass-card" id="initialPanel">
+            <button onclick="switchPanel('loginPanel')" class="primary-btn">Iniciar sesión</button>
+            <button onclick="switchPanel('registerPanel')" class="primary-btn glass-btn" style="margin-top: 10px;">Crear una cuenta nueva</button>
+        </div>
+
+
+        <div class="glass-card hidden" id="loginPanel">
+            <div class="panel-header">
+                <button class="btn-back" onclick="switchPanel('initialPanel')">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                </button>
+                <h2 class="card-title">Iniciar sesión</h2>
+            </div>
+            
+            <div class="input-group">
+                <input type="email" id="loginEmail" placeholder="Correo electrónico" inputmode="email">
+                <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            </div>
+            
+            <div class="input-inline">
+                <div class="input-wrapper">
+                    <input type="password" id="loginPass" placeholder="Contraseña">
+                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                </div>
+                <button id="btnLogin" class="arrow-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </button>
+            </div>
+            
+            <div class="text-link">¿Olvidaste tu contraseña?</div>
+        </div>
+
+
+        <div class="glass-card hidden" id="registerPanel">
+            <div class="panel-header">
+                <button class="btn-back" onclick="switchPanel('initialPanel')">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                </button>
+                <h2 class="card-title">Crear cuenta</h2>
+            </div>
+            
+            <div class="input-group">
+                <input type="text" id="regUser" placeholder="Nombre de usuario">
+                <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            </div>
+
+            <div class="input-group">
+                <input type="email" id="regEmail" placeholder="Correo electrónico" inputmode="email">
+                <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+            </div>
+            
+            <div class="input-inline">
+                <div class="input-wrapper">
+                    <input type="password" id="regPass" placeholder="Contraseña">
+                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                </div>
+                <button id="btnRegister" class="arrow-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </button>
+            </div>
+
+            <label class="terms-container">
+                <input type="checkbox" id="regTerms" disabled>
+                <span>Al registrarte, aceptas nuestros <a href="#" id="openTermsModal" style="color: white; text-decoration: underline; font-weight: 500;">términos de servicio y política de privacidad</a>.</span>
+            </label>
+        </div>
+
+        <!-- DASHBOARD / HOME -->
+    <div class="hidden" id="dashboardPanel" style="height: 100%; width: 100%; position: relative;">
+        
+        <!-- NUEVO TÍTULO SUPERIOR FIJO -->
+        <div class="dashboard-top-bar">CHECKPOINT</div>
+
+<div id="ptrIndicator" class="ptr-container">
+    <div class="ptr-spinner"></div>
+</div>
+
+        <!-- Contenedor scrolleable principal -->
+        <div class="dashboard-scroll">
+                
+                <div class="section-header" style="display: flex; align-items: center; width: 100%; margin-bottom: 12px; position: relative;">
+    <!-- Título principal -->
+    <h2 class="section-title" id="sectionTitleHype" style="white-space: nowrap; flex-shrink: 0; transition: all 0.3s ease; margin: 0;">MÁS ESPERADOS</h2>
+    
+    <!-- Botón disparador con la flecha -->
+    <div id="btnHypeDropdown" class="category-trigger" style="display: flex; align-items: center; cursor: pointer; transition: all 0.3s ease; margin-left: 12px;">
+        <span id="currentHypeLabel" style="margin-right: 4px; font-size: 11px; font-weight: bold; text-transform: uppercase;">TODOS</span>
+        <svg viewBox="0 0 24 24" style="width: 12px; height: 12px; fill: none; stroke: currentColor; stroke-width: 2.5;"><polyline points="9 18 15 12 9 6"></polyline></svg>
+    </div>
+    
+    <!-- Menú horizontal con espacio vertical ampliado para que no se corten los botones -->
+    <div id="hypeHorizontalMenu" class="horizontal-menu-container" style="display: flex; gap: 6px; align-items: center; position: absolute; left: 0; top: -6px; bottom: -6px; width: 100%; background: #fbf9f1; padding-left: 4px; box-sizing: border-box; transition: all 0.3s ease; opacity: 0; pointer-events: none; transform: translateX(20px); z-index: 10;">
+        <div class="h-menu-item selected" onclick="selectHypePlatform('todos', 'TODOS', this)">Todos</div>
+        <div class="h-menu-item" onclick="selectHypePlatform('ps', 'PS', this)">PlayStation</div>
+        <div class="h-menu-item" onclick="selectHypePlatform('xbox', 'XBOX', this)">Xbox</div>
+        <div class="h-menu-item" onclick="selectHypePlatform('switch', 'Nintendo', this)">Nintendo</div>
+        <div class="h-menu-item" onclick="selectHypePlatform('pc', 'PC', this)">PC</div>
+    </div>
+</div>
+        
+        <div class="hype-carousel" id="hypeCarousel">
+            <!-- Los juegos cargan aquí -->
+        </div>
+
+        <!-- SECCIÓN: POPULARES DEL MES (GRID + DESPLEGABLE) -->
+        <div class="section-header" style="margin-top: 25px; align-items: center; display: flex; width: 100%; overflow: hidden;">
+            <h2 class="section-title" id="sectionTitlePopular" style="white-space: nowrap; flex-shrink: 0; transition: all 0.3s ease;">Populares del mes</h2>
+            
+            <div style="display: flex; flex-grow: 1; margin-left: 0px; overflow: hidden; position: relative; align-items: center; height: 35px;">
+                
+                <div class="category-trigger" id="btnPopularDropdown">
+                    <span id="currentCategoryLabel">Juegos</span>
+                    <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </div>
+
+                <div id="horizontalMenu" class="horizontal-menu-container">
+                    
+                    <div class="h-menu-item selected">
+                        <svg viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2"></rect><path d="M6 12h4m-2-2v4m8-2h.01M16 10h.01"></path></svg>
+                        Juegos
+                    </div>
+                    
+                    <div class="h-menu-item">
+                        <svg viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+                        Reseñas
+                    </div>
+                    
+                    <div class="h-menu-item">
+                        <svg viewBox="0 0 24 24"><line x1="4" y1="9" x2="20" y2="9"></line><line x1="4" y1="15" x2="20" y2="15"></line><line x1="10" y1="3" x2="8" y2="21"></line><line x1="16" y1="3" x2="14" y2="21"></line></svg>
+                        Temas
+                    </div>
+                    
+                    <div class="h-menu-item">
+                        <svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+                        Listas
+                    </div>
+                    
+                    <div class="h-menu-item">
+                        <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                        Usuarios
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+ <div class="platform-filters" id="platformFilters">
+            <button class="platform-btn active" data-platform="">Todos</button>
+            <button class="platform-btn" data-platform="ps">PlayStation</button>
+            <button class="platform-btn" data-platform="xbox">Xbox</button>
+            <button class="platform-btn" data-platform="switch">Nintendo</button>
+            <button class="platform-btn" data-platform="pc">PC</button>
+        </div>
+
+        <!-- Contenedor principal de los juegos -->
+    <div class="popular-grid" id="popularGrid"></div>
+    
+    <!-- Circulito de carga al final de la lista -->
+    <div id="bottomLoader" class="bottom-loader hidden">
+        <div class="ptr-spinner"></div>
+        <span class="loading-text">Despertando a los hámsters del servidor...</span>
+    </div>
+                
+                <!-- Espacio extra al final para que la barra de navegación no tape el último juego -->
+                <div style="height: 0px;"></div>
+            </div>
+          
+          <div id="searchView" class="search-header glass-overlay hidden" style="display: flex; flex-direction: column; align-items: stretch; gap: 20px; padding: 60px 20px 20px 20px; background: rgba(255, 255, 255, 0.4); backdrop-filter: blur(40px); -webkit-backdrop-filter: blur(40px); border: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 9999;">
+          
+          <!-- BOTÓN CERRAR FLOTANTE (CRUZ NEGRA) -->
+          <button id="closeSearch" style="position: absolute; top: 20px; right: 20px; background: transparent; border: none; display: flex; justify-content: center; align-items: center; cursor: pointer; z-index: 10000; padding: 5px; outline: none;">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 24px; height: 24px;"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
+
+          <!-- 1. PESTAÑAS FLOTANTES -->
+          <div class="search-tabs" style="display: flex; justify-content: center; gap: 24px; padding: 0; background: transparent; border: none; width: 100%;">
+            
+            <button class="tab-btn active" data-tab="games">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 16px; height: 16px;"><rect x="2" y="6" width="20" height="12" rx="2"></rect><path d="M6 12h4"></path><path d="M8 10v4"></path><path d="M15 13h.01"></path><path d="M18 11h.01"></path></svg>
+              Juegos
+            </button>
+            
+            <button class="tab-btn" data-tab="lists">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 16px; height: 16px;"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+              Listas
+            </button>
+            
+            <button class="tab-btn" data-tab="themes">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 16px; height: 16px;"><line x1="4" y1="9" x2="20" y2="9"></line><line x1="4" y1="15" x2="20" y2="15"></line><line x1="10" y1="3" x2="8" y2="21"></line><line x1="16" y1="3" x2="14" y2="21"></line></svg>
+              Temas
+            </button>
+            
+            <button class="tab-btn" data-tab="users">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 16px; height: 16px;"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+              Usuarios
+            </button>
+          </div>
+
+          <!-- 2. BUSCADOR MINIMALISTA Y GLASS (BLANCO) -->
+          <div style="display: flex; width: 100%;">
+            <div style="flex-grow: 1; display: flex; align-items: center; background: rgba(255, 255, 255, 0.6); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border: 1px solid rgba(255, 255, 255, 0.9); border-radius: 8px; padding: 14px 16px; box-shadow: inset 0 2px 5px rgba(255, 255, 255, 0.8), 0 10px 30px rgba(0, 0, 0, 0.05);">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2.5" style="width:20px; height:20px; stroke: rgba(0, 0, 0, 0.6);"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+              <input type="text" id="mainSearchInput" placeholder="Buscar juegos..." style="background: transparent; border: none; color: #111; flex-grow: 1; outline: none; margin-left: 12px; font-size: 16px; font-weight: 300; font-family: 'Outfit', sans-serif;">
+            </div>
+          </div>
+          
+          <!-- 3. RESULTADOS -->
+    <div id="searchResults" style="flex-grow: 1; overflow-y: auto; max-height: 70vh; width: 100%;"></div>
+</div> <!-- Este cierra los resultados que ya tenías -->
+</div> <!-- NUEVO: Este cierra la barra de scroll -->
+</div> <!-- NUEVO: Este cierra el Dashboard por completo -->
+
+<!-- ========================================== -->
+<!-- PANEL DE PERFIL -->
+<!-- ========================================== -->
+<div id="profilePanel" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-bottom: 100px; background-color: #fdfdfd; box-sizing: border-box; z-index: 500;">
+    
+    <!-- CONTENEDOR DEL BANNER -->
+    <div id="profileBanner" style="position: relative; width: 100%; height: 210px; background: url('https://images.unsplash.com/photo-1605901309584-818e25960b8f?q=80&w=1000') center/cover no-repeat; border-bottom-left-radius: 20px; border-bottom-right-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); z-index: 10;">
+        
+        <!-- Sombra superior para que los iconos destaquen -->
+        <div style="position: absolute; top: 0; left: 0; width: 100%; height: 120px; background: linear-gradient(to bottom, rgba(0,0,0,0.6), transparent); border-top-left-radius: 20px; border-top-right-radius: 20px;"></div>
+
+        <!-- CAPA DE EDICIÓN DEL BANNER -->
+        <div id="bannerEditOverlay" class="hidden" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); border-bottom-left-radius: 20px; border-bottom-right-radius: 20px; display: flex; justify-content: center; align-items: center; cursor: pointer; z-index: 5;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" style="width: 40px; height: 40px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+            <input type="file" id="uploadBannerInput" accept="image/*" style="display: none;">
+        </div>
+
+        <!-- BOTÓN MENÚ (Arriba a la Derecha) -->
+        <button onclick="openSideMenu()" style="position: absolute; top: 15px; right: 15px; z-index: 100; background: transparent; border: none; cursor: pointer; color: white; display: flex; justify-content: center; align-items: center; padding: 5px; outline: none;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 28px; height: 28px; filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.8));">
+                <line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+        </button>
+
+        <!-- AVATAR DEL USUARIO -->
+        <div style="position: absolute; bottom: -40px; left: 25px; z-index: 15;">
+            <div style="position: relative; width: 86px; height: 86px; border-radius: 50%; background: #1a1a1a; border: 4px solid #ffffff; overflow: hidden; display: flex; justify-content: center; align-items: center;">
+                <img id="profileAvatarImg" src="" style="width: 100%; height: 100%; object-fit: cover; display: none;">
+                <svg id="profileAvatarSvg" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="1.5" style="width: 44px; height: 44px;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                
+                <!-- CAPA DE EDICIÓN DEL AVATAR -->
+                <div id="avatarEditOverlay" class="hidden" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; cursor: pointer; z-index: 25;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" style="width: 24px; height: 24px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                    <input type="file" id="uploadAvatarInput" accept="image/*" style="display: none;">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- DATOS DEL USUARIO (Con sus 25px de margen lateral intactos) -->
+    <div style="padding: 15px 25px 20px 25px; position: relative; z-index: 1; margin-top: 0;">
+        
+        <!-- BOTONES SUPERIORES: Editar Perfil y Tarjeta de Jugador (Alineados a la derecha) -->
+        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: -10px; margin-bottom: 15px; position: relative; z-index: 20;">
+            
+            <!-- BOTÓN EDITAR PERFIL -->
+            <button id="btnToggleEditMode" style="display: flex; align-items: center; gap: 6px; background: rgba(0,0,0,0.04); color: #111; border: 1px solid rgba(0,0,0,0.1); padding: 6px 16px; border-radius: 8px; font-family: 'Outfit', sans-serif; font-size: 0.75rem; font-weight: 700; cursor: pointer; transition: background 0.2s; outline: none;">
+                <svg id="iconEditToggle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 14px; height: 14px;"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
+                <span style="margin-top: 1px;">Editar Perfil</span>
+            </button>
+
+            <!-- TARJETA DE JUGADOR -->
+            <button id="btnPlayerCard" onclick="showPlayerCardPopup()" style="background: rgba(0,0,0,0.04); color: #111; border: 1px solid rgba(0,0,0,0.1); padding: 6px 16px; border-radius: 8px; font-family: 'Outfit', sans-serif; font-size: 0.75rem; font-weight: 700; cursor: pointer; transition: background 0.2s; outline: none;">
+                Tarjeta de Jugador
+            </button>
+            
+        </div>
+
+        <!-- CABECERA: Nombre + Nivel (Izquierda) // Seguidores (Derecha) -->
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 15px; margin-top: 35px;">
+            
+            <!-- Izquierda: Nombre, Input y Nivel -->
+            <div style="display: flex; align-items: baseline; gap: 12px;">
+                <h2 id="profileUsername" style="margin: 0; font-family: 'Cinzel', serif; font-size: 1.8rem; color: #111; font-weight: 700; letter-spacing: 1px;">Cargando...</h2>
+                <input type="text" id="inputNewName" class="hidden" style="width: 100%; margin: 0; font-family: 'Cinzel', serif; font-size: 1.6rem; color: #111; font-weight: 700; border: none; border-bottom: 2px dashed #999; background: transparent; padding: 0; outline: none;">
+                
+                <!-- Nivel al lado del nombre -->
+                <div style="font-family: 'Cinzel', serif; color: #111; font-weight: 700; display: flex; align-items: baseline; gap: 3px;">
+                    <span style="font-size: 0.75rem; color: #666; font-family: 'Outfit', sans-serif; font-weight: 800;">LVL</span> 
+                    <span id="profileLevel" style="font-size: 1.3rem;">1</span>
+                </div>
+            </div>
+
+            <!-- Derecha: Seguidores y Seguidos -->
+            <div style="display: flex; align-items: center;">
+                <button onclick="alert('Abriendo lista de seguidores...')" style="background: transparent; border: none; padding: 0; display: flex; gap: 12px; color: #111; font-family: 'Outfit', sans-serif; cursor: pointer; transition: transform 0.2s; outline: none;">
+                    <div style="display: flex; align-items: baseline; gap: 4px;">
+                        <strong id="statFollowers" style="font-family: 'Cinzel', serif; font-size: 1.1rem; color: #111;">0</strong> 
+                        <span style="font-size: 0.75rem; color: #666;">Segs</span>
+                    </div>
+                    <div style="width: 1px; background: rgba(0,0,0,0.1);"></div>
+                    <div style="display: flex; align-items: baseline; gap: 4px;">
+                        <strong id="statFollowing" style="font-family: 'Cinzel', serif; font-size: 1.1rem; color: #111;">0</strong> 
+                        <span style="font-size: 0.75rem; color: #666;">Sig.</span>
+                    </div>
+                </button>
+            </div>
+        </div>
+
+        <!-- BIOGRAFÍA -->
+        <div style="margin: 14px 0 16px 0;">
+            <p id="profileBio" style="margin: 0; font-family: 'Outfit', sans-serif; font-size: 0.95rem; color: #444; line-height: 1.5; width: 100%; word-break: break-word;">Sin descripción.</p>
+            <textarea id="inputNewBio" class="hidden" maxlength="150" rows="3" style="width: 100%; margin: 0; font-family: 'Outfit', sans-serif; font-size: 0.95rem; color: #111; line-height: 1.5; border: none; border-bottom: 2px dashed #999; background: rgba(0,0,0,0.02); padding: 4px; outline: none; resize: none; box-sizing: border-box; -webkit-user-select: auto; user-select: auto;"></textarea>
+            <div id="bioCounterContainer" class="hidden" style="text-align: right; font-family: 'Outfit', sans-serif; font-size: 0.7rem; color: #888; margin-top: 2px;">
+                <span id="bioCounter">0/150</span>
+            </div>
+        </div>
+
+        <!-- LOGROS / MEDALLAS Y MISIONES -->
+        <div style="margin: 14px 0 16px 0; display: flex; justify-content: space-between; align-items: center;">
+            <style>
+                .badge-slot { width: 38px; height: 38px; border-radius: 50%; display: flex; justify-content: center; align-items: center; cursor: pointer; transition: transform 0.2s; background: rgba(0,0,0,0.02); border: 1px dashed rgba(0,0,0,0.15); color: #ccc; flex-shrink: 0; }
+                .badge-slot:active { transform: scale(0.92); }
+                .view-achievements-btn { display: flex; flex-direction: column; align-items: center; gap: 4px; background: transparent; border: none; cursor: pointer; padding: 4px; transition: transform 0.2s; outline: none; }
+                .view-achievements-btn:active { transform: scale(0.92); }
+            </style>
+
+            <!-- IZQUIERDA: Ojo flotante "Ver logros" -->
+            <button class="view-achievements-btn" onclick="showAchievementsPopup()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 20px; height: 20px;">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+                <span style="font-family: 'Outfit', sans-serif; font-size: 0.55rem; color: #666; font-weight: 800; letter-spacing: 0.5px;">LOGROS</span>
+            </button>
+
+            <!-- CENTRO: 5 Huecos de Logros (con el símbolo + y apuntando al popup sarcástico) -->
+            <div style="display: flex; gap: 6px;">
+                <div class="badge-slot" onclick="showLockedAchievementPopup()" title="Añadir logro">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 18px; height: 18px;"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                </div>
+                <div class="badge-slot" onclick="showLockedAchievementPopup()" title="Añadir logro">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 18px; height: 18px;"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                </div>
+                <div class="badge-slot" onclick="showLockedAchievementPopup()" title="Añadir logro">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 18px; height: 18px;"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                </div>
+                <div class="badge-slot" onclick="showLockedAchievementPopup()" title="Añadir logro">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 18px; height: 18px;"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                </div>
+                <div class="badge-slot" onclick="showLockedAchievementPopup()" title="Añadir logro">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 18px; height: 18px;"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                </div>
+            </div>
+
+            <!-- DERECHA: Botón de Misiones -->
+            <button id="btnMisiones" class="view-achievements-btn" onclick="alert('Buzón de misiones...')">
+                <div style="position: relative;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 20px; height: 20px;">
+                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                        <polyline points="22,6 12,13 2,6"></polyline>
+                    </svg>
+                    <span style="position: absolute; top: -3px; right: -5px; width: 8px; height: 8px; background: #e74c3c; border-radius: 50%; border: 2px solid white;"></span>
+                </div>
+                <span style="font-family: 'Outfit', sans-serif; font-size: 0.55rem; color: #666; font-weight: 800; letter-spacing: 0.5px;">MISIONES</span>
+            </button>
+        </div>
+
+        <!-- BARRAS DE PROGRESO (CLASE y REPUTACIÓN Lado a Lado) -->
+        <div style="display: flex; flex-direction: row; gap: 12px; margin-top: 10px;">
+            
+            <style>
+                /* Efecto de botón de carta para las barras */
+                .stat-click-zone { flex: 1; padding: 10px 12px; border-radius: 12px; background: rgba(0,0,0,0.015); border: 1px solid rgba(0,0,0,0.06); cursor: pointer; transition: background 0.2s, transform 0.1s; }
+                .stat-click-zone:active { transform: scale(0.97); background: rgba(0,0,0,0.04); }
+            </style>
+
+            <!-- Barra de Clase (Izquierda) -->
+            <div class="stat-click-zone" onclick="showRankPopup('exp')">
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; font-family: 'Outfit', sans-serif; font-size: 0.65rem; color: #666; font-weight: 800; letter-spacing: 0.5px;">
+                        <div style="display: flex; align-items: center; gap: 4px;">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="#4facfe" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 14px; height: 14px;"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"></path><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"></path></svg>
+                            <span>CLASE</span> 
+                        </div>
+                    </div>
+                    <div style="font-family: 'Cinzel', serif; font-size: 0.8rem; font-weight: 700; color: #111; margin-top: -4px;">El campesino</div>
+                    <div style="width: 100%; height: 6px; background: rgba(0,0,0,0.08); border-radius: 4px; overflow: hidden; box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);">
+                        <div id="profileExpBar" class="exp-bar-fill" style="width: 0%; height: 100%; background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%); border-radius: 4px;"></div>
+                    </div>
+                    <div style="text-align: right; font-family: 'Outfit', sans-serif; font-size: 0.65rem; font-weight: 700; color: #666;">
+                        <span id="profileExpText">0 / 100</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Barra de Reputación (Derecha) -->
+            <div class="stat-click-zone" onclick="showRankPopup('rep')">
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; font-family: 'Outfit', sans-serif; font-size: 0.65rem; color: #666; font-weight: 800; letter-spacing: 0.5px;">
+                        <div style="display: flex; align-items: center; gap: 4px;">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="#f2994a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 14px; height: 14px;"><path d="M9 10h.01"></path><path d="M15 10h.01"></path><path d="M12 2a8 8 0 0 0-8 8v12l3-3 2.5 2.5L12 19l2.5 2.5L17 19l3 3V10a8 8 0 0 0-8-8z"></path></svg>
+                            <span>REPUTACIÓN</span> 
+                        </div>
+                    </div>
+                    <div style="font-family: 'Cinzel', serif; font-size: 0.8rem; font-weight: 700; color: #111; margin-top: -4px;">Desconocido</div>
+                    <div style="width: 100%; height: 6px; background: rgba(0,0,0,0.08); border-radius: 4px; overflow: hidden; box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);">
+                        <div id="profileRepBar" class="exp-bar-fill" style="width: 0%; height: 100%; background: linear-gradient(90deg, #f2994a 0%, #f2c94c 100%); border-radius: 4px;"></div>
+                    </div>
+                    <div style="text-align: right; font-family: 'Outfit', sans-serif; font-size: 0.65rem; font-weight: 700; color: #666;">
+                        <span id="profileRepText">0 / 100</span>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+            
+            <div style="display: flex; justify-content: space-between; margin-top: 15px; border-bottom: 1px solid rgba(0,0,0,0.1);">
+    <button id="btnTabColeccion" onclick="toggleProfileTab('coleccion', this)" class="stat-btn active-tab" style="flex: 1; padding: 10px 2px; text-align: center; cursor: pointer; outline: none;">
+        <div id="statCollection" style="font-family: 'Cinzel', serif; font-size: 1.15rem; font-weight: 700; color: #111;">0</div>
+        <div style="font-family: 'Outfit', sans-serif; font-size: 0.55rem; color: #666; font-weight: 800; margin-top: 2px; letter-spacing: 0.5px;">COLECCIÓN</div>
+    </button>
+    <button id="btnTabResenas" onclick="toggleProfileTab('resenas', this)" class="stat-btn" style="flex: 1; padding: 10px 2px; text-align: center; cursor: pointer; outline: none;">
+        <div id="statReviews" style="font-family: 'Cinzel', serif; font-size: 1.15rem; font-weight: 700; color: #111;">0</div>
+        <div style="font-family: 'Outfit', sans-serif; font-size: 0.55rem; color: #666; font-weight: 800; margin-top: 2px; letter-spacing: 0.5px;">RESEÑAS</div>
+    </button>
+    <button id="btnTabListas" onclick="toggleProfileTab('listas', this)" class="stat-btn" style="flex: 1; padding: 10px 2px; text-align: center; cursor: pointer; outline: none;">
+        <div id="statLists" style="font-family: 'Cinzel', serif; font-size: 1.15rem; font-weight: 700; color: #111;">0</div>
+        <div style="font-family: 'Outfit', sans-serif; font-size: 0.55rem; color: #666; font-weight: 800; margin-top: 2px; letter-spacing: 0.5px;">LISTAS</div>
+    </button>
+    <button id="btnTabTemas" onclick="toggleProfileTab('temas', this)" class="stat-btn" style="flex: 1; padding: 10px 2px; text-align: center; cursor: pointer; outline: none;">
+        <div id="statTopics" style="font-family: 'Cinzel', serif; font-size: 1.15rem; font-weight: 700; color: #111;">0</div>
+        <div style="font-family: 'Outfit', sans-serif; font-size: 0.55rem; color: #666; font-weight: 800; margin-top: 2px; letter-spacing: 0.5px;">TEMAS</div>
+    </button>
+</div>
+
+            <!-- CONTENEDOR DE PESTAÑAS (Con textos sarcásticos) -->
+            <div id="profileTabsContent" style="display: block; padding: 25px 15px; background: rgba(255,255,255,0.5); border-bottom-left-radius: 12px; border-bottom-right-radius: 12px; min-height: 120px; font-family: 'Outfit', sans-serif; font-size: 0.9rem; color: #666; text-align: center;">
+                
+                <div id="tab-coleccion" style="display: block; animation: fadeIn 0.3s ease;">
+                    <em>Por ahora no hay nada que ver aquí... salvo una colección más vacía que la taberna de un pueblo fantasma. ¿Seguro que juegas a algo o solo miras los menús?</em>
+                </div>
+                
+                <div id="tab-resenas" style="display: none; animation: fadeIn 0.3s ease;">
+                    <em>Por ahora no hay nada que ver aquí... Cero reseñas. Se ve que tu opinión es tan exclusiva que has decidido privarla al resto del mundo.</em>
+                </div>
+                
+                <div id="tab-listas" style="display: none; animation: fadeIn 0.3s ease;">
+                    <em>Por ahora no hay nada que ver aquí... Ni una lista. Suponemos que organizar tus juegos te da demasiada pereza y abrazas el caos.</em>
+                </div>
+                
+                <div id="tab-temas" style="display: none; animation: fadeIn 0.3s ease;">
+                    <em>Por ahora no hay nada que ver aquí... Ni un tema creado. Eres de los que observan desde las sombras sin hacer ruido, ¿verdad, ninja?</em>
+                </div>
+
+                <style>
+                    @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+                </style>
+            </div>
+            
+        </div>
+    </div>
+
+    </div>
+
+    <!-- SPINNER DE CARGA GLOBAL -->
+    <div id="uploadingSpinner" class="hidden" style="...">
+        <div class="ptr-spinner" style="..."></div>
+        <span id="uploadingText" style="...">Subiendo imagen...</span>
+    </div>
+
+    <!-- ¡ESTE ES EL DIV MÁGICO QUE FALTA PARA CERRAR EL PERFIL! -->
+    </div> 
+
+    <!-- BOTTOM NAVIGATION BAR GLOBAL (Blindada y perfectamente alineada) -->
+    <nav id="globalBottomNav" class="bottom-nav glass-panel" style="display: none; justify-content: space-evenly; align-items: center; width: 100%; box-sizing: border-box; z-index: 99999;">
+        
+        <!-- INICIO -->
+        <button class="nav-item active" style="flex: 1; display: flex; justify-content: center; align-items: center; background: transparent; border: none; padding: 15px 0; cursor: pointer;" onclick="switchPanel('dashboardPanel'); document.querySelectorAll('#globalBottomNav .nav-item').forEach(b => b.classList.remove('active')); this.classList.add('active');">
+            <svg viewBox="0 0 24 24" style="width: 24px; height: 24px;"><path d="M3 10l9-9 9 9v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+        </button>
+        
+        <!-- EXPLORAR -->
+        <button class="nav-item" style="flex: 1; display: flex; justify-content: center; align-items: center; background: transparent; border: none; padding: 15px 0; cursor: pointer;" onclick="switchPanel('explorePanel'); document.querySelectorAll('#globalBottomNav .nav-item').forEach(b => b.classList.remove('active')); this.classList.add('active');">
+            <svg viewBox="0 0 24 24" style="width: 24px; height: 24px;"><circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon></svg>
+        </button>
+        
+        <!-- BUSCADOR -->
+        <button class="nav-item" id="btnOpenSearch" style="flex: 1; display: flex; justify-content: center; align-items: center; background: transparent; border: none; padding: 15px 0; cursor: pointer;">
+            <svg viewBox="0 0 24 24" style="width: 24px; height: 24px;"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        </button>
+        
+        <!-- NOTIFICACIONES -->
+        <button class="nav-item" style="flex: 1; display: flex; justify-content: center; align-items: center; background: transparent; border: none; padding: 15px 0; cursor: pointer;">
+            <svg viewBox="0 0 24 24" style="width: 24px; height: 24px;"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+        </button>
+        
+        <!-- PERFIL -->
+        <button class="nav-item" style="flex: 1; display: flex; justify-content: center; align-items: center; background: transparent; border: none; padding: 15px 0; cursor: pointer;" onclick="switchPanel('profilePanel'); document.querySelectorAll('#globalBottomNav .nav-item').forEach(b => b.classList.remove('active')); this.classList.add('active');">
+            <svg viewBox="0 0 24 24" style="width: 24px; height: 24px;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+        </button>
+    </nav>
+</div>
+
+<!-- POPUP DE LOGROS / VITRINA (Árbol de Progresión Oculto) -->
+    <div id="achievementsPopupOverlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 999999; display: none; justify-content: center; align-items: center; opacity: 0; transition: opacity 0.3s; padding: 20px; box-sizing: border-box;">
+        <div id="achievementsPopupBox" style="background: white; width: 100%; max-width: 400px; border-radius: 20px; padding: 25px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); transform: translateY(20px); transition: transform 0.3s;">
+            
+            <h3 style="font-family: 'Cinzel', serif; font-size: 1.4rem; margin: 0 0 15px 0; font-weight: 700; text-align: center; color: #111;">Tus Logros</h3>
+            
+            <div style="display: flex; flex-direction: column; gap: 18px; margin-bottom: 20px; max-height: 60vh; overflow-y: auto; padding-right: 6px; overflow-x: hidden;">
+
+                <style>
+                    .ach-category-title { font-family: 'Cinzel', serif; font-size: 0.85rem; color: #111; font-weight: 700; border-bottom: 2px dashed #eee; padding-bottom: 4px; margin-bottom: 12px; text-align: center; }
+                    .ach-row { display: flex; justify-content: space-between; gap: 8px; }
+                    
+                    /* Estado Normal / Bloqueado (LVL 1) */
+                    .ach-item { flex: 1; display: flex; flex-direction: column; align-items: center; text-align: center; cursor: pointer; transition: transform 0.2s; }
+                    .ach-item:active { transform: scale(0.92); }
+                    .ach-locked { filter: grayscale(100%); opacity: 0.5; }
+                    
+                    /* Estado Oculto (LVL 2 y 3) */
+                    .ach-hidden { flex: 1; display: flex; flex-direction: column; align-items: center; text-align: center; opacity: 0.3; cursor: default; }
+                    .ach-hidden .shape-lvl2, .ach-hidden .shape-lvl3 { border-color: #ccc; background: #f5f5f5; box-shadow: none; }
+                    
+                    .ach-icon-wrapper { position: relative; width: 40px; height: 40px; margin-bottom: 8px; display: flex; justify-content: center; align-items: center; }
+                    
+                    .shape-lvl1 { width: 100%; height: 100%; border-radius: 50%; border: 2px solid #9c27b0; background: rgba(156, 39, 176, 0.08); display: flex; justify-content: center; align-items: center; }
+                    .shape-lvl2 { width: 100%; height: 100%; border-radius: 10px; border: 2px solid #2980b9; background: rgba(41, 128, 185, 0.08); display: flex; justify-content: center; align-items: center; }
+                    .shape-lvl3 { width: 34px; height: 34px; border-radius: 8px; border: 2px solid #f1c40f; background: rgba(241, 196, 15, 0.15); display: flex; justify-content: center; align-items: center; transform: rotate(45deg); margin: 3px auto; }
+                    .shape-lvl3 svg { transform: rotate(-45deg); }
+                    
+                    .ach-title { font-family: 'Cinzel', serif; font-weight: 700; font-size: 0.65rem; color: #111; line-height: 1.1; margin-bottom: 3px; height: 20px; display: flex; align-items: center; justify-content: center; }
+                    .ach-desc { font-family: 'Outfit', sans-serif; font-size: 0.55rem; color: #777; line-height: 1.2; }
+                    .padlock-icon { position: absolute; bottom: -4px; right: -4px; background: #222; border: 2px solid white; border-radius: 50%; width: 16px; height: 16px; display: flex; justify-content: center; align-items: center; z-index: 5; }
+                </style>
+
+                <!-- ================== PROGRESO DE NIVEL ================== -->
+                <div>
+                    <div class="ach-category-title">Experiencia Vital (Niveles)</div>
+                    <div class="ach-row">
+                        <!-- LVL 1 Bloqueado -->
+                        <div class="ach-item ach-locked" onclick="showAchDetail('Casual', 'Nivel 20.', 'Alcanza el Nivel 20 de experiencia completando acciones en la comunidad.', 'Nivel 20... Vaya, has aprendido a encender la consola. Felicidades, genio.', true)">
+                            <div class="ach-icon-wrapper"><div class="shape-lvl1"><svg viewBox="0 0 24 24" fill="none" stroke="#9c27b0" stroke-width="2" style="width: 20px; height: 20px;"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg></div><div class="padlock-icon"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" style="width: 8px; height: 8px;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg></div></div>
+                            <div class="ach-title">Casual</div><div class="ach-desc">Nivel 20.</div>
+                        </div>
+                        <!-- LVL 2 y 3 Ocultos -->
+                        <div class="ach-hidden">
+                            <div class="ach-icon-wrapper"><div class="shape-lvl2"><svg viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2" style="width: 18px; height: 18px;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg></div></div>
+                            <div class="ach-title" style="color:#aaa;">???</div><div class="ach-desc" style="color:#bbb;">Oculto</div>
+                        </div>
+                        <div class="ach-hidden">
+                            <div class="ach-icon-wrapper"><div class="shape-lvl3"><svg viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2" style="width: 16px; height: 16px;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg></div></div>
+                            <div class="ach-title" style="color:#aaa;">???</div><div class="ach-desc" style="color:#bbb;">Oculto</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ================== DEBATES ================== -->
+                <div>
+                    <div class="ach-category-title">Líder de Opinión (Debates)</div>
+                    <div class="ach-row">
+                        <div class="ach-item ach-locked" onclick="showAchDetail('Chismoso', '2 temas (5+ coms).', 'Inicia temas de debate en 2 juegos distintos y consigue al menos 5 comentarios en cada uno.', 'Conseguiste que te respondieran en dos juegos. Seguro fue para llevarte la contraria.', true)">
+                            <div class="ach-icon-wrapper"><div class="shape-lvl1"><svg viewBox="0 0 24 24" fill="none" stroke="#9c27b0" stroke-width="2" style="width: 20px; height: 20px;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg></div><div class="padlock-icon"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" style="width: 8px; height: 8px;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg></div></div>
+                            <div class="ach-title">Chismoso</div><div class="ach-desc">2 temas.</div>
+                        </div>
+                        <div class="ach-hidden">
+                            <div class="ach-icon-wrapper"><div class="shape-lvl2"><svg viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2" style="width: 18px; height: 18px;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg></div></div>
+                            <div class="ach-title" style="color:#aaa;">???</div><div class="ach-desc" style="color:#bbb;">Oculto</div>
+                        </div>
+                        <div class="ach-hidden">
+                            <div class="ach-icon-wrapper"><div class="shape-lvl3"><svg viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2" style="width: 16px; height: 16px;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg></div></div>
+                            <div class="ach-title" style="color:#aaa;">???</div><div class="ach-desc" style="color:#bbb;">Oculto</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ================== RESEÑAS ================== -->
+                <div>
+                    <div class="ach-category-title">El Arte de Escribir (Reseñas)</div>
+                    <div class="ach-row">
+                        <div class="ach-item ach-locked" onclick="showAchDetail('Aprendiz', '5 reseñas.', 'Escribe y publica 5 reseñas de videojuegos en tu perfil.', '5 reseñas. Shakespeare estaría temblando... pero de la risa.', true)">
+                            <div class="ach-icon-wrapper"><div class="shape-lvl1"><svg viewBox="0 0 24 24" fill="none" stroke="#9c27b0" stroke-width="2" style="width: 20px; height: 20px;"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg></div><div class="padlock-icon"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" style="width: 8px; height: 8px;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg></div></div>
+                            <div class="ach-title">Aprendiz</div><div class="ach-desc">5 reseñas.</div>
+                        </div>
+                        <div class="ach-hidden">
+                            <div class="ach-icon-wrapper"><div class="shape-lvl2"><svg viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2" style="width: 18px; height: 18px;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg></div></div>
+                            <div class="ach-title" style="color:#aaa;">???</div><div class="ach-desc" style="color:#bbb;">Oculto</div>
+                        </div>
+                        <div class="ach-hidden">
+                            <div class="ach-icon-wrapper"><div class="shape-lvl3"><svg viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2" style="width: 16px; height: 16px;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg></div></div>
+                            <div class="ach-title" style="color:#aaa;">???</div><div class="ach-desc" style="color:#bbb;">Oculto</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ================== LIKES ================== -->
+                <div>
+                    <div class="ach-category-title">Influencia en la Taberna (Likes)</div>
+                    <div class="ach-row">
+                        <div class="ach-item ach-locked" onclick="showAchDetail('Boca a Boca', '10 likes.', 'Consigue que la comunidad le dé un total de 10 aplausos a tus reseñas publicadas.', '10 aplausos. Seguro que te los dieron por pura lástima.', true)">
+                            <div class="ach-icon-wrapper"><div class="shape-lvl1"><svg viewBox="0 0 24 24" fill="none" stroke="#9c27b0" stroke-width="2" style="width: 20px; height: 20px;"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg></div><div class="padlock-icon"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" style="width: 8px; height: 8px;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg></div></div>
+                            <div class="ach-title">Boca a Boca</div><div class="ach-desc">10 likes.</div>
+                        </div>
+                        <div class="ach-hidden">
+                            <div class="ach-icon-wrapper"><div class="shape-lvl2"><svg viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2" style="width: 18px; height: 18px;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg></div></div>
+                            <div class="ach-title" style="color:#aaa;">???</div><div class="ach-desc" style="color:#bbb;">Oculto</div>
+                        </div>
+                        <div class="ach-hidden">
+                            <div class="ach-icon-wrapper"><div class="shape-lvl3"><svg viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2" style="width: 16px; height: 16px;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg></div></div>
+                            <div class="ach-title" style="color:#aaa;">???</div><div class="ach-desc" style="color:#bbb;">Oculto</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ================== TERROR ================== -->
+                <div>
+                    <div class="ach-category-title">Pesadillas (Terror)</div>
+                    <div class="ach-row">
+                        <div class="ach-item ach-locked" onclick="showAchDetail('Superviviente', '10 jgs terror.', 'Añade a tu colección personal 10 videojuegos catalogados en el género Terror.', '10 juegos de terror. ¿Duermes con la luz encendida, verdad?', true)">
+                            <div class="ach-icon-wrapper"><div class="shape-lvl1"><svg viewBox="0 0 24 24" fill="none" stroke="#9c27b0" stroke-width="2" style="width: 20px; height: 20px;"><path d="M9 10h.01"></path><path d="M15 10h.01"></path><path d="M12 2a8 8 0 0 0-8 8v12l3-3 2.5 2.5L12 19l2.5 2.5L17 19l3 3V10a8 8 0 0 0-8-8z"></path></svg></div><div class="padlock-icon"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" style="width: 8px; height: 8px;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg></div></div>
+                            <div class="ach-title">Superviviente</div><div class="ach-desc">10 jgs terror.</div>
+                        </div>
+                        <div class="ach-hidden">
+                            <div class="ach-icon-wrapper"><div class="shape-lvl2"><svg viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2" style="width: 18px; height: 18px;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg></div></div>
+                            <div class="ach-title" style="color:#aaa;">???</div><div class="ach-desc" style="color:#bbb;">Oculto</div>
+                        </div>
+                        <div class="ach-hidden">
+                            <div class="ach-icon-wrapper"><div class="shape-lvl3"><svg viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2" style="width: 16px; height: 16px;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg></div></div>
+                            <div class="ach-title" style="color:#aaa;">???</div><div class="ach-desc" style="color:#bbb;">Oculto</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ================== AVENTURA ================== -->
+                <div>
+                    <div class="ach-category-title">Viajes Épicos (Aventura)</div>
+                    <div class="ach-row">
+                        <div class="ach-item ach-locked" onclick="showAchDetail('Trotamundos', '10 jgs aventura.', 'Añade a tu colección personal 10 videojuegos catalogados en el género Aventura.', '10 aventuras. Caminar en línea recta en un juego no cuenta como explorar.', true)">
+                            <div class="ach-icon-wrapper"><div class="shape-lvl1"><svg viewBox="0 0 24 24" fill="none" stroke="#9c27b0" stroke-width="2" style="width: 20px; height: 20px;"><circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon></svg></div><div class="padlock-icon"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" style="width: 8px; height: 8px;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg></div></div>
+                            <div class="ach-title">Trotamundos</div><div class="ach-desc">10 jgs aventura.</div>
+                        </div>
+                        <div class="ach-hidden">
+                            <div class="ach-icon-wrapper"><div class="shape-lvl2"><svg viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2" style="width: 18px; height: 18px;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg></div></div>
+                            <div class="ach-title" style="color:#aaa;">???</div><div class="ach-desc" style="color:#bbb;">Oculto</div>
+                        </div>
+                        <div class="ach-hidden">
+                            <div class="ach-icon-wrapper"><div class="shape-lvl3"><svg viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2" style="width: 16px; height: 16px;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg></div></div>
+                            <div class="ach-title" style="color:#aaa;">???</div><div class="ach-desc" style="color:#bbb;">Oculto</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ================== RPG ================== -->
+                <div>
+                    <div class="ach-category-title">Forjador de Historias (RPG)</div>
+                    <div class="ach-row">
+                        <div class="ach-item ach-locked" onclick="showAchDetail('Escudero', '10 jgs RPG.', 'Añade a tu colección personal 10 videojuegos catalogados en el género RPG.', '10 RPGs. Matar ratas de nivel 1 es claramente tu gran pasión.', true)">
+                            <div class="ach-icon-wrapper"><div class="shape-lvl1"><svg viewBox="0 0 24 24" fill="none" stroke="#9c27b0" stroke-width="2" style="width: 20px; height: 20px;"><path d="M14.5 17.5L3 6V3h3l11.5 11.5"></path><path d="M13 19l6-6 2 2-8 8-2-2z"></path></svg></div><div class="padlock-icon"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" style="width: 8px; height: 8px;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg></div></div>
+                            <div class="ach-title">Escudero</div><div class="ach-desc">10 jgs RPG.</div>
+                        </div>
+                        <div class="ach-hidden">
+                            <div class="ach-icon-wrapper"><div class="shape-lvl2"><svg viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2" style="width: 18px; height: 18px;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg></div></div>
+                            <div class="ach-title" style="color:#aaa;">???</div><div class="ach-desc" style="color:#bbb;">Oculto</div>
+                        </div>
+                        <div class="ach-hidden">
+                            <div class="ach-icon-wrapper"><div class="shape-lvl3"><svg viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2" style="width: 16px; height: 16px;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg></div></div>
+                            <div class="ach-title" style="color:#aaa;">???</div><div class="ach-desc" style="color:#bbb;">Oculto</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ================== SHOOTER ================== -->
+                <div>
+                    <div class="ach-category-title">Puntería Fina (Shooter)</div>
+                    <div class="ach-row">
+                        <div class="ach-item ach-locked" onclick="showAchDetail('Recluta', '10 jgs Shooter.', 'Añade a tu colección personal 10 videojuegos catalogados en el género Shooter.', 'Tu puntería sigue siendo digna de un Stormtrooper ciego.', true)">
+                            <div class="ach-icon-wrapper"><div class="shape-lvl1"><svg viewBox="0 0 24 24" fill="none" stroke="#9c27b0" stroke-width="2" style="width: 20px; height: 20px;"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg></div><div class="padlock-icon"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" style="width: 8px; height: 8px;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg></div></div>
+                            <div class="ach-title">Recluta</div><div class="ach-desc">10 jgs shooter.</div>
+                        </div>
+                        <div class="ach-hidden">
+                            <div class="ach-icon-wrapper"><div class="shape-lvl2"><svg viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2" style="width: 18px; height: 18px;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg></div></div>
+                            <div class="ach-title" style="color:#aaa;">???</div><div class="ach-desc" style="color:#bbb;">Oculto</div>
+                        </div>
+                        <div class="ach-hidden">
+                            <div class="ach-icon-wrapper"><div class="shape-lvl3"><svg viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2" style="width: 16px; height: 16px;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg></div></div>
+                            <div class="ach-title" style="color:#aaa;">???</div><div class="ach-desc" style="color:#bbb;">Oculto</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- ================== POINT & CLICK / PUZZLES ================== -->
+                <div>
+                    <div class="ach-category-title">Mente Maestra (Point & Click)</div>
+                    <div class="ach-row">
+                        <div class="ach-item ach-locked" onclick="showAchDetail('Curioso', '10 jgs puzzles.', 'Añade a tu colección personal 10 juegos de puzzles o Point & Click.', 'Usar una guía para pasar el nivel no te hace inteligente. Lo sabes, ¿verdad?', true)">
+                            <div class="ach-icon-wrapper"><div class="shape-lvl1"><svg viewBox="0 0 24 24" fill="none" stroke="#9c27b0" stroke-width="2" style="width: 20px; height: 20px;"><path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z"></path></svg></div><div class="padlock-icon"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" style="width: 8px; height: 8px;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg></div></div>
+                            <div class="ach-title">Curioso</div><div class="ach-desc">10 jgs puzzles.</div>
+                        </div>
+                        <div class="ach-hidden">
+                            <div class="ach-icon-wrapper"><div class="shape-lvl2"><svg viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2" style="width: 18px; height: 18px;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg></div></div>
+                            <div class="ach-title" style="color:#aaa;">???</div><div class="ach-desc" style="color:#bbb;">Oculto</div>
+                        </div>
+                        <div class="ach-hidden">
+                            <div class="ach-icon-wrapper"><div class="shape-lvl3"><svg viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2" style="width: 16px; height: 16px;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg></div></div>
+                            <div class="ach-title" style="color:#aaa;">???</div><div class="ach-desc" style="color:#bbb;">Oculto</div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            
+            <button onclick="closeAchievementsPopup()" style="background: #111; color: white; border: none; padding: 12px 20px; border-radius: 12px; font-family: 'Outfit', sans-serif; font-weight: 700; cursor: pointer; width: 100%; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-top: 5px;">Cerrar Vitrina</button>
+        </div>
+    </div>
+
+    <!-- POPUP DETALLE DE LOGRO (Aparece cuando tocas un logro dentro de la vitrina) -->
+    <div id="achDetailOverlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); z-index: 9999999; display: none; justify-content: center; align-items: center; opacity: 0; transition: opacity 0.3s; padding: 20px; box-sizing: border-box;">
+        <div id="achDetailBox" style="background: white; width: 100%; max-width: 320px; border-radius: 20px; padding: 30px 25px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.3); transform: translateY(20px); transition: transform 0.3s;">
+            
+            <div style="margin-bottom: 15px; display: flex; justify-content: center;">
+                <div id="achDetailIconWrapper" style="width: 60px; height: 60px; border-radius: 50%; display: flex; justify-content: center; align-items: center; background: rgba(0,0,0,0.05); color: #888;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 30px; height: 30px;"><path d="M12 2l3 6 7 1-5 5 1 7-7-4-7 4 1-7-5-5 7-1 3-6z"></path></svg>
+                </div>
+            </div>
+            
+            <h3 id="achDetailTitle" style="font-family: 'Cinzel', serif; font-size: 1.3rem; margin: 0 0 5px 0; font-weight: 700; color: #111;">Título</h3>
+            <div id="achDetailStatus" style="font-family: 'Outfit', sans-serif; font-size: 0.75rem; font-weight: bold; margin-bottom: 15px; color: #999;">BLOQUEADO</div>
+            
+            <p id="achDetailSarcastic" style="font-family: 'Outfit', sans-serif; font-size: 0.95rem; color: #555; line-height: 1.5; margin: 0 0 25px 0; font-style: italic;">
+                Texto sarcástico.
+            </p>
+            
+            <button onclick="closeAchDetail()" style="background: #111; color: white; border: none; padding: 12px 20px; border-radius: 12px; font-family: 'Outfit', sans-serif; font-weight: 700; cursor: pointer; width: 100%; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">Vale, me callo</button>
+        </div>
+    </div>
+
+<!-- POPUP DE HISTORIA / RANGO (Oculto por defecto) -->
+    <div id="rankPopupOverlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 999999; display: none; justify-content: center; align-items: center; opacity: 0; transition: opacity 0.3s; padding: 20px; box-sizing: border-box;">
+        <div id="rankPopupBox" style="background: white; width: 100%; max-width: 320px; border-radius: 20px; padding: 30px 25px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.2); transform: translateY(20px); transition: transform 0.3s;">
+            
+            <div id="rankPopupIcon" style="margin-bottom: 15px; display: flex; justify-content: center;">
+                <!-- El icono se insertará por JS -->
+            </div>
+            
+            <h3 id="rankPopupTitle" style="font-family: 'Cinzel', serif; font-size: 1.5rem; margin: 0 0 10px 0; font-weight: 700;">Título</h3>
+            
+            <p id="rankPopupText" style="font-family: 'Outfit', sans-serif; font-size: 0.95rem; color: #555; line-height: 1.5; margin: 0 0 25px 0; font-style: italic;">
+                <!-- La historia se insertará por JS -->
+            </p>
+            
+            <button onclick="closeRankPopup()" style="background: #111; color: white; border: none; padding: 12px 20px; border-radius: 12px; font-family: 'Outfit', sans-serif; font-weight: 700; cursor: pointer; width: 100%; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">Entendido, a trabajar</button>
+        </div>
+    </div>
+
+<!-- POPUP DE LOGRO BLOQUEADO (Sarcástico) -->
+    <div id="lockedAchievementOverlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 999999; display: none; justify-content: center; align-items: center; opacity: 0; transition: opacity 0.3s; padding: 20px; box-sizing: border-box;">
+        <div id="lockedAchievementBox" style="background: white; width: 100%; max-width: 320px; border-radius: 20px; padding: 30px 25px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.2); transform: translateY(20px); transition: transform 0.3s;">
+            
+            <div style="margin-bottom: 15px; display: flex; justify-content: center;">
+                <div style="width: 60px; height: 60px; border-radius: 50%; background: rgba(0,0,0,0.05); display: flex; justify-content: center; align-items: center; color: #888;">
+                    <!-- Icono de Añadir (+) -->
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 28px; height: 28px;"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                </div>
+            </div>
+            
+            <h3 style="font-family: 'Cinzel', serif; font-size: 1.3rem; margin: 0 0 10px 0; font-weight: 700; color: #111;">Añadir Logro</h3>
+            
+            <p id="lockedAchievementText" style="font-family: 'Outfit', sans-serif; font-size: 0.95rem; color: #555; line-height: 1.5; margin: 0 0 25px 0; font-style: italic;">
+                Cargando...
+            </p>
+            
+            <button onclick="closeLockedAchievementPopup()" style="background: #111; color: white; border: none; padding: 12px 20px; border-radius: 12px; font-family: 'Outfit', sans-serif; font-weight: 700; cursor: pointer; width: 100%; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">Vaya, seguiré jugando</button>
+        </div>
+    </div>
+
+    <!-- POPUP TARJETA DE JUGADOR (Diseño Glassmorphism Premium) -->
+    <div id="playerCardOverlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 9999999; display: none; justify-content: center; align-items: center; opacity: 0; transition: opacity 0.4s ease;">
+        
+        <!-- Contenedor Principal Responsive con Efecto Glass -->
+        <div id="playerCardBox" style="position: relative; width: 90vw; max-width: 340px; max-height: 85vh; border-radius: 24px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.2); transform: translateY(30px); transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); background: transparent; display: flex; flex-direction: column;">
+            
+            <!-- Fondo Dinámico (100% visible) -->
+            <div id="pcBanner" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #222 center/cover; opacity: 1;"></div>
+            
+            <!-- Capa Glass (Difuminado MÍNIMO a 2px para que la ilustración se vea súper nítida) -->
+            <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.6) 100%); backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px);"></div>
+
+            <!-- Contenido con Scroll para móviles -->
+            <div style="position: relative; z-index: 10; padding: 25px 20px; display: flex; flex-direction: column; overflow-y: auto; color: white;">
+                
+                <!-- Cabecera (Con los títulos de Clase y Reputación añadidos) -->
+                <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 25px;">
+                    <!-- Avatar -->
+                    <div id="pcAvatarBox" style="width: 76px; height: 76px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.5); box-shadow: 0 4px 15px rgba(0,0,0,0.4); overflow: hidden; background: rgba(0,0,0,0.2); flex-shrink: 0; display: flex; justify-content: center; align-items: center;">
+                        <!-- Se inyecta por JS -->
+                    </div>
+                    <div>
+                        <h2 id="pcName" style="margin: 0; font-family: 'Cinzel', serif; font-size: 1.7rem; font-weight: 700; letter-spacing: 1px; text-shadow: 0 2px 5px rgba(0,0,0,0.9);">DAVID</h2>
+                        <div style="display: flex; align-items: center; gap: 12px; margin-top: 4px;">
+                            <!-- Nivel -->
+                            <div style="font-family: 'Outfit', sans-serif; font-size: 0.8rem;"><span style="font-weight: 800; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.8);">LVL</span> <span id="pcLvl" style="font-size: 1.3rem; font-family: 'Cinzel', serif; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.8);">1</span></div>
+                            
+                            <!-- Clase y Reputación (con sus iconos y textos en columna) -->
+                            <div style="display: flex; flex-direction: column; gap: 3px; padding-left: 12px; border-left: 1px solid rgba(255,255,255,0.3);">
+                                <div style="display: flex; align-items: center; gap: 5px; font-family: 'Outfit', sans-serif; font-size: 0.6rem; color: #fff; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; text-shadow: 0 1px 2px rgba(0,0,0,0.8);">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 12px; height: 12px; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.6));"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"></path><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"></path></svg>
+                                    EL CAMPESINO
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 5px; font-family: 'Outfit', sans-serif; font-size: 0.6rem; color: #fff; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; text-shadow: 0 1px 2px rgba(0,0,0,0.8);">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 12px; height: 12px; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.6));"><path d="M9 10h.01"></path><path d="M15 10h.01"></path><path d="M12 2a8 8 0 0 0-8 8v12l3-3 2.5 2.5L12 19l2.5 2.5L17 19l3 3V10a8 8 0 0 0-8-8z"></path></svg>
+                                    DESCONOCIDO
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Estadísticas Globales -->
+                <div style="display: flex; justify-content: space-between; background: rgba(255,255,255,0.04); border-radius: 14px; padding: 12px; margin-bottom: 22px; border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 4px 10px rgba(0,0,0,0.2);">
+                    <div style="text-align: center;"><div id="pcStatCol" style="font-family: 'Cinzel', serif; font-size: 1.3rem; font-weight: 700; text-shadow: 0 2px 4px rgba(0,0,0,0.8);">0</div><div style="font-family: 'Outfit', sans-serif; font-size: 0.55rem; color: #bbb; text-transform: uppercase;">Colección</div></div>
+                    <div style="text-align: center;"><div id="pcStatRes" style="font-family: 'Cinzel', serif; font-size: 1.3rem; font-weight: 700; text-shadow: 0 2px 4px rgba(0,0,0,0.8);">0</div><div style="font-family: 'Outfit', sans-serif; font-size: 0.55rem; color: #bbb; text-transform: uppercase;">Reseñas</div></div>
+                    <div style="text-align: center;"><div id="pcStatLis" style="font-family: 'Cinzel', serif; font-size: 1.3rem; font-weight: 700; text-shadow: 0 2px 4px rgba(0,0,0,0.8);">0</div><div style="font-family: 'Outfit', sans-serif; font-size: 0.55rem; color: #bbb; text-transform: uppercase;">Listas</div></div>
+                    <div style="text-align: center;"><div id="pcStatTem" style="font-family: 'Cinzel', serif; font-size: 1.3rem; font-weight: 700; text-shadow: 0 2px 4px rgba(0,0,0,0.8);">0</div><div style="font-family: 'Outfit', sans-serif; font-size: 0.55rem; color: #bbb; text-transform: uppercase;">Temas</div></div>
+                </div>
+
+                <!-- 5 Logros Destacados -->
+                <div style="margin-bottom: 25px;">
+                    <div style="font-family: 'Outfit', sans-serif; font-size: 0.65rem; color: rgba(255,255,255,0.7); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; text-align: center; font-weight: 700; text-shadow: 0 1px 2px rgba(0,0,0,0.5);">Logros Destacados</div>
+                    
+                    <div style="display: flex; justify-content: center; gap: 8px;">
+                        <!-- Huecos Vacíos con el signo + -->
+                        <div style="width: 38px; height: 38px; border-radius: 50%; background: rgba(255,255,255,0.03); border: 1px dashed rgba(255,255,255,0.3); display: flex; justify-content: center; align-items: center; box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);"><svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="2" style="width: 16px; height: 16px;"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></div>
+                        <div style="width: 38px; height: 38px; border-radius: 50%; background: rgba(255,255,255,0.03); border: 1px dashed rgba(255,255,255,0.3); display: flex; justify-content: center; align-items: center; box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);"><svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="2" style="width: 16px; height: 16px;"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></div>
+                        <div style="width: 38px; height: 38px; border-radius: 50%; background: rgba(255,255,255,0.03); border: 1px dashed rgba(255,255,255,0.3); display: flex; justify-content: center; align-items: center; box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);"><svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="2" style="width: 16px; height: 16px;"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></div>
+                        <div style="width: 38px; height: 38px; border-radius: 50%; background: rgba(255,255,255,0.03); border: 1px dashed rgba(255,255,255,0.3); display: flex; justify-content: center; align-items: center; box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);"><svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="2" style="width: 16px; height: 16px;"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></div>
+                        <div style="width: 38px; height: 38px; border-radius: 50%; background: rgba(255,255,255,0.03); border: 1px dashed rgba(255,255,255,0.3); display: flex; justify-content: center; align-items: center; box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);"><svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="2" style="width: 16px; height: 16px;"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></div>
+                    </div>
+                </div>
+
+                <!-- Reseña -->
+                <div style="margin-bottom: 25px;">
+                    <div style="font-family: 'Outfit', sans-serif; font-size: 0.65rem; color: rgba(255,255,255,0.7); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; font-weight: 700; text-shadow: 0 1px 2px rgba(0,0,0,0.5);">Top Reseña</div>
+                    
+                    <!-- ESTADO: Lleno -->
+                    <div id="pcReviewFilled" style="display: none; background: rgba(255,255,255,0.05); border-left: 3px solid #fff; padding: 12px; border-radius: 0 10px 10px 0; border-top: 1px solid rgba(255,255,255,0.05); border-right: 1px solid rgba(255,255,255,0.05); border-bottom: 1px solid rgba(255,255,255,0.05);">
+                        <div style="font-family: 'Outfit', sans-serif; font-size: 0.85rem; color: #eee; font-style: italic; line-height: 1.4; margin-bottom: 8px; text-shadow: 0 1px 3px rgba(0,0,0,0.5);">"El diseño de este mundo abierto cambió mi forma de entender los videojuegos. Inolvidable."</div>
+                        <span style="font-family: 'Cinzel', serif; font-size: 0.75rem; color: #fff; font-weight: 700; text-shadow: 0 1px 2px rgba(0,0,0,0.8);">Breath of the Wild</span>
+                    </div>
+
+                    <!-- ESTADO: Vacío -->
+                    <div id="pcReviewEmpty" style="display: block; background: rgba(255,255,255,0.03); border: 1px dashed rgba(255,255,255,0.2); padding: 15px; border-radius: 10px; text-align: center;">
+                        <div style="font-family: 'Outfit', sans-serif; font-size: 0.8rem; color: rgba(255,255,255,0.6); text-shadow: 0 1px 2px rgba(0,0,0,0.5);">Aún no hay reseñas escritas. ¡Anímate a compartir tu opinión!</div>
+                    </div>
+                </div>
+
+                <!-- Juegos Favoritos -->
+                <div style="margin-top: auto; padding-bottom: 10px;">
+                    <div style="font-family: 'Outfit', sans-serif; font-size: 0.65rem; color: rgba(255,255,255,0.7); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; text-align: center; font-weight: 700; text-shadow: 0 1px 2px rgba(0,0,0,0.5);">Juegos Favoritos</div>
+                    
+                    <!-- ESTADO: Lleno -->
+                    <div id="pcGamesFilled" style="display: none; justify-content: center; gap: 12px;">
+                        <div style="width: 80px; height: 110px; border-radius: 8px; background: linear-gradient(135deg, #1abc9c, #0b5345); box-shadow: 0 6px 15px rgba(0,0,0,0.5); display: flex; align-items: flex-end; padding: 6px; border: 1px solid rgba(255,255,255,0.2);"><span style="font-family: 'Cinzel', serif; font-size: 0.55rem; color: white; text-align: center; width: 100%; text-shadow: 0 2px 4px rgba(0,0,0,0.8);">Wind Waker</span></div>
+                        <div style="width: 80px; height: 110px; border-radius: 8px; background: linear-gradient(135deg, #34495e, #17202a); box-shadow: 0 6px 15px rgba(0,0,0,0.5); display: flex; align-items: flex-end; padding: 6px; border: 1px solid rgba(255,255,255,0.2);"><span style="font-family: 'Cinzel', serif; font-size: 0.55rem; color: white; text-align: center; width: 100%; text-shadow: 0 2px 4px rgba(0,0,0,0.8);">Resident Evil 7</span></div>
+                        <div style="width: 80px; height: 110px; border-radius: 8px; background: linear-gradient(135deg, #3498db, #154360); box-shadow: 0 6px 15px rgba(0,0,0,0.5); display: flex; align-items: flex-end; padding: 6px; border: 1px solid rgba(255,255,255,0.2);"><span style="font-family: 'Cinzel', serif; font-size: 0.55rem; color: white; text-align: center; width: 100%; text-shadow: 0 2px 4px rgba(0,0,0,0.8);">Pokémon Arceus</span></div>
+                    </div>
+
+                    <!-- ESTADO: Vacío -->
+                    <div id="pcGamesEmpty" style="display: flex; justify-content: center; gap: 12px;">
+                        <div style="width: 80px; height: 110px; border-radius: 8px; background: rgba(255,255,255,0.03); border: 1px dashed rgba(255,255,255,0.2); display: flex; justify-content: center; align-items: center; color: rgba(255,255,255,0.4);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 24px; height: 24px;"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></div>
+                        <div style="width: 80px; height: 110px; border-radius: 8px; background: rgba(255,255,255,0.03); border: 1px dashed rgba(255,255,255,0.2); display: flex; justify-content: center; align-items: center; color: rgba(255,255,255,0.4);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 24px; height: 24px;"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></div>
+                        <div style="width: 80px; height: 110px; border-radius: 8px; background: rgba(255,255,255,0.03); border: 1px dashed rgba(255,255,255,0.2); display: flex; justify-content: center; align-items: center; color: rgba(255,255,255,0.4);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 24px; height: 24px;"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Botones Flotantes (Cerrar y Compartir) -->
+        <div id="playerCardActions" style="position: absolute; bottom: 20px; display: flex; gap: 20px; opacity: 0; transform: translateY(20px); transition: all 0.4s 0.15s;">
+            <button onclick="closePlayerCardPopup()" style="width: 50px; height: 50px; border-radius: 50%; background: rgba(255,255,255,0.1); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.3); color: white; cursor: pointer; outline: none;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width: 22px; height: 22px; margin: auto;"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+            <button onclick="alert('Generando imagen para Redes Sociales...')" style="height: 50px; padding: 0 25px; border-radius: 25px; background: white; color: #111; font-family: 'Outfit', sans-serif; font-weight: 800; border: none; cursor: pointer; display: flex; align-items: center; gap: 10px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width: 20px; height: 20px;"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg> COMPARTIR</button>
+        </div>
+    </div>
+
+    <!-- MENÚ LATERAL (Side Menu / Drawer - TEMA BLANCO) -->
+    <div id="sideMenuOverlay" onclick="closeSideMenu()" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(2px); z-index: 99999998; display: none; opacity: 0; transition: opacity 0.3s ease;"></div>
+    
+    <div id="sideMenuBox" style="position: fixed; top: 0; right: 0; width: 85%; max-width: 320px; height: 100%; background: #ffffff; z-index: 99999999; box-shadow: -5px 0 25px rgba(0,0,0,0.15); transform: translateX(105%); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1); display: flex; flex-direction: column; color: #111;">
+        
+        <!-- Cabecera del Menú -->
+        <div style="padding: 20px 20px 15px 20px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;">
+            <div style="font-family: 'Cinzel', serif; font-size: 1.2rem; font-weight: 700; color: #111; letter-spacing: 1px;">AJUSTES</div>
+            <button onclick="closeSideMenu()" style="background: transparent; border: none; color: #555; cursor: pointer; outline: none; padding: 5px; transition: color 0.2s;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width: 24px; height: 24px;"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+        </div>
+
+        <!-- Opciones del Menú (Con scroll interno) -->
+        <div style="flex: 1; overflow-y: auto; padding: 10px 0;">
+            
+
+            <!-- CUENTA -->
+            <div class="menu-section-title">Mi Cuenta</div>
+            <div class="menu-item" onclick="openUsernameModal()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                Nombre de Usuario
+                <svg class="menu-item-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </div>
+            <div class="menu-item" onclick="openEmailModal()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                Correo Electrónico
+                <svg class="menu-item-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </div>
+            
+            <!-- PRIVACIDAD Y SEGURIDAD -->
+            <div class="menu-section-title">Privacidad y Seguridad</div>
+            <div class="menu-item" onclick="openPasswordModal()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                Cambiar Contraseña
+                <svg class="menu-item-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </div>
+            <div class="menu-item" onclick="showCustomAlert('Próximamente', 'Esta función estará disponible muy pronto.')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                Visibilidad del Perfil
+                <svg class="menu-item-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </div>
+            <div class="menu-item" onclick="showCustomAlert('Próximamente', 'Esta función estará disponible muy pronto.')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+                Cuentas Vinculadas
+                <svg class="menu-item-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </div>
+
+            <!-- APARIENCIA -->
+            <div class="menu-section-title">Apariencia y Sistema</div>
+            <div class="menu-item" onclick="showCustomAlert('Próximamente', 'Esta función estará disponible muy pronto.')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                Tema Oscuro / Claro
+                <svg class="menu-item-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </div>
+            <div class="menu-item" onclick="showCustomAlert('Próximamente', 'Esta función estará disponible muy pronto.')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                Notificaciones PUSH
+                <svg class="menu-item-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </div>
+
+            <!-- AYUDA -->
+            <div class="menu-section-title">Soporte</div>
+            <div class="menu-item" onclick="showCustomAlert('Centro de Ayuda', 'Si tienes problemas, contacta con el posadero.')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                Centro de Ayuda
+                <svg class="menu-item-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </div>
+        </div>
+
+        <!-- Footer del Menú (Cerrar Sesión) -->
+        <div style="padding: 20px; border-top: 1px solid #eee;">
+            <button onclick="openLogoutModal()" style="width: 100%; background: transparent; border: 1px solid rgba(231, 76, 60, 0.4); color: #e74c3c; padding: 12px; border-radius: 10px; font-family: 'Outfit', sans-serif; font-weight: 700; cursor: pointer; transition: background 0.2s; display: flex; justify-content: center; align-items: center; gap: 8px;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width: 18px; height: 18px;"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                Cerrar Sesión
+            </button>
+            <div style="text-align: center; margin-top: 15px; font-family: 'Outfit', sans-serif; font-size: 0.6rem; color: #888;">Versión 1.0.0 (Beta)</div>
+            
+            <!-- Botón Borrar Cuenta -->
+            <div style="margin-top: 25px; text-align: center;">
+                <button onclick="showCustomAlert('Atención', 'Para borrar tu cuenta permanentemente, contacta con el administrador por seguridad.')" style="background: transparent; border: none; color: #888; font-family: 'Outfit', sans-serif; font-size: 0.65rem; text-decoration: underline; cursor: pointer; padding: 5px;">
+                    Eliminar cuenta permanentemente
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- POPUP FUNCIONAL: CAMBIAR CORREO -->
+    <div id="emailModalOverlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 999999999; display: none; justify-content: center; align-items: center; opacity: 0; transition: opacity 0.3s;">
+        <div id="emailModalBox" style="background: white; width: 90%; max-width: 320px; border-radius: 20px; padding: 25px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); transform: translateY(20px); transition: transform 0.3s;">
+            <h3 style="font-family: 'Cinzel', serif; font-size: 1.3rem; margin: 0 0 15px 0; font-weight: 700; text-align: center; color: #111;">Actualizar Correo</h3>
+            <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;">
+                <input type="email" id="newEmailInput" placeholder="Nuevo correo electrónico" style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ddd; background: #f9f9f9; font-family: 'Outfit', sans-serif; box-sizing: border-box; outline: none; transition: border 0.2s;">
+                <input type="email" id="confirmEmailInput" placeholder="Confirmar nuevo correo" style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ddd; background: #f9f9f9; font-family: 'Outfit', sans-serif; box-sizing: border-box; outline: none; transition: border 0.2s;">
+                <p id="emailErrorMsg" style="color: #e74c3c; font-family: 'Outfit', sans-serif; font-size: 0.75rem; margin: 0; display: none; font-weight: 700; text-align: center;"></p>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button onclick="closeEmailModal()" style="flex: 1; background: #eee; color: #333; border: none; padding: 12px; border-radius: 10px; font-family: 'Outfit', sans-serif; font-weight: 700; cursor: pointer;">Cancelar</button>
+                <button onclick="saveNewEmail()" style="flex: 1; background: #111; color: white; border: none; padding: 12px; border-radius: 10px; font-family: 'Outfit', sans-serif; font-weight: 700; cursor: pointer;">Guardar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- POPUP FUNCIONAL: CAMBIAR CONTRASEÑA -->
+    <div id="passwordModalOverlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 999999999; display: none; justify-content: center; align-items: center; opacity: 0; transition: opacity 0.3s;">
+        <div id="passwordModalBox" style="background: white; width: 90%; max-width: 320px; border-radius: 20px; padding: 25px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); transform: translateY(20px); transition: transform 0.3s;">
+            <h3 style="font-family: 'Cinzel', serif; font-size: 1.3rem; margin: 0 0 15px 0; font-weight: 700; text-align: center; color: #111;">Cambiar Contraseña</h3>
+            <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;">
+                <input type="password" id="currentPasswordInput" placeholder="Contraseña actual" style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ddd; background: #f9f9f9; font-family: 'Outfit', sans-serif; box-sizing: border-box; outline: none;">
+                <input type="password" id="newPasswordInput" placeholder="Nueva contraseña (min. 6 car.)" style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ddd; background: #f9f9f9; font-family: 'Outfit', sans-serif; box-sizing: border-box; outline: none;">
+                <input type="password" id="confirmPasswordInput" placeholder="Confirmar nueva contraseña" style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ddd; background: #f9f9f9; font-family: 'Outfit', sans-serif; box-sizing: border-box; outline: none;">
+                <p id="passwordErrorMsg" style="color: #e74c3c; font-family: 'Outfit', sans-serif; font-size: 0.75rem; margin: 0; display: none; font-weight: 700; text-align: center;"></p>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button onclick="closePasswordModal()" style="flex: 1; background: #eee; color: #333; border: none; padding: 12px; border-radius: 10px; font-family: 'Outfit', sans-serif; font-weight: 700; cursor: pointer;">Cancelar</button>
+                <button onclick="saveNewPassword()" style="flex: 1; background: #111; color: white; border: none; padding: 12px; border-radius: 10px; font-family: 'Outfit', sans-serif; font-weight: 700; cursor: pointer;">Guardar</button>
+            </div>
+        </div>
+    </div>
+
+<!-- POPUP GENÉRICO (Sustituye a los alert() feos del navegador) -->
+    <div id="customAlertOverlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 9999999999; display: none; justify-content: center; align-items: center; opacity: 0; transition: opacity 0.3s;">
+        <div id="customAlertBox" style="background: white; width: 90%; max-width: 300px; border-radius: 20px; padding: 25px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.3); transform: translateY(20px); transition: transform 0.3s;">
+            <h3 id="customAlertTitle" style="font-family: 'Cinzel', serif; font-size: 1.2rem; margin: 0 0 10px 0; font-weight: 700; color: #111;">Aviso</h3>
+            <p id="customAlertText" style="font-family: 'Outfit', sans-serif; font-size: 0.9rem; color: #555; line-height: 1.4; margin: 0 0 20px 0;"></p>
+            <button onclick="closeCustomAlert()" style="background: #111; color: white; border: none; padding: 12px 20px; border-radius: 10px; font-family: 'Outfit', sans-serif; font-weight: 700; cursor: pointer; width: 100%;">Entendido</button>
+        </div>
+    </div>
+
+    <!-- POPUP FUNCIONAL: CERRAR SESIÓN -->
+    <div id="logoutModalOverlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); z-index: 999999999; display: none; justify-content: center; align-items: center; opacity: 0; transition: opacity 0.3s;">
+        <div id="logoutModalBox" style="background: white; width: 90%; max-width: 320px; border-radius: 20px; padding: 25px; box-shadow: 0 10px 40px rgba(0,0,0,0.4); transform: translateY(20px); transition: transform 0.3s; text-align: center;">
+            <div style="width: 50px; height: 50px; border-radius: 50%; background: rgba(231, 76, 60, 0.1); color: #e74c3c; display: flex; justify-content: center; align-items: center; margin: 0 auto 15px auto;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width: 24px; height: 24px;"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+            </div>
+            <h3 style="font-family: 'Cinzel', serif; font-size: 1.3rem; margin: 0 0 10px 0; font-weight: 700; color: #111;">¿Cerrar Sesión?</h3>
+            <p style="font-family: 'Outfit', sans-serif; font-size: 0.9rem; color: #666; margin: 0 0 20px 0;">Tendrás que volver a introducir tus credenciales para entrar a la taberna.</p>
+            <div style="display: flex; gap: 10px;">
+                <button onclick="closeLogoutModal()" style="flex: 1; background: #eee; color: #333; border: none; padding: 12px; border-radius: 10px; font-family: 'Outfit', sans-serif; font-weight: 700; cursor: pointer;">Cancelar</button>
+                <button onclick="confirmLogout()" style="flex: 1; background: #e74c3c; color: white; border: none; padding: 12px; border-radius: 10px; font-family: 'Outfit', sans-serif; font-weight: 700; cursor: pointer;">Cerrar Sesión</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- POPUP FUNCIONAL: CAMBIAR NOMBRE -->
+    <div id="usernameModalOverlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 999999999; display: none; justify-content: center; align-items: center; opacity: 0; transition: opacity 0.3s;">
+        <div id="usernameModalBox" style="background: white; width: 90%; max-width: 320px; border-radius: 20px; padding: 25px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); transform: translateY(20px); transition: transform 0.3s;">
+            <h3 style="font-family: 'Cinzel', serif; font-size: 1.3rem; margin: 0 0 15px 0; font-weight: 700; text-align: center; color: #111;">Nuevo Nombre</h3>
+            <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;">
+                <input type="text" id="newUsernameInput" placeholder="Ej: DragonSlayer99" style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ddd; background: #f9f9f9; font-family: 'Outfit', sans-serif; box-sizing: border-box; outline: none;">
+                <p id="userErrorMsg" style="color: #e74c3c; font-family: 'Outfit', sans-serif; font-size: 0.75rem; margin: 0; display: none; font-weight: 700; text-align: center;"></p>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button onclick="closeUsernameModal()" style="flex: 1; background: #eee; color: #333; border: none; padding: 12px; border-radius: 10px; font-family: 'Outfit', sans-serif; font-weight: 700; cursor: pointer;">Cancelar</button>
+                <button onclick="saveNewUsername()" style="flex: 1; background: #111; color: white; border: none; padding: 12px; border-radius: 10px; font-family: 'Outfit', sans-serif; font-weight: 700; cursor: pointer;">Guardar</button>
+            </div>
+        </div>
+    </div>
+
+<!-- ========================================== -->
+<!-- PANTALLA DETALLE DEL JUEGO (MODAL COMPLETO)-->
+<!-- ========================================== -->
+<div id="gameDetailScreen" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 9999999; background: #ffffff; overflow-y: auto; color: #111;">
+    
+    <!-- Fondos de la pantalla -->
+    <div class="game-detail-bg" id="gdBackground"></div>
+
+    <!-- Botón Volver -->
+    <button class="btn-back-game" onclick="closeGameDetail()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+    </button>
+
+    <!-- Contenido Principal -->
+    <div class="game-content-wrapper" style="position: relative; z-index: 10; background: transparent; min-height: 50vh; padding-top: 20px;">
+
+        <!-- === CABECERA ENCAPSULADA EN GLASSMORPHISM === -->
+        <div id="gdWatermark" class="game-watermark"></div>
+<div class="glass-header-panel">
+    
+    <!-- Carátula -->
+    <img id="gdCover" src="" class="game-cover-img" alt="Portada" style="border-radius: 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.3);">
+    
+    <!-- Título y Nota -->
+    <h1 id="gdTitle" class="game-title"></h1>
+    <div class="game-rating">
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="#f1c40f" stroke="#f1c40f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: -2px; margin-right: 4px;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+  <span style="margin: 0 8px; opacity: 0.5;">|</span>
+  <span style="color: #ffffff; font-weight: 700;"> 0 VOTO</span>
+</div>
+    
+    <!-- Barra de Estado (Cuando tienes el juego) -->
+    <div id="gdStatusOwned" class="status-bar" style="display: none;">
+        <span style="color: #2ecc71 !important;">✔ EN TU INVENTARIO</span>
+    </div>
+    
+    <!-- Barra de Estado (Cuando NO lo tienes) -->
+    <div id="gdStatusNotOwned" class="status-bar">
+        <span style="color: #bbb !important;">NO LO TIENES</span>
+        <span style="color: #bbb !important;">|</span>
+        <span style="color: #e056fd !important; cursor: pointer; display: flex; align-items: center; gap: 5px;">
+            <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg> COMPRAR
+        </span>
+    </div>
+    
+    <!-- Iconos de Acción (Se inyectan desde JavaScript) -->
+    <div class="action-icons-row" id="gdIconsContainer" style="width: 100%; display: flex; justify-content: space-evenly; margin-top: 20px;">
+    </div>
+
+</div>
+<!-- === FIN DE LA CABECERA GLASSMORPHISM === -->
+
+        <!-- NAVEGADOR DE PESTAÑAS -->
+        <div class="game-tabs">
+            <button class="game-tab-btn active" onclick="switchGameTab('ficha', this)">FICHA TÉCNICA</button>
+            <button class="game-tab-btn" onclick="switchGameTab('multimedia', this)">MULTIMEDIA</button>
+            <button class="game-tab-btn" onclick="switchGameTab('resenas', this)">RESEÑAS</button>
+        </div>
+
+        <!-- PESTAÑA 1: FICHA TÉCNICA -->
+<div id="tab-ficha" class="tab-section active">
+    <!-- 1º Los datos técnicos con iconos -->
+    <div id="gdMeta" class="game-meta-grid"></div>
+    
+    <!-- 2º La sinopsis -->
+    <p id="gdDescription" class="game-description"></p>
+</div>
+      
+        <!-- PESTAÑA 2: MULTIMEDIA -->
+    <div id="tab-multimedia" class="tab-section">
+        <!-- Nuestro JavaScript inyectará aquí los banners interactivos y la galería -->
+        <div id="gdMultimediaGallery" style="width: 100%;"></div>
+    </div>
+
+        <!-- PESTAÑA 3: RESEÑAS -->
+        <div id="tab-resenas" class="tab-section">
+    </div>
+</div>
+
+<!-- VISOR DE IMÁGENES ANIMADO (Lightbox) -->
+<div id="visorImagenes" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 9999999; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s ease; backdrop-filter: blur(5px);" onclick="this.style.opacity='0'; document.getElementById('visorImgSrc').style.transform='scale(0.8)'; setTimeout(() => { this.style.display='none'; }, 300);">
+    <img id="visorImgSrc" src="" style="max-width: 95%; max-height: 95%; border-radius: 12px; transform: scale(0.8); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+    <!-- Icono de cerrar -->
+    <svg style="position: absolute; top: 25px; right: 25px; width: 30px; height: 30px; stroke: white; cursor: pointer;" viewBox="0 0 24 24" stroke-width="2" fill="none"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+</div>
+
+<!-- Script del visor -->
+<script>
+function abrirVisorImagen(url) {
+    const visor = document.getElementById('visorImagenes');
+    const img = document.getElementById('visorImgSrc');
+    img.src = url;
+    visor.style.display = 'flex';
+    setTimeout(() => { visor.style.opacity = '1'; img.style.transform = 'scale(1)'; }, 10);
+}
+</script>
+
+<?!= include('Script'); ?>
+</body>
+</html>
