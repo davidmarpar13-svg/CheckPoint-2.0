@@ -1,19 +1,38 @@
 # CheckPoint-2.0
-🎮 CheckPoint (Versión Modular & Definitiva)
-Esta es la segunda versión de mi red social de videojuegos. Si la primera la monté en un único bloque para aprender a base de prueba y error, esta nace con una idea muy clara y meditada: hacer las cosas bien desde los cimientos, apostando por una arquitectura limpia y modular.
+CheckPoint (Versión Modular & Definitiva)
+Esta es la segunda versión de CheckPoint, una red social y base de datos de videojuegos muy visual y moderna que estoy desarrollando. Si la primera la monté en un único bloque para aprender a base de prueba y error, esta nace con una idea muy clara y meditada: hacer las cosas bien desde los cimientos, apostando por una arquitectura limpia y modular.
 
-Aunque ahora mismo tiene menos funciones acumuladas que la primera, está diseñada desde cero para ser la versión definitiva. Al separar cada parte del sistema en módulos independientes, el código es mucho más limpio, ordenado y escalable, lo que me permite añadir características nuevas sin miedo a que se rompa todo el tinglado.
+Aunque ahora mismo tiene menos funciones acumuladas que la primera, está diseñada desde cero para ser la versión definitiva. Al separar cada parte del sistema en módulos independientes, el código es mucho más limpio, ordenado y escalable, lo que me permite añadir características nuevas sin miedo a romper nada.
 
-🛠️ ¿Qué tecnologías hay bajo el capó?
-Para levantar este proyecto estoy utilizando un stack de desarrollo web moderno y muy completo:
+¿De qué va la aplicación?
+Es un espacio pensado para que los jugadores puedan explorar títulos, consultar información al detalle y conectar con la comunidad. Esto es lo que ofrece por dentro:
 
-HTML5 & CSS3: Para estructurar el contenido de la interfaz y diseñar componentes visuales atractivos, trabajando con efectos modernos y una maquetación fluida.
+Catálogo en tiempo real: Conectado a la API de IGDB para extraer carátulas en máxima resolución (t_original), títulos, sinopsis, géneros y fechas oficiales.
 
-JavaScript (Vanilla JS): Organizado de forma modular para manejar toda la lógica del cliente, la renderización dinámica de elementos en el DOM, la gestión de modales y la navegación entre pestañas de manera fluida.
+Fondos dinámicos inmersivos: Al abrir cualquier juego, el modal coge automáticamente una de sus capturas o artworks y los pone de fondo a pantalla completa con un degradado oscuro muy elegante y nítido.
 
-API de IGDB (Internet Game Database): Es el motor que alimenta el catálogo. Gracias a ella conecto la aplicación para extraer en tiempo real metadatos de juegos, carátulas en máxima resolución, fechas, géneros y galerías de capturas.
+Ficha técnica visual: Un panel limpio con iconos vectoriales (SVG) para ver de un vistazo las plataformas, el género, el estudio desarrollador y el estado en tu inventario.
 
-Firebase: Funciona como el núcleo del backend. Lo empleo para gestionar la base de datos, la persistencia de los datos y el control de los usuarios dentro de la plataforma.
+Galería Multimedia y Reseñas: Espacio dedicado a capturas interactivas con efecto de ampliación (lightbox), tráilers, y una pestaña de reseñas de la comunidad con tarjetas cuidadas, avatares, estrellas de valoración, recuento de votos y sistemas de filtrado.
 
-📌 ¿Hacia dónde va este proyecto?
-Este repositorio es básicamente el resultado de todo lo que fui descubriendo y puliendo en mi primer desarrollo. Toda esa experiencia la estoy volcando aquí de forma optimizada para construir el que será el proyecto principal y definitivo de mi portfolio.
+🚀 El futuro: ¿Hacia dónde evoluciona CheckPoint?
+La gran ambición de este proyecto no es quedarse solo en una ficha técnica, sino convertirse en la plataforma de referencia para los jugadores: un concepto estilo Letterboxd pero enfocado por completo al mundo de los videojuegos y con muchas más posibilidades. El plan a futuro incluye:
+
+Colecciones y biblioteca personal: Para llevar el control absoluto de los juegos que tienes, los que has completado o los que quieres jugar.
+
+Listas personalizadas y reseñas profundas: Espacio para puntuar, redactar opiniones y crear listas temáticas de tus títulos favoritos.
+
+Foro y comunidad activa: Un punto de encuentro social donde debatir, compartir experiencias y conectar con otros jugadores.
+
+¿Qué tecnologías hay bajo el capó?
+Para levantar todo esto de forma eficiente, estoy usando un stack web moderno y directo al grano:
+
+HTML5 & CSS3: Para estructurar la interfaz, maquetar con diseño fluido y aplicar efectos visuales modernos como Glassmorphism.
+
+JavaScript (Vanilla JS): Organizado por módulos para manejar toda la lógica del cliente, renderizar elementos de forma dinámica en el DOM y gestionar la navegación de la app.
+
+API de IGDB (Internet Game Database): El motor que alimenta todo el contenido y las imágenes de los videojuegos.
+
+Firebase: El núcleo del backend que utilizo para gestionar la base de datos, la persistencia de la información y el control de los usuarios.
+
+Este repositorio es el resultado de todo lo que fui descubriendo en mi primer desarrollo, volcado aquí de forma optimizada para construir el proyecto principal de mi portfolio. Un abrazo.
