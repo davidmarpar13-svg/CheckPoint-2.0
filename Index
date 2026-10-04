@@ -215,52 +215,45 @@
                 <!-- Espacio extra al final para que la barra de navegación no tape el último juego -->
                 <div style="height: 0px;"></div>
             </div>
-          
-          <div id="searchView" class="search-header glass-overlay hidden" style="display: flex; flex-direction: column; align-items: stretch; gap: 20px; padding: 60px 20px 20px 20px; background: rgba(255, 255, 255, 0.4); backdrop-filter: blur(40px); -webkit-backdrop-filter: blur(40px); border: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 9999;">
-          
-          <!-- BOTÓN CERRAR FLOTANTE (CRUZ NEGRA) -->
-          <button id="closeSearch" style="position: absolute; top: 20px; right: 20px; background: transparent; border: none; display: flex; justify-content: center; align-items: center; cursor: pointer; z-index: 10000; padding: 5px; outline: none;">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 24px; height: 24px;"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-          </button>
+          <!-- Espacio extra al final para que la barra de navegación no tape el último juego -->
+    <div style="height: 80px;"></div>
 
-          <!-- 1. PESTAÑAS FLOTANTES -->
-          <div class="search-tabs" style="display: flex; justify-content: center; gap: 24px; padding: 0; background: transparent; border: none; width: 100%;">
-            
-            <button class="tab-btn active" data-tab="games">
-              <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 16px; height: 16px;"><rect x="2" y="6" width="20" height="12" rx="2"></rect><path d="M6 12h4"></path><path d="M8 10v4"></path><path d="M15 13h.01"></path><path d="M18 11h.01"></path></svg>
-              Juegos
-            </button>
-            
-            <button class="tab-btn" data-tab="lists">
-              <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 16px; height: 16px;"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
-              Listas
-            </button>
-            
-            <button class="tab-btn" data-tab="themes">
-              <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 16px; height: 16px;"><line x1="4" y1="9" x2="20" y2="9"></line><line x1="4" y1="15" x2="20" y2="15"></line><line x1="10" y1="3" x2="8" y2="21"></line><line x1="16" y1="3" x2="14" y2="21"></line></svg>
-              Temas
-            </button>
-            
-            <button class="tab-btn" data-tab="users">
-              <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 16px; height: 16px;"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-              Usuarios
-            </button>
-          </div>
+</div> <!-- ¡ESTE DIV ES EL QUE CIERRA EL DASHBOARD PANEL DE VERDAD! -->
 
-          <!-- 2. BUSCADOR MINIMALISTA Y GLASS (BLANCO) -->
-          <div style="display: flex; width: 100%;">
-            <div style="flex-grow: 1; display: flex; align-items: center; background: rgba(255, 255, 255, 0.6); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border: 1px solid rgba(255, 255, 255, 0.9); border-radius: 8px; padding: 14px 16px; box-shadow: inset 0 2px 5px rgba(255, 255, 255, 0.8), 0 10px 30px rgba(0, 0, 0, 0.05);">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2.5" style="width:20px; height:20px; stroke: rgba(0, 0, 0, 0.6);"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-              <input type="text" id="mainSearchInput" placeholder="Buscar juegos..." style="background: transparent; border: none; color: #111; flex-grow: 1; outline: none; margin-left: 12px; font-size: 16px; font-weight: 300; font-family: 'Outfit', sans-serif;">
-            </div>
-          </div>
-          
-          <!-- 3. RESULTADOS -->
-    <div id="searchResults" style="flex-grow: 1; overflow-y: auto; max-height: 70vh; width: 100%;"></div>
-</div> <!-- Este cierra los resultados que ya tenías -->
-</div> <!-- NUEVO: Este cierra la barra de scroll -->
-</div> <!-- NUEVO: Este cierra el Dashboard por completo -->
+<!-- ========================================== -->
+<!-- PANEL DE BÚSQUEDA (NUEVO DISEÑO BLANCO)    -->
+<!-- ========================================== -->
+<div id="searchPanel" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; box-sizing: border-box; padding: 40px 20px 100px 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; z-index: 10; background-color: #fdfdfd;">
 
+    <!-- 1. PESTAÑAS / FILTROS (Botones arriba de la lupa) -->
+    <div style="display: flex; justify-content: space-between; gap: 8px; overflow-x: auto; padding-bottom: 5px;">
+        <button class="tab-btn active" data-tab="games" style="flex: 1; min-width: 70px; padding: 10px 5px; background: #111; border: 1px solid #111; border-radius: 10px; color: white; cursor: pointer; font-weight: 600; font-size: 13px;">Juegos</button>
+        
+        <button class="tab-btn" data-tab="lists" style="flex: 1; min-width: 70px; padding: 10px 5px; background: transparent; border: 1px solid rgba(0,0,0,0.2); border-radius: 10px; color: #444; cursor: pointer; font-size: 13px;">Listas</button>
+        
+        <button class="tab-btn" data-tab="themes" style="flex: 1; min-width: 70px; padding: 10px 5px; background: transparent; border: 1px solid rgba(0,0,0,0.2); border-radius: 10px; color: #444; cursor: pointer; font-size: 13px;">Temas</button>
+        
+        <button class="tab-btn" data-tab="users" style="flex: 1; min-width: 70px; padding: 10px 5px; background: transparent; border: 1px solid rgba(0,0,0,0.2); border-radius: 10px; color: #444; cursor: pointer; font-size: 13px;">Usuarios</button>
+    </div>
+    
+    <!-- 2. BARRA DE BÚSQUEDA (Lupa normal) -->
+    <div style="display: flex; align-items: center; background: rgba(0, 0, 0, 0.05); border: 1px solid rgba(0, 0, 0, 0.1); border-radius: 16px; padding: 12px 20px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);">
+        <!-- Icono de lupa normal (gris y un poco más fina) -->
+        <svg viewBox="0 0 24 24" stroke="#888" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 20px; height: 20px;"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        
+        <!-- Input -->
+        <input type="text" id="mainSearchInput" placeholder="Buscar juegos..." style="background: transparent; border: none; color: #111; flex-grow: 1; outline: none; margin-left: 12px; font-size: 16px; font-weight: 500; font-family: 'Outfit', sans-serif;">
+    </div>
+
+    <!-- 3. CONTENEDOR DE RESULTADOS -->
+    <div id="searchResults" style="flex-grow: 1; display: flex; flex-direction: column; gap: 15px; padding-bottom: 20px;">
+        <!-- Mensaje por defecto -->
+        <div style="text-align: center; color: rgba(0,0,0,0.3); margin-top: 60px; font-size: 15px; font-weight: 400;">
+            <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="1.5" style="width: 40px; height: 40px; margin-bottom: 10px; opacity: 0.5;"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <br>Escribe arriba para buscar
+        </div>
+    </div>
+</div>
 <!-- ========================================== -->
 <!-- PANEL DE PERFIL -->
 <!-- ========================================== -->
@@ -301,7 +294,7 @@
     </div>
 
     <!-- DATOS DEL USUARIO (Con sus 25px de margen lateral intactos) -->
-    <div style="padding: 15px 25px 20px 25px; position: relative; z-index: 1; margin-top: 0;">
+    <div style="padding: 15px 10px 20px 10px; position: relative; z-index: 1; margin-top: 0;">
         
         <!-- BOTONES SUPERIORES: Editar Perfil y Tarjeta de Jugador (Alineados a la derecha) -->
         <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: -10px; margin-bottom: 15px; position: relative; z-index: 20;">
@@ -459,7 +452,7 @@
         </div>
             
             <div style="display: flex; justify-content: space-between; margin-top: 15px; border-bottom: 1px solid rgba(0,0,0,0.1);">
-    <button id="btnTabColeccion" onclick="toggleProfileTab('coleccion', this)" class="stat-btn active-tab" style="flex: 1; padding: 10px 2px; text-align: center; cursor: pointer; outline: none;">
+    <button id="btnTabColeccion" onclick="toggleProfileTab('coleccion', this); window.pintarColeccionPerfil();" class="stat-btn active-tab" style="flex: 1; padding: 10px 2px; text-align: center; cursor: pointer; outline: none;">
         <div id="statCollection" style="font-family: 'Cinzel', serif; font-size: 1.15rem; font-weight: 700; color: #111;">0</div>
         <div style="font-family: 'Outfit', sans-serif; font-size: 0.55rem; color: #666; font-weight: 800; margin-top: 2px; letter-spacing: 0.5px;">COLECCIÓN</div>
     </button>
@@ -478,15 +471,18 @@
 </div>
 
             <!-- CONTENEDOR DE PESTAÑAS (Con textos sarcásticos) -->
-            <div id="profileTabsContent" style="display: block; padding: 25px 15px; background: rgba(255,255,255,0.5); border-bottom-left-radius: 12px; border-bottom-right-radius: 12px; min-height: 120px; font-family: 'Outfit', sans-serif; font-size: 0.9rem; color: #666; text-align: center;">
+           <div id="profileTabContent" style="display: block; padding: 5px 0px; background: transparent; border-radius: 0 0 10px 10px;">
                 
                 <div id="tab-coleccion" style="display: block; animation: fadeIn 0.3s ease;">
-                    <em>Por ahora no hay nada que ver aquí... salvo una colección más vacía que la taberna de un pueblo fantasma. ¿Seguro que juegas a algo o solo miras los menús?</em>
+                    <!-- AQUÍ DENTRO ES DONDE VAN A APARECER LOS JUEGOS -->
+                    <div id="realCollection"></div>
+                    <!-- (El texto de la taberna fantasma ya no hace falta en el HTML porque lo dibuja tu Script si la colección está vacía) -->
                 </div>
-                
-                <div id="tab-resenas" style="display: none; animation: fadeIn 0.3s ease;">
-                    <em>Por ahora no hay nada que ver aquí... Cero reseñas. Se ve que tu opinión es tan exclusiva que has decidido privarla al resto del mundo.</em>
-                </div>
+  <div id="tab-resenasPerfil" style="display: none; animation: fadeIn 0.3s ease; padding: 20px 0;">
+        <div id="perfilResenasContainer" style="width: 100%; min-height: 200px;">
+            <!-- El JS pintará las reseñas aquí -->
+        </div>
+    </div>              
                 
                 <div id="tab-listas" style="display: none; animation: fadeIn 0.3s ease;">
                     <em>Por ahora no hay nada que ver aquí... Ni una lista. Suponemos que organizar tus juegos te da demasiada pereza y abrazas el caos.</em>
@@ -515,34 +511,33 @@
     <!-- ¡ESTE ES EL DIV MÁGICO QUE FALTA PARA CERRAR EL PERFIL! -->
     </div> 
 
-    <!-- BOTTOM NAVIGATION BAR GLOBAL (Blindada y perfectamente alineada) -->
-    <nav id="globalBottomNav" class="bottom-nav glass-panel" style="display: none; justify-content: space-evenly; align-items: center; width: 100%; box-sizing: border-box; z-index: 99999;">
-        
-        <!-- INICIO -->
-        <button class="nav-item active" style="flex: 1; display: flex; justify-content: center; align-items: center; background: transparent; border: none; padding: 15px 0; cursor: pointer;" onclick="switchPanel('dashboardPanel'); document.querySelectorAll('#globalBottomNav .nav-item').forEach(b => b.classList.remove('active')); this.classList.add('active');">
-            <svg viewBox="0 0 24 24" style="width: 24px; height: 24px;"><path d="M3 10l9-9 9 9v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
-        </button>
-        
-        <!-- EXPLORAR -->
-        <button class="nav-item" style="flex: 1; display: flex; justify-content: center; align-items: center; background: transparent; border: none; padding: 15px 0; cursor: pointer;" onclick="switchPanel('explorePanel'); document.querySelectorAll('#globalBottomNav .nav-item').forEach(b => b.classList.remove('active')); this.classList.add('active');">
-            <svg viewBox="0 0 24 24" style="width: 24px; height: 24px;"><circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon></svg>
-        </button>
-        
-        <!-- BUSCADOR -->
-        <button class="nav-item" id="btnOpenSearch" style="flex: 1; display: flex; justify-content: center; align-items: center; background: transparent; border: none; padding: 15px 0; cursor: pointer;">
-            <svg viewBox="0 0 24 24" style="width: 24px; height: 24px;"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-        </button>
-        
-        <!-- NOTIFICACIONES -->
-        <button class="nav-item" style="flex: 1; display: flex; justify-content: center; align-items: center; background: transparent; border: none; padding: 15px 0; cursor: pointer;">
-            <svg viewBox="0 0 24 24" style="width: 24px; height: 24px;"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
-        </button>
-        
-        <!-- PERFIL -->
-        <button class="nav-item" style="flex: 1; display: flex; justify-content: center; align-items: center; background: transparent; border: none; padding: 15px 0; cursor: pointer;" onclick="switchPanel('profilePanel'); document.querySelectorAll('#globalBottomNav .nav-item').forEach(b => b.classList.remove('active')); this.classList.add('active');">
-            <svg viewBox="0 0 24 24" style="width: 24px; height: 24px;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-        </button>
-    </nav>
+    <!-- BOTTOM NAVIGATION BAR GLOBAL -->
+<div id="globalBottomNav" class="bottom-nav glass-panel" style="display: none; justify-content: space-evenly; align-items: center; width: 100%; box-sizing: border-box; z-index: 99999;">
+    
+    <!-- 1. INICIO -->
+    <button class="nav-item active" style="flex: 1; display: flex; justify-content: center; align-items: center; background: transparent; border: none; padding: 15px 0; cursor: pointer;" onclick="window.switchPanel('dashboardPanel')">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 24px; height: 24px;"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+    </button>
+    
+    <!-- 2. EXPLORAR (BRÚJULA) -->
+    <button class="nav-item" style="flex: 1; display: flex; justify-content: center; align-items: center; background: transparent; border: none; padding: 15px 0; cursor: pointer;" onclick="window.switchPanel('explorePanel')">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 24px; height: 24px;"><circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon></svg>
+    </button>
+
+    <!-- 3. BÚSQUEDA / LUPA (SOLO EL TRAZO EN VERDE SÓLIDO, SIN HALOS) -->
+    <button class="nav-item" style="flex: 1; display: flex; justify-content: center; align-items: center; background: transparent; border: none; padding: 15px 0; cursor: pointer;" onclick="window.switchPanel('searchPanel')">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="#2ecc71" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 24px; height: 24px;"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+    </button>
+
+    <!-- 4. NOTIFICACIONES (CAMPANA) -->
+    <button class="nav-item" style="flex: 1; display: flex; justify-content: center; align-items: center; background: transparent; border: none; padding: 15px 0; cursor: pointer;" onclick="window.switchPanel('notificationsPanel')">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 24px; height: 24px;"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+    </button>
+    
+    <!-- 5. PERFIL -->
+    <button class="nav-item" style="flex: 1; display: flex; justify-content: center; align-items: center; background: transparent; border: none; padding: 15px 0; cursor: pointer;" onclick="window.switchPanel('profilePanel'); if(window.pintarColeccionPerfil) window.pintarColeccionPerfil();">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 24px; height: 24px;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+    </button>
 </div>
 
 <!-- POPUP DE LOGROS / VITRINA (Árbol de Progresión Oculto) -->
@@ -636,6 +631,13 @@
                         </div>
                     </div>
                 </div>
+
+<!-- PESTAÑA: MIS RESEÑAS -->
+    <div id="tab-resenasPerfil" class="tab-section" style="display: none; width: 100%; padding: 20px 0;">
+        <div id="perfilResenasContainer" style="width: 100%; min-height: 200px;">
+            <!-- Se rellena automáticamente con JS -->
+        </div>
+    </div>
 
                 <!-- ================== LIKES ================== -->
                 <div>
@@ -1111,23 +1113,26 @@
     <!-- Título y Nota -->
     <h1 id="gdTitle" class="game-title"></h1>
     <div class="game-rating">
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="#f1c40f" stroke="#f1c40f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: -2px; margin-right: 4px;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-  <span style="margin: 0 8px; opacity: 0.5;">|</span>
-  <span style="color: #ffffff; font-weight: 700;"> 0 VOTO</span>
+<span style="margin: 0 8px; opacity: 0.5;">|</span>
+<span id="gdCommunityRating" style="color: #ffffff; font-weight: 700;">0 VOTOS</span>
 </div>
     
     <!-- Barra de Estado (Cuando tienes el juego) -->
     <div id="gdStatusOwned" class="status-bar" style="display: none;">
-        <span style="color: #2ecc71 !important;">✔ EN TU INVENTARIO</span>
+        
     </div>
-    
     <!-- Barra de Estado (Cuando NO lo tienes) -->
     <div id="gdStatusNotOwned" class="status-bar">
         <span style="color: #bbb !important;">NO LO TIENES</span>
         <span style="color: #bbb !important;">|</span>
-        <span style="color: #e056fd !important; cursor: pointer; display: flex; align-items: center; gap: 5px;">
-            <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg> COMPRAR
-        </span>
+        <span style="color: white !important; cursor: pointer; display: flex; align-items: center; gap: 5px;">
+    <!-- Al SVG le ponemos el color morado/rosa directamente -->
+    <svg viewBox="0 0 24 24" width="14" height="14" stroke="#e056fd" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M16 10a4 4 0 0 1-8 0"></path>
+        <path d="M4 10h16l-1.5 10.5a2 2 0 0 1-2 1.5H7.5a2 2 0 0 1-2-1.5L4 10z"></path>
+    </svg> 
+    COMPRAR
+</span>
     </div>
     
     <!-- Iconos de Acción (Se inyectan desde JavaScript) -->
@@ -1160,8 +1165,8 @@
     </div>
 
         <!-- PESTAÑA 3: RESEÑAS -->
-        <div id="tab-resenas" class="tab-section">
-    </div>
+<div id="tab-resenas" class="tab-section">
+    <div id="gdReviewsContainer" style="width: 100%; min-height: 150px;"></div>
 </div>
 
 <!-- VISOR DE IMÁGENES ANIMADO (Lightbox) -->
@@ -1171,16 +1176,45 @@
     <svg style="position: absolute; top: 25px; right: 25px; width: 30px; height: 30px; stroke: white; cursor: pointer;" viewBox="0 0 24 24" stroke-width="2" fill="none"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
 </div>
 
-<!-- Script del visor -->
-<script>
-function abrirVisorImagen(url) {
-    const visor = document.getElementById('visorImagenes');
-    const img = document.getElementById('visorImgSrc');
-    img.src = url;
-    visor.style.display = 'flex';
-    setTimeout(() => { visor.style.opacity = '1'; img.style.transform = 'scale(1)'; }, 10);
-}
-</script>
+
+<!-- MODAL DE CONFIRMACIÓN DE BORRADO (GLASSMORPHISM) -->
+<div id="deleteConfirmModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(8px); z-index: 9999999; justify-content: center; align-items: center; opacity: 0; transition: opacity 0.3s ease;">
+    <div style="background: rgba(20, 20, 20, 0.75); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; padding: 25px; max-width: 300px; width: 90%; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.6); backdrop-filter: blur(12px);">
+        <h3 style="margin-top: 0; margin-bottom: 10px; font-family: 'Cinzel', serif; color: white; font-size: 1.2rem; letter-spacing: 1px;">¿Borrar Juego?</h3>
+        <p style="color: #bbb; font-family: 'Outfit', sans-serif; font-size: 0.95rem; margin-bottom: 25px; line-height: 1.4;">Se eliminará de tu colección de forma permanente.</p>
+        <div style="display: flex; gap: 15px;">
+            <button onclick="window.cerrarModalBorrado()" style="flex: 1; padding: 12px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; color: white; cursor: pointer; font-family: 'Outfit', sans-serif; font-weight: 600; transition: all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">Cancelar</button>
+            <button onclick="window.ejecutarBorrado()" style="flex: 1; padding: 12px; background: rgba(220, 53, 69, 0.2); border: 1px solid rgba(220, 53, 69, 0.5); border-radius: 8px; color: #ff6b6b; cursor: pointer; font-family: 'Outfit', sans-serif; font-weight: 600; transition: all 0.2s;" onmouseover="this.style.background='rgba(220, 53, 69, 0.4)'" onmouseout="this.style.background='rgba(220, 53, 69, 0.2)'">Borrar</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL DE RESEÑAS (GLASSMORPHISM) -->
+<div id="reviewModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(8px); z-index: 9999999; justify-content: center; align-items: center; opacity: 0; transition: opacity 0.3s ease;">
+    <div style="background: rgba(20, 20, 20, 0.85); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; padding: 30px; max-width: 450px; width: 90%; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.8); backdrop-filter: blur(16px);">
+        <h3 style="margin-top: 0; margin-bottom: 5px; font-family: 'Cinzel', serif; color: white; font-size: 1.4rem; letter-spacing: 1px;">Tu Reseña</h3>
+        <p id="ratingTextLabel" style="color: #ffd700; font-family: 'Outfit', sans-serif; font-weight: bold; margin-bottom: 20px; font-size: 1.1rem;">Sin puntuar</p>
+
+        <!-- El contenedor ahora está vacío, el JS meterá las estrellas una sola vez -->
+        <div id="starRatingContainer" style="display: flex; justify-content: center; gap: 4px; margin-bottom: 25px;"></div>
+
+        <textarea id="reviewTextInput" rows="5" placeholder="¿Qué te ha parecido el juego? Escribe tu opinión aquí..." style="width: 100%; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15); border-radius: 12px; padding: 15px; color: white; font-family: 'Outfit', sans-serif; font-size: 0.95rem; resize: none; margin-bottom: 25px; box-sizing: border-box; transition: border 0.3s;" onfocus="this.style.borderColor='rgba(255,215,0,0.5)'" onblur="this.style.borderColor='rgba(255,255,255,0.15)'"></textarea>
+
+        <!-- AÑADIDO: Contenedor con ID para inyectar el botón de Borrar -->
+        <div id="reviewActionButtons" style="display: flex; gap: 15px;">
+        </div>
+    </div>
+</div>
+
+<!-- Contenedor del Visor de Imágenes (Con soporte Táctil) -->
+<div id="imageViewer" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: rgba(0, 0, 0, 0.9); z-index: 999999; justify-content: center; align-items: center; opacity: 0; transition: opacity 0.3s ease; cursor: pointer; overflow: hidden;" onclick="cerrarVisorImagen(event)">
+    
+    <!-- Botón de cerrar X -->
+    <span style="position: absolute; top: 20px; right: 30px; color: white; font-size: 40px; font-weight: bold; cursor: pointer; z-index: 1000000;">&times;</span>
+    
+    <!-- La imagen en grande (touch-action bloquea el zoom por defecto del navegador) -->
+    <img id="imageViewerContent" src="" style="max-width: 90%; max-height: 90%; border-radius: 8px; box-shadow: 0 0 20px rgba(0,0,0,0.5); object-fit: contain; touch-action: none; transform-origin: center;">
+</div>
 
 <?!= include('Script'); ?>
 </body>
