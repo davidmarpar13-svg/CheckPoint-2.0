@@ -47,16 +47,22 @@
     }
 
 
-        body, html {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
-            font-family: 'Inter', sans-serif;
-            background-color: #222; /* Fondo exterior oscuro en PC */
-            color: var(--text-main);
-            overflow-x: hidden;
-        }
+       * {
+  box-sizing: border-box;
+}
+
+body, html {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  max-width: 100vw;
+  height: 100%;
+  font-family: 'Inter', sans-serif;
+  background-color: #222;
+  color: var(--text-main);
+  overflow-x: hidden !important; /* Mantiene tu bloqueo con !important */
+  position: relative;
+}
 
         #authBackground {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -1141,5 +1147,49 @@
 .review-footer svg {
     width: 14px;
     height: 14px;
+}
+
+.tab-section {
+    display: none;
+}
+.tab-section.active {
+    display: block; /* O 'flex' si tu diseño lo requiere */
+}
+
+/* --- AJUSTES DEL FONDO PARA MÓVILES --- */
+@media (max-width: 768px) {
+    #gdBackground {
+        /* Esto ancla la imagen arriba para que siempre se vean las caras/acción y no corte cabezas */
+        background-position: top center !important; 
+        
+        /* Si aun así la ves muy grande, DESCOMENTA la siguiente línea. 
+           Esto forzará a que la imagen encaje a lo ancho sin hacer zoom, 
+           aprovechando tu degradado negro para rellenar la parte inferior. */
+        /* background-size: 100% auto !important; */
+    }
+}
+
+/* ESTILOS PARA LAS PESTAÑAS DEL BUSCADOR NUEVO */
+#searchPanel .tab-btn {
+    background: transparent !important;
+    color: #444 !important;
+    border: 1px solid rgba(0,0,0,0.2) !important;
+    transition: all 0.2s ease;
+}
+
+#searchPanel .tab-btn.active {
+    background: #111 !important;
+    color: white !important;
+    border-color: #111 !important;
+}
+
+/* Ocultar barra de scroll en contenedores horizontales (Chrome/Safari) */
+::-webkit-scrollbar {
+  display: none;
+}
+
+/* Ocultar barra de scroll globalmente para Firefox */
+* {
+  scrollbar-width: none;
 }
     </style>
