@@ -449,3 +449,43 @@ function traducirSinopsis(texto) {
     return texto; // Si falla por algún motivo, devuelve el original
   }
 }
+
+// ==========================================
+// FUNCIÓN PARA GUARDAR EN FIREBASE (Realtime Database)
+// ==========================================
+function guardarJuegoEnFirebase(datosDelJuego) {
+  Logger.log("Recibiendo datos para guardar: " + datosDelJuego.nombre);
+
+  try {
+    // 1. Validamos que tengamos el ID del usuario
+    if (!datosDelJuego.uid) {
+        throw new Error("Falta el ID del usuario.");
+    }
+    
+    // 2. Construimos la URL exacta donde se guardará este juego
+    // Ruta: usuarios/ID_DEL_USUARIO/coleccion/ID_DEL_JUEGO.json
+    var firebaseUrl = "https://punto-de-control-23bea-default-rtdb.firebaseio.com/usuarios/" + datosDelJuego.uid + "/coleccion/" + datosDelJuego.id + ".json";
+    
+    // 3. Preparamos la petición (Usamos PUT para crear o sobreescribir)
+    var opciones = {
+      method: 'put',
+      contentType: 'application/json',
+      payload: JSON.stringify(datosDelJuego),
+      muteHttpExceptions: true // Para ver los errores reales de Firebase en el log
+    };
+    
+    // 4. Enviamos a Firebase
+    var respuesta = UrlFetchApp.fetch(firebaseUrl, opciones);
+    var codigoRespuesta = respuesta.getResponseCode();
+    
+    if (codigoRespuesta >= 200 && codigoRespuesta < 300) {
+       return "¡Juego guardado con éxito en Firebase!";
+    } else {
+       throw new Error("Firebase respondió con error: " + respuesta.getContentText());
+    }
+    
+  } catch (error) {
+    Logger.log("Error al guardar: " + error.toString());
+    throw new Error("Fallo en el servidor al guardar el juego: " + error.toString());
+  }
+}
