@@ -1,6 +1,6 @@
 # CheckPoint-2.0
 🎮CheckPoint (Versión Modular & 2.0)
-Esta es la segunda versión de CheckPoint, una red social y base de datos de videojuegos muy visual y moderna que estoy desarrollando. Si la primera la monté en un único bloque para aprender a base de prueba y error, esta nace con una idea muy clara y meditada: hacer las cosas bien desde los cimientos, apostando por una arquitectura limpia y modular.
+Esta es la segunda versión de CheckPoint PARA MOVIL, una red social y base de datos de videojuegos muy visual y moderna que estoy desarrollando. Si la primera la monté en un único bloque para aprender a base de prueba y error, esta nace con una idea muy clara y meditada: hacer las cosas bien desde los cimientos, apostando por una arquitectura limpia y modular.
 
 Aunque ahora mismo tiene menos funciones acumuladas que la primera, está diseñada desde cero para ser la versión definitiva. Al separar cada parte del sistema en módulos independientes, el código es mucho más limpio, ordenado y escalable, lo que me permite añadir características nuevas sin miedo a romper nada.
 
