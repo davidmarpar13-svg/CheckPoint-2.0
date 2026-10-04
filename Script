@@ -1,10 +1,10 @@
 <script type="module">
   window.juegosCargados = {};
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-  import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut, updateProfile } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-  import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-  // NUEVA LÍNEA: Importamos Firebase Storage
-  import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut, updateProfile } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { getFirestore, getDoc, doc, setDoc, getDocs, collection, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    // NUEVA LÍNEA: Importamos Firebase Storage
+    import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 
   const firebaseConfig = {
             apiKey: "AIzaSyCQI0IWdQA43pmXTWbKt5l1e8fDLTfuTH4",
@@ -19,40 +19,83 @@
   const auth = getAuth(app);
   const db = getFirestore(app);
   const storage = getStorage(app);
-        const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwGc-ScS9kJxOGVC7j8LqToPfxrVBftxmv6-knKXXN5ZDdR3XnqRiEqrFKmZlbGJ40CgA/exec";
+        const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxHWCPgpx31Aehp9LT7COlrBZR2bqONJ_Xi-MFAU0NDHssXMAQ5kuuN0QHV6CoNQ22-Aw/exec";
 
         window.switchPanel = (panelId) => {
     // 1. Ocultar todos los paneles principales
-    document.getElementById('initialPanel').classList.add('hidden');
-    document.getElementById('loginPanel').classList.add('hidden');
-    document.getElementById('registerPanel').classList.add('hidden');
-    document.getElementById('dashboardPanel').classList.add('hidden');
-    document.getElementById('profilePanel').classList.add('hidden'); // Añadimos el nuevo panel a la lista de ocultos
+    const paneles = ['initialPanel', 'loginPanel', 'registerPanel', 'dashboardPanel', 'profilePanel', 'searchPanel', 'explorePanel', 'notificationsPanel'];
+    paneles.forEach(id => {
+        const panel = document.getElementById(id);
+        if (panel) {
+            panel.classList.add('hidden');
+        }
+    });
 
-    // 2. Mostrar el panel que hemos solicitado
-    document.getElementById(panelId).classList.remove('hidden');
-
-    // 3. Controlar los fondos (AuthOverlay y AuthBackground)
-    if (panelId === 'dashboardPanel' || panelId === 'profilePanel') {
-        // Si entramos al Dashboard o al Perfil, quitamos el fondo de montañas de inicio
-        document.getElementById('authBackground').style.opacity = '0';
-        document.getElementById('authOverlay').style.opacity = '0';
-        document.getElementById('heroText').style.display = 'none';
-        document.getElementById('topLogo').style.display = 'none';
-    } else {
-        // Si estamos en Inicio, Login o Registro, mostramos el fondo de montañas
-        document.getElementById('authBackground').style.opacity = '1';
-        document.getElementById('authOverlay').style.opacity = '1';
-        document.getElementById('heroText').style.display = 'flex';
-        document.getElementById('topLogo').style.display = 'block';
+    // 2. Mostrar el panel solicitado
+    const panelActivo = document.getElementById(panelId);
+    if (panelActivo) {
+        panelActivo.classList.remove('hidden');
     }
+
+    // 3. Controlar los fondos de pantalla
+    const background = document.getElementById('authBackground');
+    const overlay = document.getElementById('authOverlay');
+    const heroText = document.getElementById('heroText');
+    const topLogo = document.getElementById('topLogo');
+
+    if (panelId === 'dashboardPanel' || panelId === 'profilePanel' || panelId === 'searchPanel' || panelId === 'explorePanel' || panelId === 'notificationsPanel') {
+        if(background) background.style.opacity = '0';
+        if(overlay) overlay.style.opacity = '0';
+        if(heroText) heroText.style.display = 'none';
+        if(topLogo) topLogo.style.display = 'none';
+    } else {
+        if(background) background.style.opacity = '1';
+        if(overlay) overlay.style.opacity = '1';
+        if(heroText) heroText.style.display = 'flex';
+        if(topLogo) topLogo.style.display = 'block';
+    }
+
+    // 4. ACTUALIZAR ESTADO DE LOS BOTONES DE NAVEGACIÓN INFERIOR
+    const navButtons = document.querySelectorAll('#globalBottomNav .nav-item');
+    navButtons.forEach(btn => btn.classList.remove('active'));
+    
+    navButtons.forEach(btn => {
+        const onclickAttr = btn.getAttribute('onclick');
+        if (onclickAttr && onclickAttr.includes(panelId)) {
+            btn.classList.add('active');
+        }
+    });
 };
 
        onAuthStateChanged(auth, (user) => {
     const globalNav = document.getElementById('globalBottomNav');
 
     if (user) {
+      const uid = user.uid;
+    window.miColeccionActiva = {}; // Reiniciamos memoria por si acaso
+
+    // Referencia a tu colección en Firebase
+    const coleccionRef = collection(db, "users", uid, "coleccion");
+
+    // Pedimos los datos
+    getDocs(coleccionRef).then((querySnapshot) => {
+        querySnapshot.forEach((doc) => {
+            // Guardamos cada juego en la memoria de la app
+            window.miColeccionActiva[doc.id] = doc.data();
+        });
+        console.log("Colección cargada al iniciar sesión:", window.miColeccionActiva);
+        
+        // --- AÑADE ESTA LÍNEA ---
+        window.pintarColeccionPerfil();
+        
         switchPanel('dashboardPanel');
+        
+        // Cambiamos al panel principal
+        switchPanel('dashboardPanel');
+    }).catch((error) => {
+        console.error("Error al cargar la colección desde Firestore:", error);
+        switchPanel('dashboardPanel');
+    });
         
         // FUERZA BRUTA LIMPIA: Asegura que la barra se muestre sí o sí al estar dentro
         if (globalNav) {
@@ -99,15 +142,21 @@
                 const listas = data.listas ? data.listas.length : 0;
                 const temas = data.topicsCount || 0;
 
-                // Red Social (Seguidores separados)
+                
                 const seguidores = data.followersCount || 0;
                 const siguiendo = data.followingCount || 0;
 
-                // Actualizamos textos en el perfil
-                document.getElementById('profileLevel').textContent = nivel;
                 
-                // Los 4 bloques Glassmorphism
-                document.getElementById('statReviews').textContent = reseñas;
+                document.getElementById('profileLevel').textContent = nivel;
+
+    if (window.miColeccionActiva) {
+        const totalResenas = Object.values(window.miColeccionActiva).filter(juego => 
+            (juego.puntuacion && Number(juego.puntuacion) > 0) || (juego.reseña && juego.reseña.trim() !== "")
+        ).length;
+        document.getElementById('statReviews').textContent = totalResenas;
+    } else {
+        document.getElementById('statReviews').textContent = "0";
+    }
                 if(document.getElementById('statCollection')) document.getElementById('statCollection').textContent = coleccion;
                 if(document.getElementById('statLists')) document.getElementById('statLists').textContent = listas;
                 if(document.getElementById('statTopics')) document.getElementById('statTopics').textContent = temas;
@@ -189,7 +238,8 @@
             const btnRegHtml = document.getElementById('btnRegister').innerHTML;
             const btnLogHtml = document.getElementById('btnLogin').innerHTML;
 
-            document.getElementById('btnRegister').addEventListener('click', async () => {
+            document.getElementById('btnRegister').addEventListener('click', async (e) => {
+    e.preventDefault(); // Bloquea la recarga de la web
                 const user = document.getElementById('regUser').value;
                 const email = document.getElementById('regEmail').value;
                 const pass = document.getElementById('regPass').value;
@@ -457,16 +507,6 @@ document.addEventListener('click', (e) => {
 
 // --- LOGICA DEL NUEVO HOME ---
 
-            // Abrir y cerrar la lupa gigante
-            const searchView = document.getElementById('searchView');
-            document.getElementById('btnOpenSearch').addEventListener('click', () => {
-                searchView.classList.remove('hidden');
-                document.getElementById('mainSearchInput').focus();
-            });
-            document.getElementById('closeSearch').addEventListener('click', () => {
-                searchView.classList.add('hidden');
-            });
-
             // --- ANIMACIÓN DEL MENÚ HORIZONTAL Y OCULTACIÓN DEL TÍTULO ---
         const btnDropdown = document.getElementById('btnPopularDropdown');
         const menuHorizontal = document.getElementById('horizontalMenu');
@@ -567,35 +607,45 @@ document.addEventListener('DOMContentLoaded', () => {
             searchTimeout = setTimeout(() => {
                 
                 google.script.run
-                    .withSuccessHandler((juegos) => {
-                        if (juegos && juegos.length > 0) {
-                            let html = '<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; padding: 10px;">';
-                            
-                            juegos.forEach(game => {
-                                const coverUrl = (game.cover && game.cover.url) ? game.cover.url : 'https://images.igdb.com/igdb/image/upload/t_cover_big/nocover.png';
-                                const title = game.name || 'Desconocido';
-                                const platform = (game.platforms && game.platforms.length > 0) ? (game.platforms[0].abbreviation || game.platforms[0].name) : 'ND';
+    .withSuccessHandler((juegos) => {
+        
+        // --- GUARDAR EN MEMORIA PARA QUE FUNCIONE EL CLIC ---
+        if (!window.juegosCargados) window.juegosCargados = {};
+        if (juegos && Array.isArray(juegos)) {
+            juegos.forEach(game => {
+                window.juegosCargados[game.id] = game;
+            });
+        }
+        // ---------------------------------------------------
 
-                                html += `
-                                    <div style="display: flex; flex-direction: column; align-items: center; background: rgba(255,255,255,0.7); border-radius: 12px; padding: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); text-align: center;">
-                                        <img src="${coverUrl}" style="width: 100%; aspect-ratio: 3/4; object-fit: cover; border-radius: 8px; margin-bottom: 6px;" />
-                                        <div style="font-weight: 700; font-size: 12px; color: #111; line-height: 1.1; margin-bottom: 4px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; width: 100%;">${title}</div>
-                                        <div style="font-size: 10px; font-weight: 600; color: #555; background: rgba(0,0,0,0.08); padding: 2px 6px; border-radius: 6px;">${platform}</div>
-                                    </div>
-                                `;
-                            });
-                            
-                            html += '</div>';
-                            searchResults.innerHTML = html;
-                        } else {
-                            searchResults.innerHTML = '<div style="text-align: center; color: #555; padding: 20px;">No se han encontrado juegos</div>';
-                        }
-                    })
-                    .withFailureHandler((error) => {
-                        console.error("Fallo del servidor:", error);
-                        searchResults.innerHTML = '<div style="text-align: center; color: #d9534f; padding: 20px; font-weight: bold;">Error de conexión. Inténtalo de nuevo.</div>';
-                    })
-                    .buscarJuegosIGDB(query); 
+        if (juegos && juegos.length > 0) {
+            let html = '<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; padding: 10px;">';
+            
+            juegos.forEach(game => {
+                const coverUrl = (game.cover && game.cover.url) ? game.cover.url : 'https://images.igdb.com/igdb/image/upload/t_cover_big/nocover.png';
+                const title = game.name || 'Desconocido';
+                const platform = (game.platforms && game.platforms.length > 0) ? (game.platforms[0].abbreviation || game.platforms[0].name) : 'ND';
+
+                html += `
+                    <div onclick="openGameDetail('${game.id}', 'not_owned')" style="display: flex; flex-direction: column; background: rgba(255,255,255,0.7); border-radius: 12px; padding: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); cursor: pointer;">
+                        <img src="${coverUrl}" style="width: 100%; aspect-ratio: 3/4; object-fit: cover; border-radius: 8px;">
+                        <div style="font-weight: 700; color: #111; line-height: 1.1; margin-top: 4px; -webkit-box-orient: vertical; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; font-size: 12px;">${title}</div>
+                        <div style="font-size: 10px; font-weight: 600; color: #555; background: rgba(0,0,0,0.08); padding: 2px 6px; border-radius: 4px; margin-top: 4px; width: fit-content;">${platform}</div>
+                    </div>
+                `;
+            });
+
+            html += '</div>';
+            searchResults.innerHTML = html;
+        } else {
+            searchResults.innerHTML = '<div style="text-align: center; color: #555; padding: 20px;">No se han encontrado juegos</div>';
+        }
+    })
+    .withFailureHandler((error) => {
+        console.error("Fallo del servidor:", error);
+        searchResults.innerHTML = '<div style="text-align: center; color: #d9534f; padding: 20px; font-weight: bold;">Error de conexión. Inténtalo de nuevo.</div>';
+    })
+    .buscarJuegosIGDB(query);
                     
             }, 400); 
         });
@@ -823,41 +873,57 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 // Función GLOBAL para navegar entre las pestañas del perfil
 window.toggleProfileTab = function(tabName, btnElement) {
-    
-    // Verificación de seguridad
     if (!btnElement) {
         console.error("Falta el botón en la llamada (this).");
         return;
     }
 
-    // Los IDs exactos de los textos (HTML)
-    const tabs = ['coleccion', 'resenas', 'listas', 'temas'];
-    // Los IDs exactos de los botones (HTML)
+    console.log("Has hecho clic en la pestaña:", tabName);
+
+    // 1. Redirigimos el nombre para usar el contenedor de reseñas del perfil
+    if (tabName === 'resenas' || tabName === 'reviews') {
+        tabName = 'resenasPerfil';
+    }
+
+    // 2. Ejecutamos la función de pintar reseñas si es la pestaña correcta
+    if (tabName === 'resenasPerfil') {
+        if (typeof window.pintarResenasPerfil === 'function') {
+            console.log("Pintando reseñas...");
+            window.pintarResenasPerfil();
+        } else {
+            console.error("¡La función pintarResenasPerfil no existe!");
+        }
+    }
+
+    // 3. Los IDs exactos de los contenedores HTML
+    const tabs = ['coleccion', 'resenasPerfil', 'listas', 'temas'];
     const btns = ['btnTabColeccion', 'btnTabResenas', 'btnTabListas', 'btnTabTemas'];
-    
-    // 1. Ocultar todos los textos
-    tabs.forEach(t => { 
+
+    // 4. Ocultar todos los contenedores primero
+    tabs.forEach(t => {
         const tabEl = document.getElementById('tab-' + t);
         if (tabEl) {
-            tabEl.style.display = 'none'; 
-        }
-    });
-    
-    // 2. Quitar la raya negra de todos los botones
-    btns.forEach(b => { 
-        const btnEl = document.getElementById(b);
-        if (btnEl) {
-            btnEl.classList.remove('active-tab'); 
+            tabEl.style.display = 'none';
         }
     });
 
-    // 3. Mostrar el texto seleccionado
+    // 5. Quitar la raya negra de todos los botones
+    btns.forEach(b => {
+        const btnEl = document.getElementById(b);
+        if (btnEl) {
+            btnEl.classList.remove('active-tab');
+        }
+    });
+
+    // 6. Forzar visibilidad absoluta ignorando cualquier CSS global
     const selectedTab = document.getElementById('tab-' + tabName);
     if (selectedTab) {
-        selectedTab.style.display = 'block';
+        console.log("Mostrando contenedor: tab-" + tabName);
+        selectedTab.style.setProperty('display', 'block', 'important'); 
+    } else {
+        console.error("¡No se ha encontrado el contenedor HTML llamado: tab-" + tabName + "!");
     }
-    
-    // 4. Poner la raya negra al botón pulsado
+    // 7. Poner la raya negra al botón pulsado
     btnElement.classList.add('active-tab');
 };
 
@@ -1324,56 +1390,146 @@ window.confirmLogout = function() {
     }
 };
 
-// ==========================================
-// CONTROLADOR DE LA FICHA DE JUEGO (CON MEMORIA Y MULTIMEDIA)
-// ==========================================
 window.openGameDetail = function(id, estado = 'not_owned') {
-    // 1. RECUPERAR MEMORIA Y CHIVATO
-    const game = window.juegosCargados[id];
-    if (!game) {
-        console.error("❌ ERROR: El juego antiguo no está en memoria. Actualiza la página.");
-        return;
-    }
-    console.log("✅ DATOS RECIBIDOS EN EL MODAL:", game); // <-- Abre F12 para ver esto
-
-    const modal = document.getElementById('gameDetailScreen');
+    let game = window.juegosCargados[id];
+    let esDeFirebase = false; // Bandera para saber de dónde viene
     
-    // 2. TEXTOS Y PORTADA
+    if (!game) {
+        if (window.miColeccionActiva && window.miColeccionActiva[id]) {
+            game = window.miColeccionActiva[id]; 
+            esDeFirebase = true;
+        } else {
+             console.error("❌ ERROR: El juego no existe.");
+             return;
+        }
+    }
+    
+    
+    // ==========================================
+    // PARCHE V2: Adaptar datos de Firebase al Modal (CORREGIDO)
+    // ==========================================
+    if (esDeFirebase) {
+        if (!game.name && game.nombre) game.name = game.nombre;
+        if (!game.cover && game.caratula) game.cover = { image_id: game.caratula };
+
+        if (game.plataformas && !game.platforms) game.platforms = game.plataformas.map(p => typeof p === 'string' ? {name: p} : p);
+        if (game.generos && !game.genres) game.genres = game.generos.map(g => typeof g === 'string' ? {name: g} : g);
+        if (game.empresas && !game.involved_companies) game.involved_companies = game.empresas.map(e => typeof e === 'string' ? { developer: true, company: { name: e } } : e);
+        if (game.lanzamiento && !game.first_release_date) game.first_release_date = game.lanzamiento;
+
+        // Reconstruimos la galería y los vídeos a partir de los textos de Firebase
+        if (game.screenshots && Array.isArray(game.screenshots)) {
+            game.screenshots = game.screenshots.map(s => typeof s === 'string' ? { image_id: s } : s);
+        } else {
+            game.screenshots = [];
+        }
+
+        if (game.videos && Array.isArray(game.videos)) {
+            game.videos = game.videos.map(v => typeof v === 'string' ? { video_id: v } : v);
+        } else {
+            game.videos = [];
+        }
+
+        // EL SECRETO DEL FONDO PERFECTO:
+        // Borramos cualquier rastro de "artworks" para evitar choques con IGDB
+        game.artworks = []; 
+        
+        // Si tenemos un fondo guardado en Firebase, lo inyectamos a la fuerza
+        // como una falsa "captura de pantalla" y como un "artwork" falso.
+        // Así obligamos a las funciones de abajo a usar esta imagen y ninguna otra.
+        if (game.fondo) {
+            // Lo ponemos al principio de las capturas para que se vea en la galería
+            const fondoExiste = game.screenshots.find(s => s.image_id === game.fondo);
+            if (!fondoExiste) game.screenshots.unshift({ image_id: game.fondo });
+            
+            // Y creamos el artwork falso para que el fondo se pinte
+            game.artworks = [{ image_id: game.fondo }];
+        }
+    }
+    // ==========================================
+    // FILTRO RETRO V3: Ejecutado DESPUÉS de Firebase para que no lo borre
+    // ==========================================
+    let releaseYear = 2026; 
+    if (game.first_release_date) {
+        let timestamp = game.first_release_date;
+        if (String(timestamp).length <= 10) timestamp = timestamp * 1000;
+        releaseYear = new Date(timestamp).getFullYear();
+    } else if (game.lanzamiento) {
+        let timestamp = game.lanzamiento;
+        if (String(timestamp).length <= 10) timestamp = timestamp * 1000;
+        releaseYear = new Date(timestamp).getFullYear();
+    }
+
+    if (releaseYear < 2017 && game.artworks && game.artworks.length > 0) {
+        let artId = game.artworks[0].image_id;
+        
+        // Aplastamos lo que haya dejado Firebase o IGDB
+        if (!game.screenshots) game.screenshots = [];
+        
+        // Filtramos para asegurarnos de no duplicar la imagen si abres y cierras
+        game.screenshots = game.screenshots.filter(s => s.image_id !== artId);
+        
+        // ¡LA CLAVE! Usamos push() para poner el Artwork al FINAL de la lista,
+        // que es justo donde tu aplicación va a ir a buscar el fondo.
+        game.screenshots.push({ image_id: artId });
+        
+        // Actualizamos también la variable "fondo" por si la necesitas al guardar
+        game.fondo = artId;
+    }
+    // ==========================================
+    
+    const modal = document.getElementById('gameDetailScreen');
+    // Hacer el modal visible y ponerlo por encima de todo
+    if (modal) {
+        modal.classList.remove('hidden');
+        modal.style.display = 'flex'; // o 'block', según como sea tu diseño original
+        modal.style.zIndex = '99999'; // Aseguramos que tape al panel de búsqueda
+    }
+    console.log("Abriendo ficha del juego:", game.name);
+    
+    // TEXTOS Y PORTADA
     document.getElementById('gdTitle').innerText = game.name || 'Juego sin título';
     
-    // Sinopsis dinámica con TRADUCCIÓN AL CASTELLANO
     const descElement = document.getElementById('gdDescription');
     if (descElement) {
         const textoOriginal = game.summary || game.storyline || "";
         if (textoOriginal) {
             descElement.innerText = "Traduciendo al castellano...";
-            // Llamamos a la función de Google Apps Script que acabamos de crear
             google.script.run.withSuccessHandler(function(textoEspanol) {
                 descElement.innerText = textoEspanol;
             }).traducirSinopsis(textoOriginal);
         } else {
-            descElement.innerText = "Sinopsis no disponible en este momento.";
+            descElement.innerText = "Sinopsis no disponible.";
         }
     }
-
-    // Carátula
-    const coverId = game.cover?.image_id;
-document.getElementById('gdCover').src = coverId ? 'https://images.igdb.com/igdb/image/upload/t_original/' + coverId + '.jpg' : '';
-
-    // Metadatos dinámicos seguros
-    let platformsText = 'No especificado';
-    if (game.platforms && Array.isArray(game.platforms)) {
-        const validPlatforms = game.platforms
-            .map(p => (typeof p === 'object' && p.name ? p.name : null))
-            .filter(p => p !== null);
-        if (validPlatforms.length > 0) platformsText = validPlatforms.join(', ');
+    
+// Actualizar contenido de la pestaña reseñas al abrir la ficha
+    if (typeof window.pintarContenidoReseñas === 'function') {
+        window.pintarContenidoReseñas(id);
     }
 
+// Limpiamos el texto residual al instante y calculamos la nota real del juego abierto
+    const ratingContainer = document.getElementById('gdCommunityRating');
+    if (ratingContainer) {
+        ratingContainer.innerHTML = `<span style="color: rgba(255,255,255,0.4); font-family: 'Outfit', sans-serif; font-size: 0.9em;">Calculando...</span>`;
+    }
+
+    if (typeof window.calcularMediaComunidad === 'function') {
+        window.calcularMediaComunidad(id); 
+    }
+
+    const coverId = game.cover?.image_id;
+    document.getElementById('gdCover').src = coverId ? 'https://images.igdb.com/igdb/image/upload/t_original/' + coverId + '.jpg' : '';
+    
+    let platformsText = 'No especificado';
+    if (game.platforms && Array.isArray(game.platforms)) {
+        const validPlatforms = game.platforms.map(p => (typeof p === 'object' && p.name ? p.name : null)).filter(p => p !== null);
+        if (validPlatforms.length > 0) platformsText = validPlatforms.join(', ');
+    }
+    
     let genresText = 'No especificado';
     if (game.genres && Array.isArray(game.genres)) {
-        const validGenres = game.genres
-            .map(g => (typeof g === 'object' && g.name ? g.name : null))
-            .filter(g => g !== null);
+        const validGenres = game.genres.map(g => (typeof g === 'object' && g.name ? g.name : null)).filter(g => g !== null);
         if (validGenres.length > 0) genresText = validGenres.join(', ');
     }
     
@@ -1382,7 +1538,7 @@ document.getElementById('gdCover').src = coverId ? 'https://images.igdb.com/igdb
         const date = new Date(game.first_release_date * 1000);
         releaseDateText = date.toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
     }
-
+    
     let developerText = 'Desconocido';
     if (game.involved_companies && Array.isArray(game.involved_companies)) {
         const devCompany = game.involved_companies.find(ic => ic.developer === true) || game.involved_companies[0];
@@ -1390,258 +1546,914 @@ document.getElementById('gdCover').src = coverId ? 'https://images.igdb.com/igdb
             developerText = devCompany.company.name;
         }
     }
-
-    // === 1. FICHA TÉCNICA CON ICONOS ESTÉTICOS ===
+    
     const metaGrid = document.querySelector('.game-meta-grid');
     if (metaGrid) {
         metaGrid.innerHTML = `
-            <div class="ficha-item">
-                <small class="ficha-label">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 12h4m-2-2v4m10-2h.01M16 10h.01"/></svg>
-                    PLATAFORMAS
-                </small>
-                <span>${platformsText}</span>
-            </div>
-            <div class="ficha-item">
-                <small class="ficha-label">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
-                    GÉNEROS
-                </small>
-                <span>${genresText}</span>
-            </div>
-            <div class="ficha-item">
-                <small class="ficha-label">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                    LANZAMIENTO
-                </small>
-                <span>${releaseDateText}</span>
-            </div>
-            <div class="ficha-item">
-                <small class="ficha-label">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5c-1.1 0-2 .9-2 2v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
-                    DESARROLLADOR
-                </small>
-                <span>${developerText}</span>
-            </div>
+            <div class="ficha-item"><small class="ficha-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 12h4m-2-2v4m10-2h.01M16 10h.01"/></svg>PLATAFORMAS</small><span>${platformsText}</span></div>
+            <div class="ficha-item"><small class="ficha-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>GÉNEROS</small><span>${genresText}</span></div>
+            <div class="ficha-item"><small class="ficha-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>LANZAMIENTO</small><span>${releaseDateText}</span></div>
+            <div class="ficha-item"><small class="ficha-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5c-1.1 0-2 .9-2 2v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>DESARROLLADOR</small><span>${developerText}</span></div>
         `;
     }
-
-    // === 2. ESTADO VACÍO, FILTROS Y TARJETAS DE RESEÑAS ===
-    const contenedorResenas = document.getElementById('tab-resenas');
     
-    // Chivato para la consola: pulsa F12 en tu navegador para ver si esto aparece
-    console.log("Buscando pestaña reseñas...", contenedorResenas);
+   // === RECONSTRUCCIÓN DEL FONDO (A PRUEBA DE FALLOS DEFINITIVA) ===
+    let bgId = null;
     
-    if (contenedorResenas) {
-        
-        // Descomenta las 4 líneas de abajo si quieres ver cómo lucen las tarjetas con datos de prueba
-        // game.reviews = [
-        //    { author: "DAVID", rating: 4, text: "Un juego increíble, la historia te atrapa desde el primer minuto. Totalmente recomendado.", votes: 12 },
-        //    { author: "Elena", rating: 5, text: "Gráficos espectaculares y una jugabilidad perfecta.", votes: 5 }
-        // ];
-
-        if (!game.reviews || game.reviews.length === 0) {
-            console.log("No hay reseñas, pintando estado vacío.");
-            // ESTADO VACÍO (Con CSS integrado para asegurar que se ve de color blanco)
-            contenedorResenas.innerHTML = `
-            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 60px 20px; color: white;">
-                <svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="1.5" style="width: 50px; height: 50px; margin-bottom: 15px;">
-                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-                </svg>
-                <p style="font-size: 16px; font-weight: 600; margin: 0 0 5px 0;">Aún no hay reseñas para este juego.</p>
-                <span style="font-size: 13px; color: rgba(255,255,255,0.5);">Sé el primero en compartir tu opinión.</span>
-            </div>`;
-        } else {
-            console.log("¡Reseñas encontradas! Pintando lista...");
-            // 1. Generamos el HTML de cada tarjeta
-            let reviewsCardsHTML = game.reviews.map(review => {
-                let estrellas = '★'.repeat(review.rating) + '<span style="color: rgba(255,255,255,0.2)">' + '★'.repeat(5 - review.rating) + '</span>';
-                let inicial = review.author ? review.author.charAt(0).toUpperCase() : 'U';
-
-                return `
-                <div style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 16px; margin-bottom: 15px; backdrop-filter: blur(10px);">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                        <div style="display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 13px; color: white;">
-                            <div style="width: 28px; height: 28px; background: linear-gradient(135deg, #2ecc71, #27ae60); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 12px;">${inicial}</div>
-                            <span>${review.author}</span>
-                        </div>
-                        <div style="color: #f1c40f; font-size: 14px; letter-spacing: 1px;">${estrellas}</div>
-                    </div>
-                    <div style="font-size: 13px; color: rgba(255, 255, 255, 0.8); line-height: 1.6; margin-bottom: 12px;">${review.text}</div>
-                    <div style="display: flex; align-items: center; gap: 6px; font-size: 11px; color: rgba(255, 255, 255, 0.5);">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 14px; height: 14px;"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
-                        ${review.votes || 0} votos
-                    </div>
-                </div>`;
-            }).join('');
-
-            // 2. Inyectamos la cabecera (filtros) + la lista de tarjetas
-            contenedorResenas.innerHTML = `
-        <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px; color: white;">
-            <h4 style="margin: 0; font-size: 14px; letter-spacing: 0.5px;">RESEÑAS DE LA COMUNIDAD (${game.reviews.length})</h4>
-            <div style="display: flex; align-items: center; gap: 8px; background: rgba(0, 0, 0, 0.4); padding: 6px 12px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.2);">
-                <svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="2" style="width: 14px; height: 14px;"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
-                <select id="sortReviews" style="background: transparent; color: white; border: none; font-size: 13px; outline: none; cursor: pointer;">
-                    <option value="popular" style="background: #1a1a1a;">Más populares</option>
-                    <option value="recent" style="background: #1a1a1a;">Más recientes</option>
-                </select>
-            </div>
-        </div>
-        <div class="reviews-list">
-            ${reviewsCardsHTML}
-        </div>`;
+    if (game.fondo) {
+        // Mantiene el fondo limpio guardado en Firebase
+        bgId = game.fondo;
+    } else if (game.screenshots && game.screenshots.length > 0) {
+        // Cogemos la primera captura directamente, con escudo por si está vacía
+        let captura = game.screenshots[0];
+        if (captura) {
+            bgId = captura.image_id || captura;
         }
-    } else {
-        console.error("ERROR CRÍTICO: No se ha encontrado el div con id 'tab-resenas' en tu HTML.");
-    }
-   // 3. FONDO GIGANTE (Seguro ante juegos con pocas capturas)
-    let screenshotId = null;
-    if (game.screenshots && game.screenshots.length > 0) {
-        // Si hay más de una captura, cogemos una secundaria; si solo hay una, cogemos la primera (índice 0)
-        let indiceSeguro = Math.max(0, game.screenshots.length - 4);
-        screenshotId = game.screenshots[indiceSeguro]?.image_id || game.screenshots[0]?.image_id;
-    }
+    } 
     
-    const artworkId = game.artworks?.[0]?.image_id;
-    const bgId = screenshotId || artworkId;
+    // Si no hay capturas válidas, intentamos buscar un artwork
+    if (!bgId && game.artworks && game.artworks.length > 0) {
+        let arte = game.artworks[0];
+        if (arte) bgId = arte.image_id || arte;
+    }
 
+    // PINTAMOS EL FONDO (Solo si hemos conseguido extraer un ID válido)
     if (bgId) {
-    document.getElementById('gdBackground').style.backgroundImage = `linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0.9) 100%), url('https://images.igdb.com/igdb/image/upload/t_original/${bgId}.jpg')`;
+        document.getElementById('gdBackground').style.backgroundImage = `linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0.9) 100%), url('https://images.igdb.com/igdb/image/upload/t_original/${bgId}.jpg')`;
     } else {
+        // Fondo de seguridad si el juego de verdad no tiene absolutamente ninguna imagen
         document.getElementById('gdBackground').style.backgroundImage = 'none';
-    }
-
-    // === GENERAR PESTAÑA MULTIMEDIA DINÁMICA ===
-const galleryContainer = document.getElementById('gdMultimediaGallery');
-if (galleryContainer) {
-    let html = '';
-    
-    // 1. Extraer imágenes de fondo usando ARTWORKS oficiales (para que no se repitan con la galería)
-    let bgTrailerUrl = '';
-    let bgMusicUrl = '';
-    
-    if (game.artworks && game.artworks.length > 0) {
-        bgTrailerUrl = 'https://images.igdb.com/igdb/image/upload/t_screenshot_huge/' + game.artworks[0].image_id + '.jpg';
-        let artIndex = game.artworks.length > 1 ? 1 : 0;
-        bgMusicUrl = 'https://images.igdb.com/igdb/image/upload/t_screenshot_huge/' + game.artworks[artIndex].image_id + '.jpg';
-    } else {
-        // Respaldo por si el juego no tiene artworks cargados
-        if (game.cover && game.cover.url) {
-            bgTrailerUrl = game.cover.url.replace('t_cover_big', 't_screenshot_huge');
-            bgMusicUrl = bgTrailerUrl;
-        }
-        if (game.screenshots && game.screenshots.length > 0) {
-            if (!bgTrailerUrl) bgTrailerUrl = 'https://images.igdb.com/igdb/image/upload/t_screenshot_huge/' + game.screenshots[0].image_id + '.jpg';
-            let musicIndex = game.screenshots.length > 1 ? 1 : 0;
-            if (!bgMusicUrl) bgMusicUrl = 'https://images.igdb.com/igdb/image/upload/t_screenshot_huge/' + game.screenshots[musicIndex].image_id + '.jpg';
-        }
+        document.getElementById('gdBackground').style.backgroundColor = '#0f172a';
     }
     
-    let bgOverlay = 'linear-gradient(to bottom, rgba(0,0,0,0.4), rgba(0,0,0,0.7))';
-
-    // 2. Enlaces para YouTube y YouTube Music
-    let queryTrailer = encodeURIComponent(game.name + ' trailer español');
-    let queryMusica = encodeURIComponent(game.name + ' soundtrack ost');
-    
-    html += `
-    <style>
-        @keyframes soundWave {
-            0%, 100% { height: 6px; }
-            50% { height: 22px; }
-        }
-        .eq-bar {
-            width: 3px;
-            background: white;
-            border-radius: 3px;
-            animation: soundWave 1.2s infinite ease-in-out;
-        }
-        .eq-bar:nth-child(1) { animation-delay: 0.0s; }
-        .eq-bar:nth-child(2) { animation-delay: 0.2s; }
-        .eq-bar:nth-child(3) { animation-delay: 0.4s; }
-        .eq-bar:nth-child(4) { animation-delay: 0.6s; }
-    </style>
-
-    <div style="display: flex; gap: 10px; margin-bottom: 20px; width: 100%; padding: 0 15px; box-sizing: border-box;">
-        <!-- Botón Tráiler (YouTube) -->
-        <div onclick="window.open('https://www.youtube.com/results?search_query=${queryTrailer}', '_blank')" style="flex: 1; height: 80px; border-radius: 12px; background: ${bgOverlay}, url('${bgTrailerUrl}') center/cover; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.2); transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="white" filter="drop-shadow(0 2px 2px rgba(0,0,0,0.5))"><path d="M8 5v14l11-7z"/></svg>
-            <span style="color: white; font-size: 0.75rem; font-weight: 800; margin-top: 5px; letter-spacing: 1px; text-shadow: 1px 1px 0 #000;">TRÁILER</span>
-        </div>
+    const galleryContainer = document.getElementById('gdMultimediaGallery');
+    if (galleryContainer) {
+        let html = '';
+        let bgTrailerUrl = '';
+        let bgMusicUrl = '';
         
-        <!-- Botón Música (YouTube Music + Animación Ecualizador) -->
-        <div onclick="window.open('https://music.youtube.com/search?q=${queryMusica}', '_blank')" style="flex: 1; height: 80px; border-radius: 12px; background: ${bgOverlay}, url('${bgMusicUrl}') center/cover; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.2); transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'">
-            <div style="display: flex; align-items: flex-end; gap: 3px; height: 24px; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.5));">
-                <div class="eq-bar"></div>
-                <div class="eq-bar"></div>
-                <div class="eq-bar"></div>
-                <div class="eq-bar"></div>
-            </div>
-            <span style="color: white; font-size: 0.75rem; font-weight: 800; margin-top: 5px; letter-spacing: 1px; text-shadow: 1px 1px 0 #000;">MÚSICA</span>
-        </div>
-    </div>`;
-
-    // 3. Galería con Zoom Interactivo
-    if (game.screenshots && game.screenshots.length > 0) {
-        html += `<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 15px 25px 15px;">`;
-        game.screenshots.forEach(ss => {
-            if(ss.image_id) {
-                let miniatura = `https://images.igdb.com/igdb/image/upload/t_screenshot_med/${ss.image_id}.jpg`;
-                let pantallaCompleta = `https://images.igdb.com/igdb/image/upload/t_1080p/${ss.image_id}.jpg`;
-                html += `<img src="${miniatura}" onclick="abrirVisorImagen('${pantallaCompleta}')" style="width: 100%; aspect-ratio: 16/9; object-fit: cover; border-radius: 8px; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.1); transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">`;
+        if (game.artworks && game.artworks.length > 0) {
+            bgTrailerUrl = 'https://images.igdb.com/igdb/image/upload/t_screenshot_huge/' + game.artworks[0].image_id + '.jpg';
+            let artIndex = game.artworks.length > 1 ? 1 : 0;
+            bgMusicUrl = 'https://images.igdb.com/igdb/image/upload/t_screenshot_huge/' + game.artworks[artIndex].image_id + '.jpg';
+        } else {
+            if (game.cover && game.cover.url) {
+                bgTrailerUrl = game.cover.url.replace('t_cover_big', 't_screenshot_huge');
+                bgMusicUrl = bgTrailerUrl;
             }
-        });
+            if (game.screenshots && game.screenshots.length > 0) {
+                if (!bgTrailerUrl) bgTrailerUrl = 'https://images.igdb.com/igdb/image/upload/t_screenshot_huge/' + game.screenshots[0].image_id + '.jpg';
+                let musicIndex = game.screenshots.length > 1 ? 1 : 0;
+                if (!bgMusicUrl) bgMusicUrl = 'https://images.igdb.com/igdb/image/upload/t_screenshot_huge/' + game.screenshots[musicIndex].image_id + '.jpg';
+            }
+        }
+        
+        let bgOverlay = 'linear-gradient(to bottom, rgba(0,0,0,0.4), rgba(0,0,0,0.7))';
+        let queryTrailer = encodeURIComponent(game.name + ' trailer español');
+        let queryMusic = encodeURIComponent(game.name + ' soundtrack ost');
+        
+        html += `<style>@keyframes soundWave { 0%, 100% { height: 6px; } 50% { height: 22px; } } .eq-bar { width: 3px; background: white; border-radius: 3px; animation: soundWave 1.2s infinite ease-in-out; } .eq-bar:nth-child(1) { animation-delay: 0.0s; } .eq-bar:nth-child(2) { animation-delay: 0.2s; } .eq-bar:nth-child(3) { animation-delay: 0.4s; } .eq-bar:nth-child(4) { animation-delay: 0.6s; }</style>`;
+        html += `<div style="display: flex; gap: 10px; margin-bottom: 20px; width: 100%; padding: 0 15px; box-sizing: border-box;">`;
+        html += `<div onclick="window.open('https://www.youtube.com/results?search_query=${queryTrailer}', '_blank')" style="flex: 1; height: 80px; border-radius: 12px; background: ${bgOverlay}, url('${bgTrailerUrl}') center/cover; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.2); transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'"><svg width="28" height="28" viewBox="0 0 24 24" fill="white" filter="drop-shadow(0 2px 2px rgba(0,0,0,0.5))"><path d="M8 5v14l11-7z"/></svg><span style="color: white; font-size: 0.75rem; font-weight: 800; margin-top: 5px; letter-spacing: 1px; text-shadow: 1px 1px 0 #000;">TRÁILER</span></div>`;
+        html += `<div onclick="window.open('https://music.youtube.com/search?q=${queryMusic}', '_blank')" style="flex: 1; height: 80px; border-radius: 12px; background: ${bgOverlay}, url('${bgMusicUrl}') center/cover; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.2); transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'"><div style="display: flex; gap: 3px; height: 22px; align-items: center;"><div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div></div><span style="color: white; font-size: 0.75rem; font-weight: 800; margin-top: 5px; letter-spacing: 1px; text-shadow: 1px 1px 0 #000;">B.S.O</span></div>`;
         html += `</div>`;
-    } else {
-        html += `<p style="color:#666; text-align:center; margin-top: 20px;">No hay capturas disponibles.</p>`;
+        
+        if (game.screenshots && game.screenshots.length > 0) {
+            html += `<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 15px 25px 15px;">`;
+            game.screenshots.forEach(ss => {
+                if(ss.image_id) {
+                    let miniatura = `https://images.igdb.com/igdb/image/upload/t_screenshot_med/${ss.image_id}.jpg`;
+                    let pantallaCompleta = `https://images.igdb.com/igdb/image/upload/t_1080p/${ss.image_id}.jpg`;
+                    html += `<img src="${miniatura}" onclick="abrirVisorImagen('${pantallaCompleta}')" style="width: 100%; aspect-ratio: 16/9; object-fit: cover; border-radius: 8px; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.1); transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">`;
+                }
+            });
+            html += `</div>`;
+        } else {
+            html += `<p style="color:#666; text-align:center; margin-top: 20px;">No hay capturas disponibles.</p>`;
+        }
+        galleryContainer.innerHTML = html;
     }
     
-    galleryContainer.innerHTML = html;
-}
-
-   // 5. ABRIR MODAL Y BOTONES
     modal.classList.remove('hidden');
     modal.style.display = 'block';
     modal.scrollTop = 0;
-
+    
     const statusOwned = document.getElementById('gdStatusOwned');
     const statusNotOwned = document.getElementById('gdStatusNotOwned');
     const iconsContainer = document.getElementById('gdIconsContainer');
+    
+    // Al abrir, reseteamos estilos por si viene de una animación
+    if (iconsContainer) {
+        iconsContainer.style.transition = 'none';
+        iconsContainer.style.opacity = '1';
+        iconsContainer.style.transform = 'scale(1)';
+    }
+
+    estado = 'not_owned';
+    if (window.miColeccionActiva && window.miColeccionActiva[game.id]) {
+        estado = 'owned';
+    }
+    
+    let queryComprar = encodeURIComponent(game.name + ' comprar');
 
     if (estado === 'owned') {
-        if (statusOwned) statusOwned.style.display = 'flex';
+        if (statusOwned) statusOwned.style.display = 'none';
         if (statusNotOwned) statusNotOwned.style.display = 'none';
         
-        iconsContainer.innerHTML = `
-            <button class="action-icon-btn"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> PENDIENTE &gt;</button>
-            <button class="action-icon-btn active-yellow"><svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg> RESEÑADA</button>
-            <button class="action-icon-btn"><svg viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg> SAGA</button>
-            <button class="action-icon-btn"><svg viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg> COMUNIDAD</button>
-        `;
-    } else {
-        if (statusOwned) statusOwned.style.display = 'none';
-        if (statusNotOwned) statusNotOwned.style.display = 'flex';
+        const estadoActual = window.miColeccionActiva[game.id].estado || "jugando";
         
         iconsContainer.innerHTML = `
-            <button class="action-icon-btn"><svg viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg> SAGA</button>
-            <button class="action-icon-btn active-green"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg> AÑADIR</button>
-            <button class="action-icon-btn"><svg viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg> COMUNIDAD</button>
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 24px; width: 100%;">
+                
+                <div style="display: flex; align-items: center; justify-content: center; gap: 15px;">
+                    
+                    <!-- 1. TEXTO FLOTANTE CON EL TRUCO DEL SELECT NATIVO INVISIBLE PARA MÓVIL -->
+                    <div style="position: relative; display: flex; align-items: center; gap: 8px; cursor: pointer; transition: transform 0.2s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'" ontouchstart="this.style.transform='scale(0.95)'" ontouchend="this.style.transform='scale(1)'">
+                        <svg style="stroke: #2ecc71; width: 16px; height: 16px; fill: none" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2" ry="2"></rect><path d="M6 12h4m-2-2v4m10-2h.01M15 10h.01"></path></svg>
+                        <span id="textoEstadoCentral" style="color: #2ecc71; font-weight: 800; font-size: 12px; letter-spacing: 1px; text-transform: uppercase;">
+                            ${estadoActual}
+                        </span>
+                        <svg style="stroke: #2ecc71; width: 14px; height: 14px; fill: none" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        
+                        <!-- EL SELECT INVISIBLE -->
+                        <select id="selectorEstadoNativo" onchange="window.actualizarEstadoJuego('${game.id}', this.value)" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; appearance: none; cursor: pointer;">
+                            <option value="jugando" ${estadoActual === 'jugando' ? 'selected' : ''}>JUGANDO</option>
+                            <option value="terminado" ${estadoActual === 'terminado' ? 'selected' : ''}>TERMINADO</option>
+                            <option value="pendiente" ${estadoActual === 'pendiente' ? 'selected' : ''}>PENDIENTE</option>
+                            <option value="mitad" ${estadoActual === 'mitad' ? 'selected' : ''}>A MITAD</option>
+                        </select>
+                    </div>
+
+                    <span style="color: rgba(255,255,255,0.3);">|</span>
+
+                    <div onclick="window.open('https://www.google.com/search?q=${queryComprar}', '_blank')" style="display: flex; align-items: center; gap: 6px; cursor: pointer; transition: transform 0.2s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'" ontouchstart="this.style.transform='scale(0.95)'" ontouchend="this.style.transform='scale(1)'">
+                        <svg style="stroke: #9b59b6; width: 15px; height: 15px; fill: none;" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
+                        <span style="color: white; font-size: 11px; font-weight: 700; letter-spacing: 1px;">COMPRAR</span>
+                    </div>
+
+                    <span style="color: rgba(255,255,255,0.3);">|</span>
+
+                    <button onclick="window.borrarJuegoDeColeccion('${game.id}')" title="Eliminar de mi colección" style="background: transparent; border: none; padding: 0; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: transform 0.2s;" onmousedown="this.style.transform='scale(0.90)'" onmouseup="this.style.transform='scale(1)'" ontouchstart="this.style.transform='scale(0.90)'" ontouchend="this.style.transform='scale(1)'">
+                        <svg style="stroke: #e74c3c; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; width: 18px; height: 18px;" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                    </button>
+                </div>
+
+                <div style="display: flex; justify-content: space-evenly; width: 100%;">
+                    <button class="action-icon-btn" style="color: white; background: transparent !important; border: none !important; box-shadow: none !important;">
+                        <svg style="stroke: #3498db !important; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;" viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
+                        <span>SAGA</span>
+                    </button>
+                    <button onclick="window.abrirModalReseña('${game.id}')" class="action-icon-btn" style="color: white; background: transparent !important; border: none !important; box-shadow: none !important; cursor: pointer;">
+    <!-- Estrella engrosada con stroke-width: 3 y color amarillo forzado -->
+    <svg style="margin-bottom: 5px; stroke: #f1c40f !important; stroke-width: 3 !important; fill: none;" width="22" height="22" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+    </svg>
+    <span style="font-size: 10px; font-weight: 700; letter-spacing: 1px;">RESEÑAR</span>
+</button>
+                    <button class="action-icon-btn" style="color: white; background: transparent !important; border: none !important; box-shadow: none !important;">
+                        <svg style="stroke: #fd79a8 !important; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;" viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+                        <span>COMUNIDAD</span>
+                    </button>
+                </div>
+            </div>
+        `;
+        
+    } else {
+        if (statusOwned) statusOwned.style.display = 'none';
+        if (statusNotOwned) statusNotOwned.style.display = 'none'; 
+        
+        iconsContainer.innerHTML = `
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 24px; width: 100%;">
+                <div style="display: flex; align-items: center; justify-content: center; gap: 15px;">
+                    <span style="color: #bdc3c7; font-weight: 800; font-size: 11px; letter-spacing: 1px; text-transform: uppercase;">
+                        NO LO TIENES
+                    </span>
+                    <span style="color: rgba(255,255,255,0.3);">|</span>
+                    <div onclick="window.open('https://www.google.com/search?q=${queryComprar}', '_blank')" style="display: flex; align-items: center; gap: 6px; cursor: pointer; transition: transform 0.2s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'" ontouchstart="this.style.transform='scale(0.95)'" ontouchend="this.style.transform='scale(1)'">
+                        <svg style="stroke: #9b59b6; width: 15px; height: 15px; fill: none;" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
+                        <span style="color: white; font-size: 11px; font-weight: 700; letter-spacing: 1px;">COMPRAR</span>
+                    </div>
+                </div>
+                <div style="display: flex; justify-content: space-evenly; width: 100%;">
+                    <button class="action-icon-btn" style="color: white; background: transparent !important; border: none !important; box-shadow: none !important;">
+                        <svg style="stroke: #3498db !important; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;" viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
+                        <span>SAGA</span>
+                    </button>
+                    <button onclick="window.añadirAlInventario('${game.id}')" class="action-icon-btn" style="color: white; background: transparent !important; border: none !important; box-shadow: none !important; cursor: pointer;">
+    <!-- Le forzamos el stroke-width a 3 para que sea más grueso -->
+    <svg style="margin-bottom: 5px; stroke: #2ecc71 !important; stroke-width: 3 !important;" width="22" height="22" fill="none" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+    </svg>
+    <span style="font-size: 10px; font-weight: 700; letter-spacing: 1px;">AÑADIR</span>
+</button>
+                    <button class="action-icon-btn" style="color: white; background: transparent !important; border: none !important; box-shadow: none !important;">
+                        <svg style="stroke: #fd79a8 !important; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;" viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+                        <span>COMUNIDAD</span>
+                    </button>
+                </div>
+            </div>
         `;
     }
-}; 
-window.closeGameDetail = function() {
-    const modal = document.getElementById('gameDetailScreen');
-    modal.classList.add('hidden');
-    modal.style.display = 'none';
 };
 
+window.añadirAlInventario = function(gameId) {
+    const game = window.juegosCargados[gameId];
+    if (!game) return;
+
+    const iconsContainer = document.getElementById('gdIconsContainer');
+    if (iconsContainer) {
+        iconsContainer.style.transition = 'all 0.3s ease';
+        iconsContainer.style.opacity = '0';
+        iconsContainer.style.transform = 'scale(0.95)';
+    }
+
+    const usuarioActual = auth.currentUser;
+    const miUid = usuarioActual ? usuarioActual.uid : "usuario_anonimo";
+
+    // 1. CALCULAR AÑO PARA EL FILTRO RETRO
+    let anioLanzamiento = 2026; 
+    let fechaUsar = game.first_release_date || game.lanzamiento;
+    if (fechaUsar) {
+        let timestamp = String(fechaUsar).length <= 10 ? fechaUsar * 1000 : fechaUsar;
+        anioLanzamiento = new Date(timestamp).getFullYear();
+    }
+
+    // 2. FONDO DEFINITIVO (Respetando juegos clásicos < 2017)
+    let idFondoReal = null;
+    if (anioLanzamiento < 2017 && game.artworks && game.artworks.length > 0) {
+        // ES RETRO: Forzamos el artwork para que no salgan píxeles feos
+        let arte = game.artworks[0];
+        idFondoReal = arte ? (arte.image_id || arte) : null;
+    } else {
+        // ES MODERNO: Cogemos la primera captura de pantalla directamente
+        if (game.screenshots && game.screenshots.length > 0) {
+            let captura = game.screenshots[0];
+            if (captura) idFondoReal = captura.image_id || captura;
+        }
+        // Plan B para modernos sin capturas
+        if (!idFondoReal && game.artworks && game.artworks.length > 0) {
+            let arte = game.artworks[0];
+            if (arte) idFondoReal = arte.image_id || arte;
+        }
+    }
+
+    // 3. EXTRACCIÓN SEGURA (Escudos contra IGDB)
+    const plataformasSafe = game.platforms ? Array.from(game.platforms).map(p => p ? (p.name || p) : "").filter(n => typeof n === 'string' && n !== "") : [];
+    const generosSafe = game.genres ? Array.from(game.genres).map(g => g ? (g.name || g) : "").filter(n => typeof n === 'string' && n !== "") : [];
+    const empresasSafe = game.involved_companies ? Array.from(game.involved_companies).map(e => (e && e.company && e.company.name) ? e.company.name : "").filter(n => typeof n === 'string' && n !== "") : [];
+    const videosSafe = game.videos ? Array.from(game.videos).map(v => v ? (v.video_id || v) : null).filter(v => v !== null) : [];
+    const screenshotsSafe = game.screenshots ? Array.from(game.screenshots).map(s => s ? (s.image_id || s) : null).filter(s => s !== null) : [];
+
+    // 4. OBJETO FINAL PARA FIREBASE
+    const datosSaneados = {
+        id: game.id,
+        nombre: game.name || 'Juego sin título',
+        caratula: game.cover ? (game.cover.image_id || game.cover) : null,
+        fondo: typeof idFondoReal === 'string' ? idFondoReal : null, 
+        
+        summary: game.summary || game.storyline || "",
+        first_release_date: game.first_release_date || null,
+        
+        plataformas: plataformasSafe,
+        generos: generosSafe,
+        empresas: empresasSafe,
+        videos: videosSafe,
+        screenshots: screenshotsSafe,
+        
+        estado: 'pendiente',
+        fecha_agregado: new Date().getTime(),
+        uid: miUid,
+        
+        puntuacion: (window.miColeccionActiva && window.miColeccionActiva[game.id] && window.miColeccionActiva[game.id].puntuacion) ? window.miColeccionActiva[game.id].puntuacion : 0,
+        reseña: (window.miColeccionActiva && window.miColeccionActiva[game.id] && window.miColeccionActiva[game.id].reseña) ? window.miColeccionActiva[game.id].reseña : ""
+    };
+
+    const juegoRef = doc(db, 'users', miUid, 'coleccion', game.id.toString());
+
+    setDoc(juegoRef, datosSaneados, { merge: true })
+    .then(() => {
+        if (!window.miColeccionActiva) window.miColeccionActiva = {};
+        window.miColeccionActiva[game.id] = datosSaneados;
+        
+        if (typeof window.pintarColeccionPerfil === 'function') window.pintarColeccionPerfil();
+
+        setTimeout(() => {
+            if (typeof window.openGameDetail === 'function') window.openGameDetail(game.id);
+            if (iconsContainer) {
+                iconsContainer.style.opacity = '1';
+                iconsContainer.style.transform = 'scale(1)';
+            }
+        }, 300);
+    })
+    .catch(error => console.error("Error guardando:", error));
+};
+
+// ==========================================
+// FUNCIÓN PARA CAMBIAR ENTRE PESTAÑAS (Ficha, Multimedia, Reseñas)
+// ==========================================
 window.switchGameTab = function(tabName, btnElement) {
+    // 1. Quitar la clase 'active' de todos los botones de las pestañas
     const btns = document.querySelectorAll('.game-tab-btn');
     btns.forEach(b => b.classList.remove('active'));
-    
-    const sections = document.querySelectorAll('.tab-section');
-    sections.forEach(s => s.classList.remove('active'));
-    
+
+    // 2. Ocultar todas las secciones de contenido
+    const sections = document.querySelectorAll('#gameDetailScreen .tab-section');
+    sections.forEach(s => {
+        s.style.display = 'none';
+        s.classList.remove('active');
+    });
+
+    // 3. Poner la clase 'active' al botón pulsado (para que se vea la raya debajo)
     btnElement.classList.add('active');
-    document.getElementById('tab-' + tabName).classList.add('active');
+
+    // 4. Mostrar la sección seleccionada
+    const tabToActivate = document.querySelector(`#gameDetailScreen #tab-${tabName}`);
+    if (tabToActivate) {
+        tabToActivate.style.display = 'block';
+        tabToActivate.classList.add('active');
+    }
 };
-    </script>Scripy
+
+window.pintarColeccionPerfil = function() {
+    const contenedor = document.getElementById('realCollection');
+    const contadorRef = document.getElementById('statCollection'); // Referencia a tu número 0
+    
+    // 1. Contamos cuántos juegos tienes en memoria
+    let totalJuegos = 0;
+    if (window.miColeccionActiva) {
+        totalJuegos = Object.keys(window.miColeccionActiva).length;
+    }
+
+    // 2. Actualizamos el número en la pestaña superior
+    if (contadorRef) {
+        contadorRef.innerText = totalJuegos;
+    }
+
+    if (!contenedor) return;
+    
+    // Si no hay juegos guardados
+    if (totalJuegos === 0) {
+        contenedor.innerHTML = '<div style="text-align: center; color: #888; padding: 40px; font-style: italic; font-size: 14px;">Por ahora no hay nada que ver aquí... salvo una colección más vacía que la taberna de un pueblo fantasma. ¿Seguro que juegas a algo o solo miras los menús?</div>';
+        return;
+    }
+
+    // Si hay juegos, forzamos 3 columnas y quitamos el texto del estado inferior
+    let html = '<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 5px 10px; width: 100%; box-sizing: border-box;">';
+    
+    // Recorremos todos los juegos
+    Object.values(window.miColeccionActiva).forEach(juego => {
+        
+        // Carátula
+        const coverUrl = juego.caratula ? `https://images.igdb.com/igdb/image/upload/t_cover_big/${juego.caratula}.jpg` : 'https://images.igdb.com/igdb/image/upload/t_cover_big/nocover.png';
+            
+        // HTML de la carátula sin el div del estado
+       html += '<div onclick="window.openGameDetail(\'' + juego.id + '\', \'' + juego.estado + '\')" style="cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform=\'scale(1.05)\'" onmouseout="this.style.transform=\'scale(1)\'">';
+html += '<img src="' + coverUrl + '" style="width: 100%; aspect-ratio: 3/4; object-fit: cover; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.15); display: block;">';
+html += '</div>';
+    });
+    
+    html += '</div>';
+    
+    // Inyectamos el HTML
+    contenedor.innerHTML = html;
+};
+
+window.borrarJuegoDeColeccion = function(gameId) {
+    if(!confirm("¿Seguro que quieres borrar este juego de tu colección?")) return;
+    const usuarioActual = auth.currentUser;
+    if (!usuarioActual) return;
+
+    // 1. SALVAR DATOS: Guardamos una copia en memoria para que la ficha no se quede vacía al recargarse
+    if (!window.juegosCargados) window.juegosCargados = {};
+    if (!window.juegosCargados[gameId] && window.miColeccionActiva && window.miColeccionActiva[gameId]) {
+        window.juegosCargados[gameId] = JSON.parse(JSON.stringify(window.miColeccionActiva[gameId]));
+    }
+
+    // 2. ANIMACIÓN DE SALIDA: Ocultamos los botones actuales suavemente
+    const iconsContainer = document.getElementById('gdIconsContainer');
+    if (iconsContainer) {
+        iconsContainer.style.transition = 'all 0.3s ease';
+        iconsContainer.style.opacity = '0';
+        iconsContainer.style.transform = 'scale(0.95)';
+    }
+
+    const juegoRef = doc(db, 'users', usuarioActual.uid, 'coleccion', gameId.toString());
+    
+    deleteDoc(juegoRef).then(() => {
+        // 3. Borramos de tu colección local
+        delete window.miColeccionActiva[gameId];
+        if(window.pintarColeccionPerfil) window.pintarColeccionPerfil();
+        
+        // 4. Redibujamos la ficha en modo "no lo tienes" con animación de entrada
+        setTimeout(() => {
+            window.openGameDetail(gameId, 'not_owned'); // Forzamos el modo sin tenerlo
+            
+            setTimeout(() => {
+                const nuevoContainer = document.getElementById('gdIconsContainer');
+                if (nuevoContainer) {
+                    nuevoContainer.style.transition = 'all 0.3s ease';
+                    nuevoContainer.style.opacity = '1';
+                    nuevoContainer.style.transform = 'scale(1)';
+                }
+            }, 50);
+        }, 300);
+        
+    }).catch((error) => {
+        console.error("Error al borrar:", error);
+        if (iconsContainer) {
+            iconsContainer.style.opacity = '1';
+            iconsContainer.style.transform = 'scale(1)';
+        }
+    });
+};
+window.actualizarEstadoJuego = function(gameId, nuevoEstado) {
+    const usuarioActual = auth.currentUser;
+    if (!usuarioActual || !window.miColeccionActiva[gameId]) return;
+
+    // Actualiza en Firebase
+    const juegoRef = doc(db, 'users', usuarioActual.uid, 'coleccion', gameId.toString());
+    updateDoc(juegoRef, { estado: nuevoEstado }).then(() => {
+        // Actualiza en local
+        window.miColeccionActiva[gameId].estado = nuevoEstado;
+        if(window.pintarColeccionPerfil) window.pintarColeccionPerfil();
+        
+        // Actualiza el texto central del nuevo botón animado
+        const textoEstado = document.getElementById('textoEstadoCentral');
+        if (textoEstado) textoEstado.innerText = nuevoEstado;
+    });
+};
+
+window.seleccionarNuevoEstado = function(gameId, nuevoEstado, elementoClicado) {
+    // 1. Ocultar el menú inmediatamente
+    document.getElementById('estadoDropdownMenu').classList.remove('show');
+    
+    // 2. Cambiar el texto verde central visualmente
+    document.getElementById('textoEstadoCentral').innerText = nuevoEstado;
+    
+    // 3. Cambiar la clase 'active' de los botones del menú (el fondo verde al seleccionarlo)
+    const opciones = document.querySelectorAll('.custom-option');
+    opciones.forEach(op => op.classList.remove('active'));
+    elementoClicado.classList.add('active');
+    
+    // 4. Mandarlo a Firebase en segundo plano usando tu función ya existente
+    window.actualizarEstadoJuego(gameId, nuevoEstado);
+};
+
+//visor
+function abrirVisorImagen(url) {
+    const visor = document.getElementById('visorImagenes');
+    const img = document.getElementById('visorImgSrc');
+    img.src = url;
+    visor.style.display = 'flex';
+    setTimeout(() => { visor.style.opacity = '1'; img.style.transform = 'scale(1)'; }, 10);
+}
+
+let juegoAReseñarId = null;
+
+// ==========================================
+// SISTEMA DE RESEÑAS Y MEDIA DE COMUNIDAD (VERSIÓN DEFINITIVA)
+// ==========================================
+window.juegoAReseñarId = null;
+window.notaActualReseña = 0;
+window.reseñaBloqueada = false;
+
+// 1. Abrir Modal
+window.abrirModalReseña = function(gameId) {
+    const game = window.miColeccionActiva ? window.miColeccionActiva[gameId] : null;
+    if (!game) return;
+
+    window.juegoAReseñarId = gameId;
+    window.notaActualReseña = game.puntuacion ? parseInt(game.puntuacion) : 0; 
+    window.reseñaBloqueada = (game.reseña || window.notaActualReseña > 0);
+    
+    const inputTexto = document.getElementById('reviewTextInput');
+    if(inputTexto) {
+        inputTexto.value = game.reseña || '';
+        inputTexto.readOnly = window.reseñaBloqueada;
+        inputTexto.style.opacity = window.reseñaBloqueada ? '0.7' : '1';
+        inputTexto.style.cursor = window.reseñaBloqueada ? 'default' : 'text';
+    }
+    
+    const btnContainer = document.getElementById('reviewActionButtons');
+    if (btnContainer) {
+        if (window.reseñaBloqueada) {
+            btnContainer.innerHTML = `
+                <button onclick="window.borrarReseña()" style="flex: 1; padding: 12px; background: rgba(220, 53, 69, 0.15); border: 1px solid rgba(220, 53, 69, 0.4); border-radius: 8px; color: #ff6b6b; cursor: pointer; font-family: 'Outfit', sans-serif; font-weight: 600; transition: all 0.2s;" onmouseover="this.style.background='rgba(220, 53, 69, 0.3)'" onmouseout="this.style.background='rgba(220, 53, 69, 0.15)'">Borrar Reseña</button>
+                <button onclick="window.cerrarModalReseña()" style="flex: 1; padding: 12px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; color: white; cursor: pointer; font-family: 'Outfit', sans-serif; font-weight: 600; transition: all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">Cerrar</button>
+            `;
+        } else {
+            btnContainer.innerHTML = `
+                <button onclick="window.cerrarModalReseña()" style="flex: 1; padding: 12px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; color: white; cursor: pointer; font-family: 'Outfit', sans-serif; font-weight: 600; transition: all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">Cancelar</button>
+                <button onclick="window.guardarReseña()" style="flex: 1; padding: 12px; background: rgba(255, 215, 0, 0.15); border: 1px solid rgba(255, 215, 0, 0.4); border-radius: 8px; color: #ffd700; cursor: pointer; font-family: 'Outfit', sans-serif; font-weight: 600; transition: all 0.2s;" onmouseover="this.style.background='rgba(255, 215, 0, 0.3)'" onmouseout="this.style.background='rgba(255, 215, 0, 0.15)'">Guardar Reseña</button>
+            `;
+        }
+    }
+    
+    if(typeof window.construirEstrellas === 'function') window.construirEstrellas();
+    if(typeof window.pintarEstrellas === 'function') window.pintarEstrellas(window.notaActualReseña);
+
+    const modal = document.getElementById('reviewModal');
+    if (modal) {
+        modal.style.display = 'flex';
+        setTimeout(() => { modal.style.opacity = '1'; }, 10);
+    }
+};
+
+// 2. Estrellas
+window.construirEstrellas = function() {
+    const container = document.getElementById('starRatingContainer');
+    if(!container || container.children.length === 10) return;
+    let html = '';
+    for(let i = 1; i <= 10; i++) {
+        html += `<svg id="star-icon-${i}" onclick="window.seleccionarEstrella(${i})" onmouseover="window.manejarHoverEstrella(${i})" onmouseout="window.restaurarEstrellas()" style="width: 26px; height: 26px; fill: rgba(255,255,255,0.1); transition: all 0.2s; stroke: rgba(255,255,255,0.2); stroke-width: 1; margin: 0 2px;" viewBox="0 0 24 24" onmousedown="if(!window.reseñaBloqueada) this.style.transform='scale(0.8)'" onmouseup="if(!window.reseñaBloqueada) this.style.transform='scale(1)'"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`;
+    }
+    container.innerHTML = html;
+};
+window.manejarHoverEstrella = function(rating) { if (!window.reseñaBloqueada) window.pintarEstrellas(rating); };
+window.seleccionarEstrella = function(rating) { if (!window.reseñaBloqueada) { window.notaActualReseña = rating; window.pintarEstrellas(rating); }};
+window.restaurarEstrellas = function() { if (!window.reseñaBloqueada) window.pintarEstrellas(window.notaActualReseña); };
+window.pintarEstrellas = function(rating) {
+    for(let i = 1; i <= 10; i++) {
+        const star = document.getElementById(`star-icon-${i}`);
+        if(star) {
+            const isFilled = i <= rating;
+            star.style.fill = isFilled ? '#ffd700' : 'rgba(255,255,255,0.1)';
+            star.style.filter = isFilled ? 'drop-shadow(0 0 5px rgba(255,215,0,0.5))' : 'none';
+            star.style.stroke = isFilled ? '#ffaa00' : 'rgba(255,255,255,0.2)';
+            star.style.cursor = window.reseñaBloqueada ? 'default' : 'pointer';
+        }
+    }
+    const textoRating = document.getElementById('ratingTextLabel');
+    if(textoRating) textoRating.innerText = rating > 0 ? `${rating} / 10` : 'Sin puntuar';
+};
+window.cerrarModalReseña = function() {
+    const modal = document.getElementById('reviewModal');
+    if (modal) { modal.style.opacity = '0'; setTimeout(() => { modal.style.display = 'none'; }, 300); }
+};
+
+// 3. Guardado Blindado en Firebase
+window.guardarReseña = function() {
+    if (!window.juegoAReseñarId) return;
+    const usuarioActual = auth.currentUser;
+    if (!usuarioActual) return;
+
+    const texto = document.getElementById('reviewTextInput') ? document.getElementById('reviewTextInput').value.trim() : "";
+    const fechaActual = new Date().getTime(); 
+    const notaFinal = window.notaActualReseña; 
+    
+    const juegoRef = doc(db, 'users', usuarioActual.uid, 'coleccion', window.juegoAReseñarId.toString());
+
+    setDoc(juegoRef, { puntuacion: notaFinal, reseña: texto, fecha_reseña: fechaActual }, { merge: true })
+    .then(() => {
+        if (window.miColeccionActiva[window.juegoAReseñarId]) {
+            window.miColeccionActiva[window.juegoAReseñarId].puntuacion = notaFinal;
+            window.miColeccionActiva[window.juegoAReseñarId].reseña = texto;
+            window.miColeccionActiva[window.juegoAReseñarId].fecha_reseña = fechaActual;
+        }
+        window.cerrarModalReseña();
+        
+        if (typeof window.pintarContenidoReseñas === 'function') window.pintarContenidoReseñas(window.juegoAReseñarId); 
+        if (typeof window.calcularMediaComunidad === 'function') window.calcularMediaComunidad(window.juegoAReseñarId); 
+    }).catch(error => console.error("Error al guardar:", error));
+};
+
+window.borrarReseña = function() {
+    if (!window.juegoAReseñarId || !auth.currentUser) return;
+    if(!confirm("¿Seguro que quieres borrar tu reseña y puntuación?")) return;
+
+    const juegoRef = doc(db, 'users', auth.currentUser.uid, 'coleccion', window.juegoAReseñarId.toString());
+    setDoc(juegoRef, { puntuacion: 0, reseña: "", fecha_reseña: null }, { merge: true })
+    .then(() => {
+        if (window.miColeccionActiva[window.juegoAReseñarId]) {
+            window.miColeccionActiva[window.juegoAReseñarId].puntuacion = 0;
+            window.miColeccionActiva[window.juegoAReseñarId].reseña = "";
+            window.miColeccionActiva[window.juegoAReseñarId].fecha_reseña = null;
+        }
+        window.cerrarModalReseña();
+        
+        if (typeof window.pintarContenidoReseñas === 'function') window.pintarContenidoReseñas(window.juegoAReseñarId); 
+        if (typeof window.calcularMediaComunidad === 'function') window.calcularMediaComunidad(window.juegoAReseñarId); 
+    }).catch(error => console.error("Error al borrar:", error));
+};
+
+// 4. Pintar Reseña Individual
+window.pintarContenidoReseñas = function(gameId) {
+    const contenedor = document.getElementById('gdReviewsContainer'); 
+    if(!contenedor) return;
+    const game = window.miColeccionActiva ? window.miColeccionActiva[gameId] : null;
+    
+    if (!game || (!game.reseña && (!game.puntuacion || game.puntuacion === 0))) {
+        contenedor.innerHTML = `<div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: rgba(255,255,255,0.4); font-family: 'Outfit', sans-serif; padding: 40px 0;"><svg style="width: 50px; height: 50px; margin-bottom: 15px; fill: none; stroke: currentColor; stroke-width: 1.5;" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10z"></path></svg><p style="margin:0; font-size: 1.1rem; letter-spacing: 0.5px;">Aún no hay reseñas de este juego.</p><p style="margin:5px 0 0 0; font-size: 0.9rem; color: rgba(255,255,255,0.3);">Haz clic en el botón de la estrella para ser el primero en opinar.</p></div>`;
+    } else {
+        const unicaEstrellaHTML = `<svg style="width: 22px; height: 22px; fill: #ffd700; filter: drop-shadow(0 0 5px rgba(255,215,0,0.6)); margin-right: 8px;" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`;
+        let nombreUsuario = auth.currentUser?.displayName || document.getElementById('profileUsername')?.innerText || "Usuario";
+        let avatarHTML = `<div style="width: 45px; height: 45px; border-radius: 50%; background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.02)); border: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: center; align-items: center; font-family: 'Cinzel', serif; font-weight: bold; color: white; font-size: 1.4rem;">${nombreUsuario.charAt(0).toUpperCase()}</div>`;
+        const imgPerfil = document.getElementById('profileAvatarImg');
+        if (imgPerfil && imgPerfil.src && imgPerfil.style.display !== 'none' && !imgPerfil.src.endsWith(window.location.host + '/')) {
+            avatarHTML = `<img src="${imgPerfil.src}" style="width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 10px rgba(0,0,0,0.5);">`;
+        }
+        let fechaTexto = game.fecha_reseña ? new Date(game.fecha_reseña).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' }) : "Hoy";
+
+        contenedor.innerHTML = `<div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 25px; text-align: left; box-shadow: 0 4px 20px rgba(0,0,0,0.3); margin-top: 10px;"><div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; flex-wrap: wrap; gap: 15px;"><div style="display: flex; align-items: center; gap: 15px;">${avatarHTML}<div style="display: flex; flex-direction: column;"><span style="color: white; font-family: 'Cinzel', serif; font-size: 1.2rem; font-weight: bold; letter-spacing: 0.5px;">${nombreUsuario}</span><span style="color: rgba(255,255,255,0.4); font-family: 'Outfit', sans-serif; font-size: 0.85rem; margin-top: 3px;">${fechaTexto}</span></div></div><div style="display: flex; align-items: center; background: rgba(0,0,0,0.3); padding: 8px 16px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.05);">${unicaEstrellaHTML} <span style="color: #ffd700; font-family: 'Outfit', sans-serif; font-weight: bold; font-size: 1.25rem; line-height: 1; margin-top: 2px;">${game.puntuacion}<span style="font-size: 0.85rem; color: rgba(255,215,0,0.6);">/10</span></span></div></div><hr style="border: none; border-top: 1px solid rgba(255,255,255,0.08); margin-bottom: 20px;"><p style="color: #ddd; font-family: 'Outfit', sans-serif; font-size: 1.05rem; line-height: 1.6; white-space: pre-wrap; margin: 0; font-style: ${game.reseña ? 'normal' : 'italic'}; opacity: ${game.reseña ? '1' : '0.6'};">${game.reseña || 'El usuario ha valorado este juego pero no ha dejado ningún comentario.'}</p></div>`;
+    }
+};
+
+// 5. Media de la Comunidad (Diseño corregido sin estrellas extra)
+window.calcularMediaComunidad = async function(gameId) {
+    const ratingContainer = document.getElementById('gdCommunityRating');
+    if (!ratingContainer) return;
+    
+    // Texto mientras carga
+    ratingContainer.innerHTML = `Calculando...`;
+    
+    try {
+        const usuariosSnap = await getDocs(collection(db, 'users'));
+        let totalPuntuacion = 0;
+        let totalVotos = 0;
+        
+        for (const usuarioDoc of usuariosSnap.docs) {
+            // Buscamos si este usuario tiene este juego en su colección
+            const juegoRef = doc(db, 'users', usuarioDoc.id, 'coleccion', gameId.toString());
+            const juegoSnap = await getDoc(juegoRef);
+            
+            if (juegoSnap.exists()) {
+                const datos = juegoSnap.data();
+                // Si el juego existe y tiene una nota mayor que 0, la sumamos
+                if (datos.puntuacion && Number(datos.puntuacion) > 0) {
+                    totalPuntuacion += Number(datos.puntuacion);
+                    totalVotos++;
+                }
+            }
+        }
+        
+        // El SVG de tu estrella para cuando HAYA votos
+        const estrellaAmarilla = `<svg width="16" height="16" viewBox="0 0 24 24" fill="#f1c40f" stroke="#f1c40f" stroke-width="2" style="margin-right: 5px; vertical-align: middle;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>`;
+
+        if (totalVotos > 0) {
+            const notaMedia = (totalPuntuacion / totalVotos).toFixed(1);
+            const textoVotos = totalVotos === 1 ? 'VOTO' : 'VOTOS';
+            
+            ratingContainer.innerHTML = `
+                <div style="display: inline-flex; align-items: center; color: #ffd700; font-weight: bold; text-shadow: 0 0 5px rgba(255,215,0,0.5);">
+                    ${estrellaAmarilla}
+                    ${notaMedia}
+                </div> 
+                <span style="opacity: 0.5; margin-left: 5px; margin-right: 5px; color: white;">|</span> 
+                <span style="color: white; font-weight: 700;">${totalVotos} ${textoVotos}</span>
+            `;
+        } else {
+            // Diseño limpio sin estrella si no hay votos
+            ratingContainer.innerHTML = `0 VOTOS`;
+        }
+        
+    } catch (error) {
+        console.error("Error al calcular media:", error);
+        ratingContainer.innerHTML = `0 VOTOS`;
+    }
+};
+
+// ==========================================
+// FUNCIÓN PARA CERRAR LA FICHA DEL JUEGO
+// ==========================================
+window.closeGameDetail = function() {
+    const modal = document.getElementById('gameDetailScreen');
+    if (modal) {
+        modal.classList.add('hidden');
+        modal.style.display = 'none';
+    }
+};
+
+// ==========================================
+// VISOR DE IMÁGENES A PANTALLA COMPLETA
+// ==========================================
+// ==========================================
+// VISOR DE IMÁGENES A PANTALLA COMPLETA (CON ZOOM Y ARRASTRE TÁCTIL)
+// ==========================================
+window.abrirVisorImagen = function(url) {
+    const visor = document.getElementById('imageViewer');
+    const imagenVisor = document.getElementById('imageViewerContent');
+    
+    if (visor && imagenVisor) {
+        imagenVisor.src = url;
+        
+        // Resetear el zoom y la posición al abrir una imagen nueva
+        window.imgScale = 1;
+        window.imgLastScale = 1;
+        window.imgTx = 0;
+        window.imgTy = 0;
+        window.imgLastTx = 0;
+        window.imgLastTy = 0;
+        imagenVisor.style.transform = `translate(0px, 0px) scale(1)`;
+        
+        visor.style.display = 'flex';
+        setTimeout(() => { visor.style.opacity = '1'; }, 10);
+        
+        // Iniciar sensores táctiles solo la primera vez que se abre
+        if (!window.gestosIniciados) {
+            iniciarGestosTactiles(imagenVisor);
+            window.gestosIniciados = true;
+        }
+    }
+};
+
+window.cerrarVisorImagen = function(e) {
+    // Si el usuario toca la propia foto, NO cerramos (así puede hacer zoom tranquilo)
+    // Solo cerramos si toca el fondo negro o la X
+    if (e && e.target && e.target.id === 'imageViewerContent') {
+        return;
+    }
+    
+    const visor = document.getElementById('imageViewer');
+    const imagenVisor = document.getElementById('imageViewerContent');
+    
+    if (visor) {
+        visor.style.opacity = '0';
+        setTimeout(() => {
+            visor.style.display = 'none';
+            if (imagenVisor) imagenVisor.src = ''; 
+        }, 300); 
+    }
+};
+
+// --- MOTOR DE CÁLCULO DE GESTOS ---
+function iniciarGestosTactiles(img) {
+    let initialDistance = 0;
+    let startX = 0, startY = 0;
+
+    img.addEventListener('touchstart', (e) => {
+        if (e.touches.length === 2) {
+            e.preventDefault();
+            // Calcular la distancia inicial entre los dos dedos
+            initialDistance = Math.hypot(
+                e.touches[0].pageX - e.touches[1].pageX,
+                e.touches[0].pageY - e.touches[1].pageY
+            );
+        } else if (e.touches.length === 1 && window.imgScale > 1) {
+            e.preventDefault();
+            // Registrar dónde empieza a arrastrar con un dedo
+            startX = e.touches[0].pageX - window.imgLastTx;
+            startY = e.touches[0].pageY - window.imgLastTy;
+        }
+    }, { passive: false });
+
+    img.addEventListener('touchmove', (e) => {
+        e.preventDefault(); // Bloquear el scroll de la página web
+        if (e.touches.length === 2) {
+            // ZOOM: Calcular cuánto se han separado los dedos
+            const currentDistance = Math.hypot(
+                e.touches[0].pageX - e.touches[1].pageX,
+                e.touches[0].pageY - e.touches[1].pageY
+            );
+            
+            window.imgScale = window.imgLastScale * (currentDistance / initialDistance);
+            window.imgScale = Math.min(Math.max(1, window.imgScale), 4); // Límite: mínimo 1x, máximo 4x
+            
+            img.style.transform = `translate(${window.imgTx}px, ${window.imgTy}px) scale(${window.imgScale})`;
+        } else if (e.touches.length === 1 && window.imgScale > 1) {
+            // ARRASTRAR: Mover la imagen si está ampliada
+            window.imgTx = e.touches[0].pageX - startX;
+            window.imgTy = e.touches[0].pageY - startY;
+            
+            img.style.transform = `translate(${window.imgTx}px, ${window.imgTy}px) scale(${window.imgScale})`;
+        }
+    }, { passive: false });
+
+    img.addEventListener('touchend', (e) => {
+        // Guardar la posición y escala final cuando levanta los dedos
+        if (e.touches.length < 2) {
+            window.imgLastScale = window.imgScale;
+        }
+        if (e.touches.length === 0) {
+            window.imgLastTx = window.imgTx;
+            window.imgLastTy = window.imgTy;
+        }
+    });
+}
+
+// ==========================================
+// RENDERIZAR RESEÑAS EN EL PERFIL
+// ==========================================
+window.pintarResenasPerfil = function() {
+    const contenedorResenas = document.getElementById('perfilResenasContainer'); 
+    if (!contenedorResenas) return; 
+
+    if (!window.miColeccionActiva || Object.keys(window.miColeccionActiva).length === 0) {
+        contenedorResenas.innerHTML = `
+            <div style="text-align: center; padding: 40px 20px; font-family: 'Outfit', sans-serif;">
+                <p style="font-size: 1.1rem; margin-bottom: 10px; color: #111; font-weight: bold;">Aún no tienes juegos en tu colección.</p>
+                <p style="font-size: 0.9rem; color: #555;">Añade juegos y puntúalos para ver tus reseñas aquí.</p>
+            </div>
+        `;
+        return;
+    }
+
+    const juegosConResena = Object.values(window.miColeccionActiva).filter(juego => 
+        (juego.puntuacion && Number(juego.puntuacion) > 0) || (juego.reseña && juego.reseña.trim() !== "")
+    );
+
+    // Ordenar de más reciente a más antiguo
+    juegosConResena.sort((a, b) => (b.fecha_agregado || 0) - (a.fecha_agregado || 0));
+
+    if (juegosConResena.length === 0) {
+        contenedorResenas.innerHTML = `
+            <div style="text-align: center; padding: 40px 20px; font-family: 'Outfit', sans-serif;">
+                <p style="font-size: 1.1rem; margin-bottom: 10px; color: #111; font-weight: bold;">Aún no has escrito ninguna reseña.</p>
+                <p style="font-size: 0.9rem; color: #555;">Entra en la ficha de cualquier juego de tu colección y déjale tu opinión.</p>
+            </div>
+        `;
+        return;
+    }
+
+    // Contenedor principal con más margen para que respiren las tarjetas
+    let htmlResenas = `<div style="display: flex; flex-direction: column; gap: 20px; width: 100%; max-width: 900px; margin: 0 auto; padding-bottom: 30px;">`;
+
+    juegosConResena.forEach(juego => {
+        // Usamos t_cover_big para que la imagen tenga más resolución al ser más grande
+        const caratulaUrl = juego.caratula ? `https://images.igdb.com/igdb/image/upload/t_cover_big/${juego.caratula}.jpg` : 'https://via.placeholder.com/90x120/f3f4f6/111111?text=Sin+Portada';
+        
+        // MATEMÁTICAS ARREGLADAS: Tu nota es del 1 al 10
+        const notaReal = Number(juego.puntuacion) || 0;
+        const notaStr = notaReal > 0 ? `${notaReal}/10` : "-/10";
+
+        // Estrellas arregladas (dividimos entre 2 para sacar 5 estrellas a partir del 10)
+        let estrellasHtml = '';
+        let notaBase5 = notaReal / 2; 
+        for (let i = 1; i <= 5; i++) {
+            if (i <= Math.floor(notaBase5)) {
+                // Estrella llena (Amarilla)
+                estrellasHtml += `<svg style="width: 18px; height: 18px; fill: #fbbf24; margin-right: 3px;" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>`;
+            } else if (i === Math.ceil(notaBase5) && !Number.isInteger(notaBase5)) {
+                // Media estrella (Semiamarilla)
+                estrellasHtml += `<svg style="width: 18px; height: 18px; fill: #fbbf24; opacity: 0.5; margin-right: 3px;" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>`;
+            } else {
+                // Estrella vacía (Gris clarito)
+                estrellasHtml += `<svg style="width: 18px; height: 18px; fill: #e5e7eb; margin-right: 3px;" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>`;
+            }
+        }
+
+        // Formatear la fecha para que sea bonita (Ej: "4 de octubre de 2026")
+        let fechaTexto = "";
+        if (juego.fecha_agregado) {
+            const date = new Date(juego.fecha_agregado);
+            fechaTexto = date.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
+        }
+
+        const textoResena = (juego.reseña && juego.reseña.trim() !== "") ? `"${juego.reseña}"` : "<em style='color: #999;'>Solo puntuación. Sin opinión escrita.</em>";
+
+        // HTML DE LA TARJETA MEJORADA
+        htmlResenas += `
+            <div style="background: #ffffff; border: 1px solid #eaeaea; border-radius: 16px; padding: 20px; display: flex; gap: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); transition: transform 0.2s ease, box-shadow 0.2s ease;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 25px rgba(0,0,0,0.08)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(0,0,0,0.03)'">
+                
+                <!-- Carátula más grande -->
+                <div style="cursor: pointer; flex-shrink: 0;" onclick="window.openGameDetail(${juego.id})">
+                    <img src="${caratulaUrl}" style="width: 90px; height: 130px; object-fit: cover; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.15);" alt="${juego.nombre}">
+                </div>
+                
+                <!-- Contenido Principal -->
+                <div style="flex-grow: 1; display: flex; flex-direction: column; justify-content: center; font-family: 'Outfit', sans-serif;">
+                    
+                    <!-- Cabecera (Título a la izquierda, Medalla de nota a la derecha) -->
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                        <div>
+                            <h4 style="margin: 0 0 8px 0; font-size: 1.25rem; color: #111; font-weight: 800; cursor: pointer;" onclick="window.openGameDetail(${juego.id})">${juego.nombre}</h4>
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <div style="display: flex;">${estrellasHtml}</div>
+                                <span style="font-size: 0.85rem; color: #888; font-weight: 500;">${fechaTexto ? 'Analizado el ' + fechaTexto : ''}</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Medalla de Puntuación (Fondo doradito con icono) -->
+                        <div style="display: flex; align-items: center; gap: 6px; background: #fffbeb; padding: 6px 14px; border-radius: 30px; border: 1px solid #fde68a;">
+                            <svg style="width: 16px; height: 16px; fill: #d97706;" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
+                            <span style="color: #b45309; font-weight: 800; font-size: 1.05rem; letter-spacing: 0.5px;">${notaStr}</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Texto de la Reseña -->
+                    <div style="margin-top: 18px; padding-left: 15px; border-left: 3px solid #e5e7eb;">
+                        <p style="margin: 0; font-size: 0.95rem; color: #444; line-height: 1.6; font-style: italic;">
+                            ${textoResena}
+                        </p>
+                    </div>
+                    
+                </div>
+            </div>
+        `;
+    });
+
+    htmlResenas += `</div>`;
+    contenedorResenas.innerHTML = htmlResenas;
+};
+
+const juegosConResena = Object.values(window.miColeccionActiva).filter(juego => 
+        (juego.puntuacion && Number(juego.puntuacion) > 0) || (juego.reseña && juego.reseña.trim() !== "")
+    );
+
+    const contadorResenas = document.getElementById('statReviews');
+    if (contadorResenas) {
+        contadorResenas.innerText = juegosConResena.length;
+    }
+  
+
+    </script>
