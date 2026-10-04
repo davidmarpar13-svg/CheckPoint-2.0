@@ -1,4 +1,7 @@
-# CheckPoint-2.0
+# CheckPoint-2.0 
+Web: Mejor abrir desde un Movil, ya que esta preparado para ello: https://script.google.com/macros/s/AKfycbxHWCPgpx31Aehp9LT7COlrBZR2bqONJ_Xi-MFAU0NDHssXMAQ5kuuN0QHV6CoNQ22-Aw/exec
+Correo: david.marpar13@gmail.com
+Contraseña: 12345678
 🎮CheckPoint (Versión Modular & 2.0)
 Esta es la segunda versión de CheckPoint PARA MOVIL, una red social y base de datos de videojuegos muy visual y moderna que estoy desarrollando. Si la primera la monté en un único bloque para aprender a base de prueba y error, esta nace con una idea muy clara y meditada: hacer las cosas bien desde los cimientos, apostando por una arquitectura limpia y modular.
 
