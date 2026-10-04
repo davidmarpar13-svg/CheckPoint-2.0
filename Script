@@ -1,7 +1,7 @@
 <script type="module">
   window.juegosCargados = {};
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut, updateProfile } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut, updateProfile, EmailAuthProvider, reauthenticateWithCredential, updatePassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
     import { getFirestore, getDoc, doc, setDoc, getDocs, collection, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
     // NUEVA LÍNEA: Importamos Firebase Storage
     import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
@@ -149,11 +149,12 @@
                 
                 document.getElementById('profileLevel').textContent = nivel;
 
-    if (window.miColeccionActiva) {
-        const totalResenas = Object.values(window.miColeccionActiva).filter(juego => 
+    // Calculamos el número de reseñas EN VIVO (Ultra seguro)
+    if (window.miColeccionActiva && typeof window.miColeccionActiva === 'object') {
+        const totalResenasSeguro = Object.values(window.miColeccionActiva).filter(juego => 
             (juego.puntuacion && Number(juego.puntuacion) > 0) || (juego.reseña && juego.reseña.trim() !== "")
         ).length;
-        document.getElementById('statReviews').textContent = totalResenas;
+        document.getElementById('statReviews').textContent = totalResenasSeguro;
     } else {
         document.getElementById('statReviews').textContent = "0";
     }
@@ -2446,14 +2447,93 @@ window.pintarResenasPerfil = function() {
     contenedorResenas.innerHTML = htmlResenas;
 };
 
-const juegosConResena = Object.values(window.miColeccionActiva).filter(juego => 
-        (juego.puntuacion && Number(juego.puntuacion) > 0) || (juego.reseña && juego.reseña.trim() !== "")
-    );
-
+// 1. Contador de reseñas ULTRA SEGURO (Evita el choque de Object.values)
+    let totalResenas = 0;
+    if (window.miColeccionActiva && typeof window.miColeccionActiva === 'object') {
+        const juegosConResena = Object.values(window.miColeccionActiva).filter(juego => 
+            (juego.puntuacion && Number(juego.puntuacion) > 0) || (juego.reseña && juego.reseña.trim() !== "")
+        );
+        totalResenas = juegosConResena.length;
+    }
     const contadorResenas = document.getElementById('statReviews');
     if (contadorResenas) {
-        contadorResenas.innerText = juegosConResena.length;
+        contadorResenas.innerText = totalResenas;
     }
-  
+
+    // Función GLOBAL para cambiar la contraseña en Firebase
+window.ejecutarCambioContrasena = async function() {
+    // AQUÍ ESTABA EL ERROR: Faltaba el "Input" al final del ID
+    const inputActual = document.getElementById('currentPasswordInput');
+    const inputNueva = document.getElementById('newPasswordInput');
+    const inputConfirmar = document.getElementById('confirmPasswordInput');
+    const errorMsg = document.getElementById('passwordErrorMsg');
+    
+    const actual = inputActual.value;
+    const nueva = inputNueva.value;
+    const confirmar = inputConfirmar.value;
+
+
+    errorMsg.style.display = 'none';
+
+    if (!actual || !nueva || !confirmar) {
+        errorMsg.textContent = "Por favor, rellena todos los campos.";
+        errorMsg.style.display = 'block';
+        return;
+    }
+
+    if (nueva !== confirmar) {
+        errorMsg.textContent = "Las nuevas contraseñas no coinciden.";
+        errorMsg.style.display = 'block';
+        return;
+    }
+
+    if (nueva.length < 6) {
+        errorMsg.textContent = "La contraseña debe tener al menos 6 caracteres.";
+        errorMsg.style.display = 'block';
+        return;
+    }
+
+    try {
+        const user = auth.currentUser;
+        if (!user) {
+            throw new Error("No hay ninguna sesión iniciada.");
+        }
+
+        // REAUTENTICACIÓN
+        const credenciales = EmailAuthProvider.credential(user.email, actual);
+        await reauthenticateWithCredential(user, credenciales);
+        
+        // ACTUALIZAR
+        await updatePassword(user, nueva);
+
+        // Éxito: Mostramos modal y limpiamos
+        // Usamos tu popup genérico para mostrar el éxito
+const alertTitle = document.getElementById('customAlertTitle');
+const alertText = document.getElementById('customAlertText');
+const alertOverlay = document.getElementById('customAlertOverlay');
+
+if (alertTitle && alertText && alertOverlay) {
+    alertTitle.textContent = "CONTRASEÑA SEGURA";
+    alertText.textContent = "Tu contraseña ha sido actualizada correctamente.";
+    alertOverlay.style.display = 'flex';
+} else {
+    // Plan B infalible por si acaso
+    alert("¡Contraseña actualizada con éxito!");
+}
+        inputActual.value = '';
+        inputNueva.value = '';
+        inputConfirmar.value = '';
+        document.getElementById('passwordModelOverlay').style.display = 'none';
+
+    } catch (error) {
+        console.error("Error al cambiar contraseña:", error);
+        if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password') {
+            errorMsg.textContent = "La contraseña actual es incorrecta.";
+        } else {
+            errorMsg.textContent = "Error al actualizar: " + error.message;
+        }
+        errorMsg.style.display = 'block';
+    }
+};
 
     </script>
