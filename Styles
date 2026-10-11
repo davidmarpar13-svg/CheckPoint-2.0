@@ -1192,4 +1192,74 @@ body, html {
 * {
   scrollbar-width: none;
 }
+
+/* Color gris y grosor minimalista para todos los botones */
+        #globalBottomNav .nav-item {
+            color: #737373 !important; /* Gris intermedio elegante */
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        #globalBottomNav .nav-item svg {
+            stroke-width: 1.55 !important; /* Trazo muy fino y minimalista */
+            transition: all 0.2s ease;
+        }
+
+        /* Botón ACTIVO: Solo cambia el color a negro, sin engordar la línea */
+        #globalBottomNav .nav-item.active {
+            color: #000000 !important; /* Negro puro */
+        }
+        #globalBottomNav .nav-item.active svg {
+            stroke-width: 1.55 !important; /* Mismo grosor fino, sin engordar */
+        }
+
+/* Diseño de los botones de plataforma (Filtro) */
+        .explore-plat-btn {
+            background: transparent;
+            border: none;
+            color: #9ca3af; /* Gris sutil */
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .explore-plat-btn.active {
+            background: #111111;
+            color: #ffffff;
+            transform: scale(1.05);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        }
+        
+        /* Ocultar barra de scroll en el carrusel de botones */
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* Tarjeta Glassmorphism para la lista vertical */
+        .glass-card-vertical {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.9);
+            border-radius: 14px;
+            padding: 10px;
+            display: flex;
+            gap: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s;
+            cursor: pointer;
+            /* Estos 2 evitan que Chrome rompa el blur: */
+            transform: translateZ(0); 
+            will-change: transform;
+        }
+        .glass-card-vertical:active { transform: scale(0.98); }
+
+        /* Animación de entrada suave */
+        @keyframes fadeUpIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-up { animation: fadeUpIn 0.5s ease forwards; }
+
     </style>
