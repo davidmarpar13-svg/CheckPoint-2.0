@@ -474,7 +474,10 @@
            <div id="profileTabContent" style="display: block; padding: 5px 0px; background: transparent; border-radius: 0 0 10px 10px;">
                 
                 <div id="tab-coleccion" style="display: block; animation: fadeIn 0.3s ease;">
-                    <!-- AQUÍ DENTRO ES DONDE VAN A APARECER LOS JUEGOS -->
+                    <!-- SECCIÓN TOP 3 FAVORITOS -->
+        <div id="top3Container" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-width: 450px; margin: 0 auto 25px auto; padding: 0 5px;"></div>
+        
+        <hr style="border: 0; border-top: 1px solid #eaeaea; margin-bottom: 20px;">
                     <div id="realCollection"></div>
                     <!-- (El texto de la taberna fantasma ya no hace falta en el HTML porque lo dibuja tu Script si la colección está vacía) -->
                 </div>
@@ -512,33 +515,38 @@
     </div> 
 
     <!-- BOTTOM NAVIGATION BAR GLOBAL -->
-<div id="globalBottomNav" class="bottom-nav glass-panel" style="display: none; justify-content: space-evenly; align-items: center; width: 100%; box-sizing: border-box; z-index: 99999;">
-    
-    <!-- 1. INICIO -->
-    <button class="nav-item active" style="flex: 1; display: flex; justify-content: center; align-items: center; background: transparent; border: none; padding: 15px 0; cursor: pointer;" onclick="window.switchPanel('dashboardPanel')">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 24px; height: 24px;"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-    </button>
-    
-    <!-- 2. EXPLORAR (BRÚJULA) -->
-    <button class="nav-item" style="flex: 1; display: flex; justify-content: center; align-items: center; background: transparent; border: none; padding: 15px 0; cursor: pointer;" onclick="window.switchPanel('explorePanel')">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 24px; height: 24px;"><circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon></svg>
-    </button>
-
-    <!-- 3. BÚSQUEDA / LUPA (SOLO EL TRAZO EN VERDE SÓLIDO, SIN HALOS) -->
-    <button class="nav-item" style="flex: 1; display: flex; justify-content: center; align-items: center; background: transparent; border: none; padding: 15px 0; cursor: pointer;" onclick="window.switchPanel('searchPanel')">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="#2ecc71" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 24px; height: 24px;"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-    </button>
-
-    <!-- 4. NOTIFICACIONES (CAMPANA) -->
-    <button class="nav-item" style="flex: 1; display: flex; justify-content: center; align-items: center; background: transparent; border: none; padding: 15px 0; cursor: pointer;" onclick="window.switchPanel('notificationsPanel')">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 24px; height: 24px;"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
-    </button>
-    
-    <!-- 5. PERFIL -->
-    <button class="nav-item" style="flex: 1; display: flex; justify-content: center; align-items: center; background: transparent; border: none; padding: 15px 0; cursor: pointer;" onclick="window.switchPanel('profilePanel'); if(window.pintarColeccionPerfil) window.pintarColeccionPerfil();">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 24px; height: 24px;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-    </button>
-</div>
+    <div id="globalBottomNav" class="bottom-nav glass-panel" style="display: none; justify-content: space-evenly; align-items: center; width: 100%; box-sizing: border-box; z-index: 99999; height: 60px; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(10px); border-top: 1px solid rgba(0,0,0,0.05);">
+        
+        <!-- 1. INICIO -->
+        <button class="nav-item active" style="flex: 1; display: flex; justify-content: center; align-items: center; background: transparent; border: none; height: 100%; cursor: pointer;" 
+        onclick="document.querySelectorAll('#globalBottomNav .nav-item').forEach(b=>b.classList.remove('active')); this.classList.add('active'); window.switchPanel('dashboardPanel');">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round" style="width: 23px; height: 23px;"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+        </button>
+        
+        <!-- 2. EXPLORAR (BRÚJULA) -->
+        <button class="nav-item" style="flex: 1; display: flex; justify-content: center; align-items: center; background: transparent; border: none; height: 100%; cursor: pointer;" 
+        onclick="document.querySelectorAll('#globalBottomNav .nav-item').forEach(b=>b.classList.remove('active')); this.classList.add('active'); window.switchPanel('explorePanel'); window.initExploreTab();">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round" style="width: 23px; height: 23px;"><circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon></svg>
+        </button>
+        
+        <!-- 3. BÚSQUEDA / LUPA -->
+        <button class="nav-item" style="flex: 1; display: flex; justify-content: center; align-items: center; background: transparent; border: none; height: 100%; cursor: pointer;" 
+        onclick="document.querySelectorAll('#globalBottomNav .nav-item').forEach(b=>b.classList.remove('active')); this.classList.add('active'); window.switchPanel('searchPanel');">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round" style="width: 23px; height: 23px;"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        </button>
+        
+        <!-- 4. NOTIFICACIONES (CAMPANA) -->
+        <button class="nav-item" style="flex: 1; display: flex; justify-content: center; align-items: center; background: transparent; border: none; height: 100%; cursor: pointer;" 
+        onclick="document.querySelectorAll('#globalBottomNav .nav-item').forEach(b=>b.classList.remove('active')); this.classList.add('active'); window.switchPanel('notificationsPanel');">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round" style="width: 23px; height: 23px;"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+        </button>
+        
+        <!-- 5. PERFIL -->
+        <button class="nav-item" style="flex: 1; display: flex; justify-content: center; align-items: center; background: transparent; border: none; height: 100%; cursor: pointer;" 
+        onclick="document.querySelectorAll('#globalBottomNav .nav-item').forEach(b=>b.classList.remove('active')); this.classList.add('active'); window.switchPanel('profilePanel'); if(window.pintarColeccionPerfil) window.pintarColeccionPerfil();">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round" style="width: 23px; height: 23px;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+        </button>
+    </div>
 
 <!-- POPUP DE LOGROS / VITRINA (Árbol de Progresión Oculto) -->
     <div id="achievementsPopupOverlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 999999; display: none; justify-content: center; align-items: center; opacity: 0; transition: opacity 0.3s; padding: 20px; box-sizing: border-box;">
@@ -1214,6 +1222,139 @@
     
     <!-- La imagen en grande (touch-action bloquea el zoom por defecto del navegador) -->
     <img id="imageViewerContent" src="" style="max-width: 90%; max-height: 90%; border-radius: 8px; box-shadow: 0 0 20px rgba(0,0,0,0.5); object-fit: contain; touch-action: none; transform-origin: center;">
+</div>
+
+<!-- POPUP SELECTOR DE JUEGOS FAVORITOS CON BUSCADOR -->
+    <div id="favGameModalOverlay" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); z-index: 9999999; justify-content: center; align-items: center; box-sizing: border-box; padding: 20px;">
+        <div style="background: white; width: 100%; max-width: 600px; max-height: 85vh; border-radius: 16px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.3); font-family: 'Outfit', sans-serif;">
+            
+            <div style="padding: 20px; border-bottom: 1px solid #eaeaea; display: flex; justify-content: space-between; align-items: center; background: #fff;">
+                <div>
+                    <h3 style="margin: 0; font-family: 'Cinzel', serif; font-size: 1.3rem; color: #111; font-weight: 800;">Elige un juego</h3>
+                    <p style="margin: 4px 0 0 0; font-size: 0.85rem; color: #666;">Selecciona un juego para destacarlo.</p>
+                </div>
+                <button onclick="document.getElementById('favGameModalOverlay').style.display='none'" style="background: #f3f4f6; border: none; width: 36px; height: 36px; border-radius: 50%; font-size: 1.2rem; cursor: pointer; color: #111; display: flex; justify-content: center; align-items: center;">✕</button>
+            </div>
+            
+            <!-- NUEVO: BARRA DE BÚSQUEDA -->
+        <div style="padding: 15px 20px 0 20px; background: #fff;">
+            <input type="text" id="favSearchInput" onkeyup="window.filtrarFavoritos()" placeholder="🔍 Buscar en tu colección..." style="width: 100%; padding: 12px 16px; border-radius: 10px; border: 1px solid #ddd; background: #f9f9f9; font-family: 'Outfit', sans-serif; font-size: 0.95rem; box-sizing: border-box; outline: none; transition: 0.2s;" onfocus="this.style.borderColor='#999'">
+        </div>
+
+        <div id="favGameList" style="padding: 20px; overflow-y: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 15px; background: #fff;">
+        </div>
+    </div> 
+</div> 
+
+</div> <!-- ¡ESTE ES EL DIV MISTERIOSO! Lo cerramos AQUÍ para liberar el panel de Explorar -->
+
+<!-- ========================================== -->
+<!-- PANEL DE EXPLORAR (ESTILO DEFINITIVO) -->
+<!-- ========================================== -->
+<div id="explorePanel" class="hidden" style="position: fixed; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; overflow-y: auto; padding-bottom: 90px; background-color: #fcfcfc !important; z-index: 50 !important;">
+    <div style="padding: 20px; max-width: 800px; margin: 0 auto;">
+        
+        <!-- SECCIÓN 1: PRÓXIMAMENTE -->
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; margin-top: 15px; width: 100%;">
+            <h3 style="font-family: 'Outfit', sans-serif; font-size: 0.95rem; font-weight: 800; margin: 0; color: #111; letter-spacing: 0.5px; text-transform: uppercase;">PRÓXIMAMENTE</h3>
+            
+            <button onclick="window.abrirCalendarioProximos()" style="display: flex; align-items: center; gap: 6px; background: #f3f4f6; border: none; padding: 6px 14px; border-radius: 20px; font-family: 'Outfit', sans-serif; font-size: 0.75rem; font-weight: 800; color: #111; cursor: pointer; transition: all 0.2s;">
+                <!-- Icono de Calendario SVG -->
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                VER TODO
+            </button>
+        </div>
+
+        <!-- Carrusel Horizontal de Próximamente -->
+        <div id="exploreUpcomingList" class="hide-scrollbar" style="display: flex; flex-direction: row; gap: 15px; overflow-x: auto; padding-bottom: 5px; margin-bottom: 20px; scroll-snap-type: x mandatory;">
+            <div style="text-align:center; padding: 20px; color: #888; font-family: 'Outfit'; width: 100%;">Cargando próximos lanzamientos...</div>
+        </div>
+
+        <!-- SECCIÓN 2: PARA TI -->
+        <div style="display: flex; align-items: center; justify-content: flex-start; margin-bottom: 12px;">
+            <h3 style="font-family: 'Outfit', sans-serif; font-size: 0.95rem; font-weight: 800; margin: 0; color: #111; letter-spacing: 0.5px; text-transform: uppercase;">PARA TI</h3>
+        </div>
+        
+        <!-- Cuadrícula infinita (AHORA CON 3 COLUMNAS) -->
+        <div id="exploreForYouGrid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">
+        </div>
+        
+        <!-- Indicador de carga al hacer scroll -->
+        <div id="exploreLoadingMore" style="text-align: center; padding: 25px 0; display: none;">
+            <span class="loader-dots" style="font-family: 'Outfit', sans-serif; font-size: 0.9rem; color: #666; font-weight: 600;">Cargando más joyas...</span>
+        </div>
+
+    <!-- (aquí termina tu panel de Explorar normal) -->
+    </div>
+</div> 
+
+<!-- ========================================== -->
+<!-- MODAL: CALENDARIO DE PRÓXIMOS LANZAMIENTOS -->
+<!-- ========================================== -->
+<div id="modalVerTodoProximos" style="visibility: hidden; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #fcfcfc; z-index: 999999; overflow-y: auto; padding-bottom: 90px; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.3s; transform: translateY(100%);">
+    <div style="padding: 20px; max-width: 800px; margin: 0 auto;">
+        
+        <!-- Cabecera del Modal -->
+        <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px; margin-top: 15px;">
+            <button onclick="window.cerrarCalendarioProximos()" style="background: none; border: none; font-size: 1.8rem; cursor: pointer; color: #111; padding: 0 10px 0 0;">&larr;</button>
+            <h3 style="font-family: 'Outfit', sans-serif; font-size: 1.1rem; font-weight: 700; margin: 0; color: #111; letter-spacing: 1px; text-transform: uppercase;">CALENDARIO</h3>
+        </div>
+
+       <!-- Controles de Calendario Avanzados (DISEÑO MÓVIL ULTRA COMPACTO) -->
+    <div style="display: flex; flex-direction: column; gap: 10px; padding-bottom: 15px; margin-bottom: 15px; position: sticky; top: 0; z-index: 50; background: #fcfcfc;">
+
+        <!-- Botón Ver Todos -->
+        <button id="btnMesTodos" onclick="window.filtrarCalendarioAvanzado('todos')" style="width: 100%; padding: 10px; border-radius: 12px; font-weight: 800; border: none; cursor: pointer; font-family: 'Outfit', sans-serif; font-size: 0.8rem; background: #111; color: #fff; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.15);">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+            MOSTRAR TODO EL CATÁLOGO
+        </button>
+        
+        <!-- Cuadrícula 2x2 para los filtros (Ideal para pantallas estrechas) -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%;">
+            
+            <div style="background: #f0f0f0; border-radius: 10px; padding: 0 8px; height: 34px; display: flex; align-items: center;">
+                <span style="font-size: 0.6rem; font-weight: 800; color: #888; margin-right: 4px;">MES</span>
+                <input type="month" id="filtroMesSelect" onchange="window.filtrarCalendarioAvanzado('mes')" style="background: transparent; border: none; outline: none; font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 0.75rem; width: 100%; color: #111; padding: 0;">
+            </div>
+
+            <div style="background: #f0f0f0; border-radius: 10px; padding: 0 8px; height: 34px; display: flex; align-items: center;">
+                <span style="font-size: 0.6rem; font-weight: 800; color: #888; margin-right: 4px;">DÍA</span>
+                <input type="date" id="filtroDiaSelect" onchange="window.filtrarCalendarioAvanzado('dia')" style="background: transparent; border: none; outline: none; font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 0.75rem; width: 100%; color: #111; padding: 0;">
+            </div>
+
+            <div style="background: #f0f0f0; border-radius: 10px; padding: 0 8px; height: 34px; display: flex; align-items: center;">
+                <select id="filtroPlataforma" onchange="window.filtrarCalendarioAvanzado('filtro')" style="background: transparent; border: none; outline: none; font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 0.75rem; width: 100%; color: #111; cursor: pointer;">
+                    <option value="">Plataformas...</option>
+                    <option value="130,508">Nintendo</option>
+                    <option value="167,48">PlayStation</option>
+                    <option value="169,49">Xbox</option>
+                    <option value="6">PC</option>
+                </select>
+            </div>
+
+            <div style="background: #f0f0f0; border-radius: 10px; padding: 0 8px; height: 34px; display: flex; align-items: center;">
+                <select id="filtroGenero" onchange="window.filtrarCalendarioAvanzado('filtro')" style="background: transparent; border: none; outline: none; font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 0.75rem; width: 100%; color: #111; cursor: pointer;">
+                    <option value="">Géneros...</option>
+                    <option value="31">Aventura</option>
+                    <option value="12">RPG</option>
+                    <option value="5">Shooter</option>
+                    <option value="8">Plataformas</option>
+                    <option value="25,4">Lucha</option>
+                    <option value="10">Conducción</option>
+                    <option value="14">Deportes</option>
+                    <option value="32">Indie</option>
+                </select>
+            </div>
+        </div>
+
+    </div>
+        
+        <!-- Cuadrícula Grande del Modal -->
+        <div id="gridVerTodoProximos" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">
+            <!-- El JS meterá aquí los juegos -->
+        </div>
+        
+    </div>
 </div>
 
 <?!= include('Script'); ?>
