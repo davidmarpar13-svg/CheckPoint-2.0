@@ -3,16 +3,101 @@ var TWITCH_CLIENT_SECRET = "zgi246d7qb6qpzkjppahrg4b8xqgnq";
 
 // --- Función principal de tu servidor ---
   function doGet(e) {
-    if (!e || !e.parameter) {
-      return ContentService.createTextOutput(JSON.stringify({ success: false, error: "Script ejecutado sin parámetros." })).setMimeType(ContentService.MimeType.JSON);
+  if (!e || !e.parameter) {
+    return ContentService.createTextOutput(JSON.stringify({ success: false, error: "Script ejecutado sin parámetros." })).setMimeType(ContentService.MimeType.JSON);
+  }
+
+  var action = e.parameter.action;
+  var query = e.parameter.query;
+  var offset = parseInt(e.parameter.offset || '0', 10);
+
+  // --- PRÓXIMOS LANZAMIENTOS Y CALENDARIO MENSUAL ---
+if (action === 'upcoming') {
+  try {
+    var timestampInicio;
+    var timestampFin;
+
+    if (e.parameter.mes && e.parameter.anio) {
+      var mes = parseInt(e.parameter.mes, 10);
+      var anio = parseInt(e.parameter.anio, 10);
+      var fechaInicio = new Date(anio, mes - 1, 1);
+      timestampInicio = Math.floor(fechaInicio.getTime() / 1000);
+      var fechaFin = new Date(anio, mes, 0, 23, 59, 59);
+      timestampFin = Math.floor(fechaFin.getTime() / 1000);
+    } else {
+      timestampInicio = Math.floor(Date.now() / 1000);
+      var fechaFutura = new Date();
+      fechaFutura.setMonth(fechaFutura.getMonth() + 6);
+      timestampFin = Math.floor(fechaFutura.getTime() / 1000);
+    }
+
+    var filterPlataforma = "";
+    if (e.parameter.plataforma) {
+      filterPlataforma = " & platforms = (" + e.parameter.plataforma + ")";
     }
     
-    var action = e.parameter.action;
-    var query = e.parameter.query;
-    var offset = parseInt(e.parameter.offset || '0', 10);
+    var filterGenero = "";
+    if (e.parameter.genero) {
+      filterGenero = " & genres = (" + e.parameter.genero + ")";
+    }
 
-    // Si el usuario escribe en el buscador
-    if (!action && query) {
+    // AÑADIMOS artworks.image_id y screenshots.image_id A LA PETICIÓN
+    var queryUpcoming = 'fields id, name, summary, cover.image_id, artworks.image_id, screenshots.image_id, platforms.name, genres.name, first_release_date, involved_companies.developer, involved_companies.company.name; ' +
+                        'where first_release_date >= ' + timestampInicio + 
+                        ' & first_release_date <= ' + timestampFin + 
+                        ' & cover != null & category != 5' + 
+                        filterPlataforma + filterGenero + '; ' +
+                        'sort first_release_date asc; ' +
+                        'limit 500;';
+
+    var optionsUpcoming = {
+      method: 'post',
+      headers: {
+        'Client-ID': TWITCH_CLIENT_ID,
+        'Authorization': 'Bearer ' + getIGDBTokenFast(),
+        'Accept': 'application/json'
+      },
+      payload: queryUpcoming,
+      muteHttpExceptions: true
+    };
+
+    var url = 'https://api.igdb.com/v4/games';
+    var responseUpcoming = UrlFetchApp.fetch(url, optionsUpcoming);
+
+    if (responseUpcoming.getResponseCode() === 401) {
+      resetIGDBTokenFast();
+      optionsUpcoming.headers['Authorization'] = 'Bearer ' + getIGDBTokenFast();
+      responseUpcoming = UrlFetchApp.fetch(url, optionsUpcoming);
+    }
+
+    var status = responseUpcoming.getResponseCode();
+    var contenido = responseUpcoming.getContentText();
+
+    if (status === 200) {
+      var results = JSON.parse(contenido);
+      
+      // AQUÍ ESTABA EL OTRO FALLO: Modificamos el array original sin borrar los demás datos
+      results.forEach(function(g) {
+        if (g.cover && g.cover.image_id) {
+          g.cover.url = 'https://images.igdb.com/igdb/image/upload/t_cover_big/' + g.cover.image_id + '.jpg';
+        }
+      });
+
+      return ContentService.createTextOutput(JSON.stringify(results))
+                           .setMimeType(ContentService.MimeType.JSON);
+    } else {
+      return ContentService.createTextOutput(JSON.stringify({ success: false, error: 'IGDB HTTP ' + status, detalle: contenido }))
+                           .setMimeType(ContentService.MimeType.JSON);
+    }
+  } catch (error) {
+    return ContentService.createTextOutput(JSON.stringify({ success: false, error: String(error) }))
+                           .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+  // --- SECCIÓN ORIGINAL: BÚSQUEDA Y PORTADA ---
+  // Si el usuario escribe en el buscador
+  if (!action && query) {
       var searchBody = 'search "' + safeQuery + '"; ' +
                      'fields id, name, summary, storyline, cover.image_id, cover.url, artworks.image_id, screenshots.image_id, platforms.id, platforms.name, platforms.abbreviation, genres.name, first_release_date, involved_companies.developer, involved_companies.company.name; ' +
                      'where category = (0,8,9,11); ' +
