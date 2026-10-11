@@ -7,7 +7,7 @@
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Lora:ital,wght@0,400;0,500;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600&display=swap" rel="stylesheet">
     
@@ -515,38 +515,38 @@
     </div> 
 
     <!-- BOTTOM NAVIGATION BAR GLOBAL -->
-    <div id="globalBottomNav" class="bottom-nav glass-panel" style="display: none; justify-content: space-evenly; align-items: center; width: 100%; box-sizing: border-box; z-index: 99999; height: 60px; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(10px); border-top: 1px solid rgba(0,0,0,0.05);">
-        
-        <!-- 1. INICIO -->
-        <button class="nav-item active" style="flex: 1; display: flex; justify-content: center; align-items: center; background: transparent; border: none; height: 100%; cursor: pointer;" 
-        onclick="document.querySelectorAll('#globalBottomNav .nav-item').forEach(b=>b.classList.remove('active')); this.classList.add('active'); window.switchPanel('dashboardPanel');">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round" style="width: 23px; height: 23px;"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-        </button>
-        
-        <!-- 2. EXPLORAR (BRÚJULA) -->
-        <button class="nav-item" style="flex: 1; display: flex; justify-content: center; align-items: center; background: transparent; border: none; height: 100%; cursor: pointer;" 
-        onclick="document.querySelectorAll('#globalBottomNav .nav-item').forEach(b=>b.classList.remove('active')); this.classList.add('active'); window.switchPanel('explorePanel'); window.initExploreTab();">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round" style="width: 23px; height: 23px;"><circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon></svg>
-        </button>
-        
-        <!-- 3. BÚSQUEDA / LUPA -->
-        <button class="nav-item" style="flex: 1; display: flex; justify-content: center; align-items: center; background: transparent; border: none; height: 100%; cursor: pointer;" 
-        onclick="document.querySelectorAll('#globalBottomNav .nav-item').forEach(b=>b.classList.remove('active')); this.classList.add('active'); window.switchPanel('searchPanel');">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round" style="width: 23px; height: 23px;"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-        </button>
-        
-        <!-- 4. NOTIFICACIONES (CAMPANA) -->
-        <button class="nav-item" style="flex: 1; display: flex; justify-content: center; align-items: center; background: transparent; border: none; height: 100%; cursor: pointer;" 
-        onclick="document.querySelectorAll('#globalBottomNav .nav-item').forEach(b=>b.classList.remove('active')); this.classList.add('active'); window.switchPanel('notificationsPanel');">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round" style="width: 23px; height: 23px;"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
-        </button>
-        
-        <!-- 5. PERFIL -->
-        <button class="nav-item" style="flex: 1; display: flex; justify-content: center; align-items: center; background: transparent; border: none; height: 100%; cursor: pointer;" 
-        onclick="document.querySelectorAll('#globalBottomNav .nav-item').forEach(b=>b.classList.remove('active')); this.classList.add('active'); window.switchPanel('profilePanel'); if(window.pintarColeccionPerfil) window.pintarColeccionPerfil();">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round" style="width: 23px; height: 23px;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-        </button>
-    </div>
+<div id="globalBottomNav" class="bottom-nav glass-panel" style="display: none; justify-content: space-evenly; align-items: center; width: 100%; box-sizing: border-box; z-index: 99999; height: 60px; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border-top: 1px solid rgba(0,0,0,0.05);">
+
+    <!-- 1. INICIO (Casita minimalista de Google) -->
+    <button class="nav-item active" style="flex: 1; display: flex; justify-content: center; align-items: center; background: transparent; border: none; height: 100%; cursor: pointer;"
+    onclick="document.querySelectorAll('#globalBottomNav .nav-item').forEach(b=>b.classList.remove('active')); this.classList.add('active'); window.switchPanel('dashboardPanel');">
+        <span class="material-symbols-rounded" style="font-size: 28px;">home</span>
+    </button>
+
+    <!-- 2. EXPLORAR (Brújula minimalista) -->
+    <button class="nav-item" style="flex: 1; display: flex; justify-content: center; align-items: center; background: transparent; border: none; height: 100%; cursor: pointer;"
+    onclick="document.querySelectorAll('#globalBottomNav .nav-item').forEach(b=>b.classList.remove('active')); this.classList.add('active'); window.switchPanel('explorePanel'); window.initExploreTab();">
+        <span class="material-symbols-rounded" style="font-size: 28px;">explore</span>
+    </button>
+
+    <!-- 3. BÚSQUEDA / LUPA -->
+    <button class="nav-item" style="flex: 1; display: flex; justify-content: center; align-items: center; background: transparent; border: none; height: 100%; cursor: pointer;"
+    onclick="document.querySelectorAll('#globalBottomNav .nav-item').forEach(b=>b.classList.remove('active')); this.classList.add('active'); window.switchPanel('searchPanel');">
+        <span class="material-symbols-rounded" style="font-size: 32px;">search</span>
+    </button>
+
+    <!-- 4. NOTIFICACIONES -->
+    <button class="nav-item" style="flex: 1; display: flex; justify-content: center; align-items: center; background: transparent; border: none; height: 100%; cursor: pointer;"
+    onclick="document.querySelectorAll('#globalBottomNav .nav-item').forEach(b=>b.classList.remove('active')); this.classList.add('active'); window.switchPanel('notificationsPanel');">
+        <span class="material-symbols-rounded" style="font-size: 28px;">notifications</span>
+    </button>
+
+    <!-- 5. PERFIL -->
+    <button class="nav-item" style="flex: 1; display: flex; justify-content: center; align-items: center; background: transparent; border: none; height: 100%; cursor: pointer;"
+    onclick="document.querySelectorAll('#globalBottomNav .nav-item').forEach(b=>b.classList.remove('active')); this.classList.add('active'); window.switchPanel('profilePanel'); if(window.pintarColeccionPerfil) window.pintarColeccionPerfil();">
+        <span class="material-symbols-rounded" style="font-size: 28px;">person</span>
+    </button>
+</div>
 
 <!-- POPUP DE LOGROS / VITRINA (Árbol de Progresión Oculto) -->
     <div id="achievementsPopupOverlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 999999; display: none; justify-content: center; align-items: center; opacity: 0; transition: opacity 0.3s; padding: 20px; box-sizing: border-box;">
