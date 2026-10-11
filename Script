@@ -2893,50 +2893,92 @@ window.filtrarCalendarioAvanzado = async function(tipo) {
         if (gridError) gridError.innerHTML = '<div style="grid-column: span 3; text-align:center; color:red; padding: 30px 0;">Error de conexión con IGDB.</div>';
     }
 };
-// 3. CARGAR "PARA TI" (Muro infinito)
-window.cargarParaTi = async function() {
+// 3. CARGAR "PARA TI" (Recomendaciones Personalizadas por Colección + Top 3)
+window.cargarParaTi = async function(forzarRecarga = false) {
     if (window.isFetchingExplore) return;
-    window.isFetchingExplore = true;
-    
+
     const contenedor = document.getElementById('exploreForYouGrid');
     const loading = document.getElementById('exploreLoadingMore');
     if (!contenedor || !loading) return;
-    
-    loading.style.display = 'block';
+
+    if (forzarRecarga) {
+        window.exploreRecOffset = 0;
+        contenedor.innerHTML = "";
+    }
+
+    // CONTROL DE TEXTOS: Si es la primera carga, ocultamos el texto de scroll infinito
+    if (window.exploreRecOffset === 0) {
+        loading.style.display = 'none'; 
+        contenedor.innerHTML = `<div style="grid-column: span 3; text-align:center; color:#888; padding: 30px 20px; font-family: 'Outfit', sans-serif;">Analizando tus gustos...</div>`;
+        await new Promise(resolve => setTimeout(resolve, 2000));
+    } else {
+        // Solo mostramos "Cargando más joyas..." cuando haces scroll hacia abajo
+        loading.style.display = 'block';
+    }
+
+    window.isFetchingExplore = true;
 
     try {
         const separador = APPS_SCRIPT_URL.includes('?') ? '&' : '?';
-        const urlFinal = `${APPS_SCRIPT_URL}${separador}action=popular&offset=${window.exploreRecOffset}&t=${Date.now()}`;
         
-        // Usamos fetch estándar aquí también
+        let favIds = [];
+        if (window.misFavoritos && window.misFavoritos.length > 0) {
+            favIds = window.misFavoritos.filter(id => id && id !== "null" && id !== "undefined");
+        }
+
+        let colIds = [];
+        if (window.miColeccionActiva) {
+            const todosIds = Object.keys(window.miColeccionActiva).filter(id => id && id !== "null" && id !== "undefined");
+            const restoIds = todosIds.filter(id => !favIds.includes(id));
+            colIds = restoIds.sort(() => 0.5 - Math.random()).slice(0, 5);
+        }
+
+        let urlFinal = "";
+        if (favIds.length > 0 || colIds.length > 0) {
+            urlFinal = `${APPS_SCRIPT_URL}${separador}action=recommended&favs=${favIds.join(',')}&col=${colIds.join(',')}&offset=${window.exploreRecOffset}`;
+        } else {
+            urlFinal = `${APPS_SCRIPT_URL}${separador}action=popular&offset=${window.exploreRecOffset}`;
+        }
+
         const respuesta = await fetch(urlFinal);
         const json = await respuesta.json();
-        
-        if (json && json.data && json.data.length > 0) {
-            let html = "";
-            json.data.forEach((juego, index) => {
-                if(!window.juegosCargados) window.juegosCargados = {};
-                window.juegosCargados[juego.id] = juego;
+        const juegos = Array.isArray(json) ? json : (json?.data || []);
 
-                const coverId = (juego.cover && juego.cover.image_id) ? juego.cover.image_id : 'null';
-                const caratulaUrl = coverId !== 'null' ? `https://images.igdb.com/igdb/image/upload/t_cover_big/${coverId}.jpg` : 'https://via.placeholder.com/90x120';
-                const safeTitle = juego.name ? juego.name.replace(/'/g, "\\'").replace(/"/g, "&quot;") : "Juego";
-                
-                html += `
-                    <div class="animate-fade-up" style="cursor: pointer; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 8px; animation-delay: ${(index % 10) * 0.05}s;" onclick="if(window.openGameDetail) window.openGameDetail('${juego.id}', 'not_owned')">
-                        <img src="${caratulaUrl}" style="width: 100%; aspect-ratio: 3/4; object-fit: cover; border-radius: 12px; box-shadow: 0 6px 15px rgba(0,0,0,0.1); transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'">
-                        <span style="font-family: 'Outfit', sans-serif; font-size: 0.8rem; font-weight: 700; color: #222; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.2;">${safeTitle}</span>
-                    </div>
-                `;
-            });
-            
-            contenedor.innerHTML += html; 
-            window.exploreRecOffset += 20; 
+        if (juegos.length === 0 && window.exploreRecOffset === 0) {
+            contenedor.innerHTML = `<div style="grid-column: span 3; text-align:center; color:#888;">Sigue añadiendo juegos a tu colección para recibir recomendaciones mejores.</div>`;
+            window.isFetchingExplore = false;
+            return;
         }
+
+        let html = "";
+        juegos.forEach((juego, index) => {
+            if(!window.juegosCargados) window.juegosCargados = {};
+            window.juegosCargados[juego.id] = juego; // Ahora este objeto contiene TODAS las imágenes
+
+            const coverId = (juego.cover && juego.cover.image_id) ? juego.cover.image_id : 'null';
+            const caratulaUrl = coverId !== 'null' ? `https://images.igdb.com/igdb/image/upload/t_cover_big/${coverId}.jpg` : 'https://via.placeholder.com/90x120';
+            const safeTitle = juego.name ? juego.name.replace(/'/g, "\\'").replace(/"/g, "&quot;") : "Juego";
+            
+            html += `
+                <div class="animate-fade-up" style="cursor: pointer; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 8px; animation-delay: ${(index % 10) * 0.05}s;" onclick="if(window.openGameDetail) window.openGameDetail('${juego.id}', 'not_owned')">
+                    <img src="${caratulaUrl}" style="width: 100%; aspect-ratio: 3/4; object-fit: cover; border-radius: 12px; box-shadow: 0 8px 15px rgba(0,0,0,0.1); transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'">
+                    <span style="font-family: 'Outfit', sans-serif; font-size: 0.8rem; font-weight: 700; color: #222; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.2;">${safeTitle}</span>
+                </div>
+            `;
+        });
+
+        if (window.exploreRecOffset === 0) {
+            contenedor.innerHTML = html;
+        } else {
+            contenedor.innerHTML += html;
+        }
+        
+        window.exploreRecOffset += 18;
+
     } catch (error) {
         console.error("Error cargando Para Ti:", error);
     }
-    
+
     loading.style.display = 'none';
     window.isFetchingExplore = false;
 };
