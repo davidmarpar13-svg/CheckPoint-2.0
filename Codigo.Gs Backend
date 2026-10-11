@@ -11,89 +11,128 @@ var TWITCH_CLIENT_SECRET = "zgi246d7qb6qpzkjppahrg4b8xqgnq";
   var query = e.parameter.query;
   var offset = parseInt(e.parameter.offset || '0', 10);
 
-  // --- PRÓXIMOS LANZAMIENTOS Y CALENDARIO MENSUAL ---
-if (action === 'upcoming') {
-  try {
-    var timestampInicio;
-    var timestampFin;
+// --- PRÓXIMOS LANZAMIENTOS (Límite Máximo de IGDB) ---
+  if (action === 'upcoming') {
+    try {
+      var timestampInicio;
+      var timestampFin;
 
-    if (e.parameter.mes && e.parameter.anio) {
-      var mes = parseInt(e.parameter.mes, 10);
-      var anio = parseInt(e.parameter.anio, 10);
-      var fechaInicio = new Date(anio, mes - 1, 1);
-      timestampInicio = Math.floor(fechaInicio.getTime() / 1000);
-      var fechaFin = new Date(anio, mes, 0, 23, 59, 59);
-      timestampFin = Math.floor(fechaFin.getTime() / 1000);
-    } else {
-      timestampInicio = Math.floor(Date.now() / 1000);
-      var fechaFutura = new Date();
-      fechaFutura.setMonth(fechaFutura.getMonth() + 6);
-      timestampFin = Math.floor(fechaFutura.getTime() / 1000);
-    }
+      // 1. Detectar si piden un mes/año en concreto desde el calendario
+      if (e.parameter.mes && e.parameter.anio) {
+        var mes = parseInt(e.parameter.mes, 10);
+        var anio = parseInt(e.parameter.anio, 10);
+        var fechaInicio = new Date(anio, mes - 1, 1);
+        timestampInicio = Math.floor(fechaInicio.getTime() / 1000);
+        var fechaFin = new Date(anio, mes, 0, 23, 59, 59);
+        timestampFin = Math.floor(fechaFin.getTime() / 1000);
+      } else {
+        // Por defecto: desde hoy hasta dentro de 6 meses
+        timestampInicio = Math.floor(Date.now() / 1000);
+        var fechaFutura = new Date();
+        fechaFutura.setMonth(fechaFutura.getMonth() + 6);
+        timestampFin = Math.floor(fechaFutura.getTime() / 1000);
+      }
 
-    var filterPlataforma = "";
-    if (e.parameter.plataforma) {
-      filterPlataforma = " & platforms = (" + e.parameter.plataforma + ")";
-    }
-    
-    var filterGenero = "";
-    if (e.parameter.genero) {
-      filterGenero = " & genres = (" + e.parameter.genero + ")";
-    }
-
-    // AÑADIMOS artworks.image_id y screenshots.image_id A LA PETICIÓN
-    var queryUpcoming = 'fields id, name, summary, cover.image_id, artworks.image_id, screenshots.image_id, platforms.name, genres.name, first_release_date, involved_companies.developer, involved_companies.company.name; ' +
-                        'where first_release_date >= ' + timestampInicio + 
-                        ' & first_release_date <= ' + timestampFin + 
-                        ' & cover != null & category != 5' + 
-                        filterPlataforma + filterGenero + '; ' +
-                        'sort first_release_date asc; ' +
-                        'limit 500;';
-
-    var optionsUpcoming = {
-      method: 'post',
-      headers: {
-        'Client-ID': TWITCH_CLIENT_ID,
-        'Authorization': 'Bearer ' + getIGDBTokenFast(),
-        'Accept': 'application/json'
-      },
-      payload: queryUpcoming,
-      muteHttpExceptions: true
-    };
-
-    var url = 'https://api.igdb.com/v4/games';
-    var responseUpcoming = UrlFetchApp.fetch(url, optionsUpcoming);
-
-    if (responseUpcoming.getResponseCode() === 401) {
-      resetIGDBTokenFast();
-      optionsUpcoming.headers['Authorization'] = 'Bearer ' + getIGDBTokenFast();
-      responseUpcoming = UrlFetchApp.fetch(url, optionsUpcoming);
-    }
-
-    var status = responseUpcoming.getResponseCode();
-    var contenido = responseUpcoming.getContentText();
-
-    if (status === 200) {
-      var results = JSON.parse(contenido);
+      // 2. Inyectar filtros de plataforma y género si existen
+      var filterPlataforma = "";
+      if (e.parameter.plataforma) {
+        filterPlataforma = " & platforms = (" + e.parameter.plataforma + ")";
+      }
       
-      // AQUÍ ESTABA EL OTRO FALLO: Modificamos el array original sin borrar los demás datos
-      results.forEach(function(g) {
-        if (g.cover && g.cover.image_id) {
-          g.cover.url = 'https://images.igdb.com/igdb/image/upload/t_cover_big/' + g.cover.image_id + '.jpg';
-        }
-      });
+      var filterGenero = "";
+      if (e.parameter.genero) {
+        filterGenero = " & genres = (" + e.parameter.genero + ")";
+      }
 
-      return ContentService.createTextOutput(JSON.stringify(results))
-                           .setMimeType(ContentService.MimeType.JSON);
-    } else {
-      return ContentService.createTextOutput(JSON.stringify({ success: false, error: 'IGDB HTTP ' + status, detalle: contenido }))
-                           .setMimeType(ContentService.MimeType.JSON);
+      // 3. Petición completa con TODOS los campos multimedia e información
+      var queryUpcoming = 'fields id, name, summary, cover.image_id, artworks.image_id, screenshots.image_id, platforms.name, genres.name, first_release_date, involved_companies.developer, involved_companies.company.name; ' +
+                          'where first_release_date >= ' + timestampInicio + 
+                          ' & first_release_date <= ' + timestampFin + 
+                          ' & cover != null & category != 5' + 
+                          filterPlataforma + filterGenero + '; ' +
+                          'sort first_release_date asc; ' +
+                          'limit 500;';
+
+      var optionsUpcoming = {
+        method: 'post',
+        headers: {
+          'Client-ID': TWITCH_CLIENT_ID,
+          'Authorization': 'Bearer ' + getIGDBTokenFast(),
+          'Accept': 'application/json'
+        },
+        payload: queryUpcoming,
+        muteHttpExceptions: true
+      };
+
+      var url = 'https://api.igdb.com/v4/games';
+      var responseUpcoming = UrlFetchApp.fetch(url, optionsUpcoming);
+
+      // 4. Sistema anti-cuelgues (Refrescar token si da 401)
+      if (responseUpcoming.getResponseCode() === 401) {
+        resetIGDBTokenFast();
+        optionsUpcoming.headers['Authorization'] = 'Bearer ' + getIGDBTokenFast();
+        responseUpcoming = UrlFetchApp.fetch(url, optionsUpcoming);
+      }
+
+      var status = responseUpcoming.getResponseCode();
+      var contenido = responseUpcoming.getContentText();
+
+      if (status === 200) {
+        // Devolvemos la información directa, tu HTML ya sabe procesarla sola
+        return ContentService.createTextOutput(contenido).setMimeType(ContentService.MimeType.JSON);
+      } else {
+        return ContentService.createTextOutput(JSON.stringify({ success: false, error: 'IGDB HTTP ' + status, detalle: contenido })).setMimeType(ContentService.MimeType.JSON);
+      }
+    } catch (error) {
+      return ContentService.createTextOutput(JSON.stringify({ success: false, error: String(error) })).setMimeType(ContentService.MimeType.JSON);
     }
-  } catch (error) {
-    return ContentService.createTextOutput(JSON.stringify({ success: false, error: String(error) }))
-                           .setMimeType(ContentService.MimeType.JSON);
   }
-}
+  
+  // --- RECOMENDACIONES GLOBALES (COLECCIÓN + FAVORITOS) ---
+  else if (action === 'recommended') {
+      try {
+          var favs = (e.parameter.favs || "").replace(/null/g, "").split(",").filter(Boolean);
+          var col = (e.parameter.col || "").replace(/null/g, "").split(",").filter(Boolean);
+          var allIds = favs.concat(col);
+          
+          if (allIds.length === 0) throw new Error("Sin juegos");
+
+          var querySim = "fields similar_games; where id = (" + allIds.join(',') + "); limit 20;";
+          var optSim = { method: 'post', headers: { 'Client-ID': TWITCH_CLIENT_ID, 'Authorization': 'Bearer ' + getIGDBTokenFast(), 'Accept': 'application/json' }, payload: querySim, muteHttpExceptions: true };
+          var resSim = UrlFetchApp.fetch('https://api.igdb.com/v4/games', optSim);
+          var dataSim = JSON.parse(resSim.getContentText());
+          
+          var simIds = [];
+          if (Array.isArray(dataSim)) {
+              dataSim.forEach(function(g) {
+                  if (g.similar_games) simIds = simIds.concat(g.similar_games);
+              });
+          }
+          
+          simIds = simIds.filter(function(v, i, a) { return a.indexOf(v) === i; });
+          simIds = simIds.filter(function(v) { return allIds.indexOf(String(v)) === -1; });
+          
+          if (simIds.length === 0) throw new Error("Sin similares");
+          simIds = simIds.slice(0, 40); 
+          
+          var offset = e.parameter.offset || '0';
+          // AQUÍ ESTÁ LA MAGIA: Le pedimos a IGDB las capturas, artworks, sinopsis, géneros y desarrolladores
+          var camposCompletos = "fields id, name, summary, storyline, cover.image_id, artworks.image_id, screenshots.image_id, platforms.name, genres.name, first_release_date, involved_companies.developer, involved_companies.company.name;";
+          var queryRecs = camposCompletos + " where id = (" + simIds.join(',') + ") & cover != null; sort popularity desc; limit 18; offset " + offset + ";";
+          var optRecs = { method: 'post', headers: { 'Client-ID': TWITCH_CLIENT_ID, 'Authorization': 'Bearer ' + getIGDBTokenFast(), 'Accept': 'application/json' }, payload: queryRecs, muteHttpExceptions: true };
+          var resRecs = UrlFetchApp.fetch('https://api.igdb.com/v4/games', optRecs);
+          return ContentService.createTextOutput(resRecs.getContentText()).setMimeType(ContentService.MimeType.JSON);
+          
+      } catch (error) {
+          // PLAN B: También le pedimos los gráficos completos si carga los populares por defecto
+          var offsetPop = e.parameter.offset || '0';
+          var camposCompletosPop = "fields id, name, summary, storyline, cover.image_id, artworks.image_id, screenshots.image_id, platforms.name, genres.name, first_release_date, involved_companies.developer, involved_companies.company.name;";
+          var queryPop = camposCompletosPop + " where cover != null & category = 0; sort popularity desc; limit 18; offset " + offsetPop + ";";
+          var optPop = { method: 'post', headers: { 'Client-ID': TWITCH_CLIENT_ID, 'Authorization': 'Bearer ' + getIGDBTokenFast(), 'Accept': 'application/json' }, payload: queryPop, muteHttpExceptions: true };
+          var resPop = UrlFetchApp.fetch('https://api.igdb.com/v4/games', optPop);
+          return ContentService.createTextOutput(resPop.getContentText()).setMimeType(ContentService.MimeType.JSON);
+      }
+  }
 
   // --- SECCIÓN ORIGINAL: BÚSQUEDA Y PORTADA ---
   // Si el usuario escribe en el buscador
@@ -402,6 +441,8 @@ var gamesResponse = UrlFetchApp.fetch(
       .setMimeType(ContentService.MimeType.JSON);
   }
 }
+
+
 
 // =======================================================
 // SISTEMA DE CACHÉ DE TOKENS (Velocidad Extrema)
