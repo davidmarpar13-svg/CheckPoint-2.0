@@ -155,7 +155,7 @@
 
         <!-- SECCIÓN: POPULARES DEL MES (GRID + DESPLEGABLE) -->
         <div class="section-header" style="margin-top: 25px; align-items: center; display: flex; width: 100%; overflow: hidden;">
-            <h2 class="section-title" id="sectionTitlePopular" style="white-space: nowrap; flex-shrink: 0; transition: all 0.3s ease;">Populares del mes</h2>
+            <h2 class="section-title" id="sectionTitlePopular" style="white-space: nowrap; flex-shrink: 0; transition: all 0.3s ease;">Estrenos del mes</h2>
             
             <div style="display: flex; flex-grow: 1; margin-left: 0px; overflow: hidden; position: relative; align-items: center; height: 35px;">
                 
