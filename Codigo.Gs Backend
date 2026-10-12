@@ -243,58 +243,104 @@ if (action === 'popular') {
         platFilter = " & platforms = (130, 339, 471, 508)";
     }
 
-    // --- VENTANA EXACTA DE LOS ÚLTIMOS 30 DÍAS ---
-    var offset = e.parameter.offset || '0';
-    
-    // Momento exacto de hoy y exactamente 30 días (30 * 24 * 60 * 60 segundos) hacia atrás
     var tsEnd = Math.floor(Date.now() / 1000);
     var tsStart = tsEnd - (30 * 24 * 60 * 60);
 
-    // Ampliamos el 'limit' a 36 para que muestre muchos más juegos de golpe y no parezca que faltan
-    var gamesBody = 'fields id, name, summary, storyline, cover.image_id, cover.url, artworks.image_id, screenshots.image_id, platforms.id, platforms.name, platforms.abbreviation, genres.name, first_release_date, involved_companies.developer, involved_companies.company.name; where first_release_date >= ' + tsStart + ' & first_release_date <= ' + tsEnd + ' & cover != null' + platFilter + '; sort first_release_date desc; limit 100; offset ' + offset + ';';
+    var todosLosJuegosValidos = [];
+    var igdbOffset = 0;
+    var maxPeticiones = 10; // Tope de seguridad: barrerá hasta 5000 juegos del último mes
 
-    var gamesResponse = UrlFetchApp.fetch(
-        'https://api.igdb.com/v4/games',
-        {
-            method: 'post',
-            headers: {
-                'Client-ID': TWITCH_CLIENT_ID,
-                'Authorization': 'Bearer ' + getIGDBTokenFast(),
-                'Accept': 'application/json'
-            },
-            payload: gamesBody,
-            muteHttpExceptions: true
+    // BUCLE: Pedimos a IGDB de 500 en 500 hasta cubrir los 30 días completos
+    while (maxPeticiones > 0) {
+        var gamesBody = 'fields id, name, summary, storyline, cover.image_id, cover.url, artworks.image_id, screenshots.image_id, platforms.id, platforms.name, platforms.abbreviation, genres.name, first_release_date, involved_companies.developer, involved_companies.company.name; where first_release_date >= ' + tsStart + ' & first_release_date <= ' + tsEnd + ' & cover != null & screenshots != null' + platFilter + '; sort first_release_date desc; limit 500; offset ' + igdbOffset + ';';
+
+        var gamesResponse = UrlFetchApp.fetch(
+            'https://api.igdb.com/v4/games',
+            {
+                method: 'post',
+                headers: {
+                    'Client-ID': TWITCH_CLIENT_ID,
+                    'Authorization': 'Bearer ' + getIGDBTokenFast(),
+                    'Accept': 'application/json'
+                },
+                payload: gamesBody,
+                muteHttpExceptions: true
+            }
+        );
+
+        if (gamesResponse.getResponseCode() !== 200) {
+            // Si falla y ya tenemos juegos, rompemos el bucle y enviamos lo que tenemos
+            if (todosLosJuegosValidos.length > 0) break;
+            
+            return ContentService.createTextOutput(JSON.stringify({
+                success: false,
+                error: 'Error de IGDB (Código ' + gamesResponse.getResponseCode() + ')'
+            })).setMimeType(ContentService.MimeType.JSON);
         }
-    );
 
-    var statusCode = gamesResponse.getResponseCode();
-    var gamesText = gamesResponse.getContentText();
+        var games;
+        try {
+            games = JSON.parse(gamesResponse.getContentText());
+        } catch (err) {
+            break;
+        }
 
-    if (statusCode !== 200) {
-        return ContentService
-            .createTextOutput(JSON.stringify({
-                success: false,
-                error: 'Error de IGDB (Código ' + statusCode + ')',
-                details: gamesText
-            }))
-            .setMimeType(ContentService.MimeType.JSON);
+        // Si IGDB devuelve un array vacío, hemos llegado al final de los 30 días
+        if (games.length === 0) {
+            break;
+        }
+
+        // Aplicamos nuestro filtro estricto al bloque de 500 juegos actual
+        var juegosFiltrados = games.filter(function(juego) {
+            if (!juego.id || !juego.name || !juego.cover) return false;
+            
+            var tieneDev = false;
+            if (juego.involved_companies && Array.isArray(juego.involved_companies)) {
+                tieneDev = juego.involved_companies.some(function(ic) {
+                    return ic.developer === true;
+                });
+            }
+            if (!tieneDev) return false;
+
+            var tieneScreenshotsValidos = juego.screenshots && Array.isArray(juego.screenshots) && juego.screenshots.some(function(s) {
+                return s && s.image_id;
+            });
+            if (!tieneScreenshotsValidos) return false;
+
+            if (juego.genres && Array.isArray(juego.genres)) {
+                var esIndie = juego.genres.some(function(g) {
+                    return g.name && g.name.toLowerCase().indexOf('indie') !== -1;
+                });
+                if (esIndie) return false;
+            }
+
+            if (juego.summary) {
+                var descripcion = juego.summary.toLowerCase();
+                var palabrasProhibidas = ['accesorio de', 'avatar pack', 'skin pack', 'soundtrack pack'];
+                var contieneBasura = palabrasProhibidas.some(function(palabra) {
+                    return descripcion.indexOf(palabra) !== -1;
+                });
+                if (contieneBasura) return false;
+            }
+
+            return true;
+        });
+
+        // Sumamos los juegos que han sobrevivido al filtro a nuestra lista maestra
+        todosLosJuegosValidos = todosLosJuegosValidos.concat(juegosFiltrados);
+
+        // Si la API nos ha devuelto menos de 500 juegos, significa que ya no hay más datos en este mes
+        if (games.length < 500) {
+            break;
+        }
+
+        igdbOffset += 500;
+        maxPeticiones--;
     }
 
-    var games;
-    try {
-        games = JSON.parse(gamesText);
-    } catch (err) {
-        return ContentService
-            .createTextOutput(JSON.stringify({
-                success: false,
-                error: 'Error parseando el JSON de los juegos',
-                details: gamesText
-            }))
-            .setMimeType(ContentService.MimeType.JSON);
-    }
-
+    // Devolvemos a tu página web el mes completo ya procesado
     return ContentService
-        .createTextOutput(JSON.stringify({ success: true, data: games || [] }))
+        .createTextOutput(JSON.stringify({ success: true, data: todosLosJuegosValidos }))
         .setMimeType(ContentService.MimeType.JSON);
 }
 
