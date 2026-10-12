@@ -485,7 +485,7 @@ document.addEventListener('click', (e) => {
             }
         });
                     grid.innerHTML += nuevosJuegosHTML;
-                    window.popularOffset += 30; 
+                    window.popularOffset += 500; // O el nombre de la variable que uses para paginar
                 } else if (window.popularOffset === 0) {
                     grid.innerHTML = '<p style="color:#888; text-align:center; width:100%; margin-top:20px;">No hay juegos en esta plataforma.</p>';
                 }
@@ -2235,9 +2235,6 @@ window.closeGameDetail = function() {
 };
 
 // ==========================================
-// VISOR DE IMÁGENES A PANTALLA COMPLETA
-// ==========================================
-// ==========================================
 // VISOR DE IMÁGENES A PANTALLA COMPLETA (CON ZOOM Y ARRASTRE TÁCTIL)
 // ==========================================
 window.abrirVisorImagen = function(url) {
@@ -2257,6 +2254,9 @@ window.abrirVisorImagen = function(url) {
         imagenVisor.style.transform = `translate(0px, 0px) scale(1)`;
         
         visor.style.display = 'flex';
+        // Ocultamos el botón de atrás exacto de la ficha del juego
+const botonAtrasGeneral = document.querySelector('.btn-back-game');
+if (botonAtrasGeneral) botonAtrasGeneral.style.display = 'none';
         setTimeout(() => { visor.style.opacity = '1'; }, 10);
         
         // Iniciar sensores táctiles solo la primera vez que se abre
@@ -2281,6 +2281,9 @@ window.cerrarVisorImagen = function(e) {
         visor.style.opacity = '0';
         setTimeout(() => {
             visor.style.display = 'none';
+            // Restauramos el botón con su "flex" original
+const botonAtrasGeneral = document.querySelector('.btn-back-game');
+if (botonAtrasGeneral) botonAtrasGeneral.style.display = 'flex';
             if (imagenVisor) imagenVisor.src = ''; 
         }, 300); 
     }
@@ -2545,27 +2548,38 @@ if (!Array.isArray(favoritos)) return; // Evita que explote si algo va mal
 
     for (let i = 0; i < 3; i++) {
         const gameId = favoritos[i];
-        
+        let posicion = i + 1; // Para que sea 1, 2 o 3
+
+        // Clases e iconos para las insignias animadas
+        let claseInsignia = posicion === 1 ? 'badge-gold' : (posicion === 2 ? 'badge-silver' : 'badge-bronze');
+        let iconoInsignia = posicion === 1 ? 'local_fire_department' : 'star';
+
         if (gameId && window.miColeccionActiva && window.miColeccionActiva[gameId]) {
             const juego = window.miColeccionActiva[gameId];
-            const caratulaUrl = juego.caratula ? `https://images.igdb.com/igdb/image/upload/t_cover_big/${juego.caratula}.jpg` : 'https://via.placeholder.com/90x120/f3f4f6/111111?text=Sin+Portada';
+            const caratulaUrl = juego.caratula ? `https://images.igdb.com/igdb/image/upload/t_cover_big/${juego.caratula}.jpg` : 'https://via.placeholder.com/90x128/f3f4f6/111111?text=Sin+Portada';
             
             html += `
-                <div style="position: relative; aspect-ratio: 3/4; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.15); cursor: pointer;" onclick="window.abrirSelectorFavorito(${i})">
-                    <img src="${caratulaUrl}" style="width: 100%; height: 100%; object-fit: cover; display: block;" alt="${juego.nombre}">
-                    <div style="position: absolute; bottom: 0; left: 0; width: 100%; background: linear-gradient(transparent, rgba(0,0,0,0.9)); padding: 15px 5px 5px; color: #fbbf24; text-align: center; font-family: 'Cinzel', serif; font-size: 1.1rem; font-weight: bold;">#${i + 1}</div>
-                    <div onclick="event.stopPropagation(); window.quitarFavorito(${i})" style="position: absolute; top: 5px; right: 5px; background: rgba(0,0,0,0.7); color: white; border-radius: 50%; width: 22px; height: 22px; display: flex; justify-content: center; align-items: center; font-size: 0.7rem; cursor: pointer; backdrop-filter: blur(2px);">✕</div>
+            <div class="fav-card-container">
+                <!-- 1. IMAGEN (Al pulsar lleva a la ficha del juego en el modal/visor) -->
+                <img src="${caratulaUrl}" class="fav-card-image" onclick="window.abrirDetalleJuego(${juego.id})" alt="${juego.nombre}">
+            
+                <!-- 2. BOTÓN DE CAMBIAR (Abre el buscador de favoritos para ese hueco) -->
+                <div class="fav-edit-btn" onclick="window.abrirSelectorFavorito(${i})" title="Cambiar juego favorito">
+                    <span class="material-symbols-rounded">swap_horiz</span>
                 </div>
-            `;
+            
+                <!-- 3. INSIGNIA ANIMADA (Oro, Plata o Bronce) -->
+                <div class="fav-badge ${claseInsignia}">
+                    <span class="material-symbols-rounded">${iconoInsignia}</span> TOP ${posicion}
+                </div>
+            </div>`;
         } else {
-            // DISEÑO NUEVO: Fondo blanco puro, borde gris claro y SVG de estrella dorada
+            // Hueco vacío
             html += `
-                <div onclick="window.abrirSelectorFavorito(${i})" style="cursor: pointer; aspect-ratio: 3/4; border: 2px dashed #d1d5db; border-radius: 12px; display: flex; flex-direction: column; justify-content: center; align-items: center; background: #ffffff; transition: all 0.2s;" onmouseover="this.style.background='#f9fafb'; this.style.borderColor='#9ca3af'; this.style.transform='scale(1.02)';" onmouseout="this.style.background='#ffffff'; this.style.borderColor='#d1d5db'; this.style.transform='scale(1)';">
-                    <svg style="width: 26px; height: 26px; fill: #d97706; margin-bottom: 6px; opacity: 0.9;" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
-                    <span style="font-size: 1.1rem; font-family: 'Cinzel', serif; font-weight: 800; margin-bottom: 2px; color: #111;">TOP ${i + 1}</span>
-                    <span style="font-size: 0.65rem; font-family: 'Outfit', sans-serif; font-weight: 700; color: #9ca3af; text-transform: uppercase;">Añadir</span>
-                </div>
-            `;
+            <div onclick="window.abrirSelectorFavorito(${i})" style="cursor: pointer; aspect-ratio: 3/4; border: 2px dashed #d1d5db; border-radius: 12px; display: flex; flex-direction: column; justify-content: center; align-items: center; background: #ffffff; transition: transform 0.2s;" onmouseover="this.style.background='#f9fafb'; this.style.transform='scale(1.02)'" onmouseout="this.style.background='#ffffff'; this.style.transform='scale(1)'">
+                <span class="material-symbols-rounded" style="font-size: 2rem; color: #9ca3af; margin-bottom: 8px;">add</span>
+                <span style="font-size: 0.85rem; font-family: 'Outfit', sans-serif; font-weight: 700; color: #9ca3af;">TOP ${posicion}</span>
+            </div>`;
         }
     }
     container.innerHTML = html;
