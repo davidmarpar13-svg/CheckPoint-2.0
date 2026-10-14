@@ -261,14 +261,14 @@
 <div id="profilePanel" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-bottom: 100px; background-color: #fdfdfd; box-sizing: border-box; z-index: 500;">
     
     <!-- CONTENEDOR DEL BANNER -->
-    <div id="profileBanner" style="position: relative; width: 100%; height: 210px; background: url('https://images.unsplash.com/photo-1605901309584-818e25960b8f?q=80&w=1000') center/cover no-repeat; border-bottom-left-radius: 20px; border-bottom-right-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); z-index: 10;">
+    <div id="profileBanner" style="position: relative; width: 100%; height: 216px; background: url('https://images.unsplash.com/photo-1605901309584-818e25960a8f?q=80&w=1000') center/cover no-repeat; border-radius: 0px !important; box-shadow: 0 4px 15px rgba(0,0,0,0.1); z-index: 10;">
         
         <!-- Sombra superior para que los iconos destaquen -->
-        <div style="position: absolute; top: 0; left: 0; width: 100%; height: 120px; background: linear-gradient(to bottom, rgba(0,0,0,0.6), transparent); border-top-left-radius: 20px; border-top-right-radius: 20px;"></div>
-
+        <div style="position: absolute; top: 0; left: 0; width: 100%; height: 120px; background: linear-gradient(to bottom, rgba(0,0,0,0.6), transparent); border-radius: 0px !important;"></div>
+        
         <!-- CAPA DE EDICIÓN DEL BANNER -->
-        <div id="bannerEditOverlay" class="hidden" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); border-bottom-left-radius: 20px; border-bottom-right-radius: 20px; display: flex; justify-content: center; align-items: center; cursor: pointer; z-index: 5;">
-            <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" style="width: 40px; height: 40px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+        <div id="bannerEditOverlay" class="hidden" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); border-radius: 0px !important; display: flex; justify-content: center; align-items: center; cursor: pointer; z-index: 5;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" style="width: 40px; height: 40px; margin-bottom: 10px; opacity: 0.8;"><circle cx="12" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
             <input type="file" id="uploadBannerInput" accept="image/*" style="display: none;">
         </div>
 
@@ -300,11 +300,11 @@
         <!-- BOTONES SUPERIORES: Editar Perfil y Tarjeta de Jugador (Alineados a la derecha) -->
         <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: -10px; margin-bottom: 15px; position: relative; z-index: 20;">
             
-            <!-- BOTÓN EDITAR PERFIL -->
-            <button id="btnToggleEditMode" style="display: flex; align-items: center; gap: 6px; background: rgba(0,0,0,0.04); color: #111; border: 1px solid rgba(0,0,0,0.1); padding: 6px 16px; border-radius: 8px; font-family: 'Outfit', sans-serif; font-size: 0.75rem; font-weight: 700; cursor: pointer; transition: background 0.2s; outline: none;">
-                <svg id="iconEditToggle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 14px; height: 14px;"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
-                <span style="margin-top: 1px;">Editar Perfil</span>
-            </button>
+            <!-- BOTÓN EDITAR PERFIL ORIGINAL (Neutro sin verde) -->
+<button type="button" id="btnToggleEditMode" style="display: flex; align-items: center; gap: 6px; background: rgba(0, 0, 0, 0.04); color: #111111; border: 1px solid rgba(0, 0, 0, 0.1); padding: 6px 16px; border-radius: 8px; font-family: 'Outfit', sans-serif; font-size: 0.75rem; font-weight: 700; cursor: pointer; transition: background 0.2s; outline: none;">
+    <span class="material-symbols-rounded" id="iconEditToggle" style="font-size: 16px; color: #111111;">edit</span>
+    <span style="margin-top: 1px; color: #111111;">Editar Perfil</span>
+</button>
 
             <!-- TARJETA DE JUGADOR -->
             <button id="btnPlayerCard" onclick="showPlayerCardPopup()" style="background: rgba(0,0,0,0.04); color: #111; border: 1px solid rgba(0,0,0,0.1); padding: 6px 16px; border-radius: 8px; font-family: 'Outfit', sans-serif; font-size: 0.75rem; font-weight: 700; cursor: pointer; transition: background 0.2s; outline: none;">
@@ -452,7 +452,7 @@
             
         </div>
             
-            <div style="display: flex; justify-content: space-between; margin-top: 15px; border-bottom: 1px solid rgba(0,0,0,0.1);">
+            <div style="display: flex; justify-content: space-between; margin-top: 15px;">
     <button id="btnTabColeccion" onclick="toggleProfileTab('coleccion', this); window.pintarColeccionPerfil();" class="stat-btn active-tab" style="flex: 1; padding: 10px 2px; text-align: center; cursor: pointer; outline: none;">
         <div id="statCollection" style="font-family: 'Cinzel', serif; font-size: 1.15rem; font-weight: 700; color: #111;">0</div>
         <div style="font-family: 'Outfit', sans-serif; font-size: 0.55rem; color: #666; font-weight: 800; margin-top: 2px; letter-spacing: 0.5px;">COLECCIÓN</div>
@@ -476,29 +476,125 @@
                 
                 <div id="tab-coleccion" style="display: block; animation: fadeIn 0.3s ease;">
                     <!-- SECCIÓN TOP 3 FAVORITOS -->
-        <div id="top3Container" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-width: 450px; margin: 0 auto 25px auto; padding: 0 5px;"></div>
-        
-        <hr style="border: 0; border-top: 1px solid #eaeaea; margin-bottom: 20px;">
-                    <div id="realCollection"></div>
-                    <!-- (El texto de la taberna fantasma ya no hace falta en el HTML porque lo dibuja tu Script si la colección está vacía) -->
-                </div>
-  <div id="tab-resenasPerfil" style="display: none; animation: fadeIn 0.3s ease; padding: 20px 0;">
-        <div id="perfilResenasContainer" style="width: 100%; min-height: 200px;">
-            <!-- El JS pintará las reseñas aquí -->
-        </div>
-    </div>              
-                
-                <div id="tab-listas" style="display: none; animation: fadeIn 0.3s ease;">
-                    <em>Por ahora no hay nada que ver aquí... Ni una lista. Suponemos que organizar tus juegos te da demasiada pereza y abrazas el caos.</em>
-                </div>
-                
-                <div id="tab-temas" style="display: none; animation: fadeIn 0.3s ease;">
-                    <em>Por ahora no hay nada que ver aquí... Ni un tema creado. Eres de los que observan desde las sombras sin hacer ruido, ¿verdad, ninja?</em>
-                </div>
 
-                <style>
-                    @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-                </style>
+<div id="top3Container" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-width: 450px; margin: 0 auto 0px auto; padding: 0 5px;"></div>
+
+
+<!-- BARRA DE FILTROS SUPERIOR CON BÚSQUEDA ANIMADA -->
+<div class="filtros-container" style="display: flex; gap: 8px; width: 100%; box-sizing: border-box; align-items: center; position: relative; overflow: hidden; margin-bottom: 10px;">
+    
+    <!-- Botón TODOS -->
+    <div id="btnTabTodos" class="filtro-btn activo" style="flex: 1; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); transform-origin: left center;" onclick="window.filtrarColeccion('todos', null, this)">
+        <span class="material-symbols-rounded">grid_view</span> Todos
+    </div>
+
+    <!-- Botón LUPA (Central - Más estrecho de arriba a abajo) -->
+    <div id="btnToggleBuscador" style="background: #f3f4f6; border-radius: 25px; width: 55px; height: 36px; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1); border: none; box-shadow: none;" onclick="window.alternarBuscadorColeccion()">
+        <span class="material-symbols-rounded" style="color: #333; font-size: 20px;">search</span>
+    </div>
+
+    <!-- Botón FAVORITOS -->
+    <div id="btnTabFavoritos" class="filtro-btn" style="flex: 1; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); transform-origin: right center;" onclick="window.filtrarColeccion('favoritos', null, this)">
+        <span class="material-symbols-rounded">star</span> Favoritos
+    </div>
+
+    <!-- Input de Búsqueda (Más estrecho de alto y estilizado) -->
+<div id="contenedorBuscadorColeccion" style="position: absolute; top: 0; left: 0; width: 100%; height: 42px; background: #f3f4f6; border-radius: 25px; border: none; display: none; opacity: 0; transform: scale(0.9); align-items: center; padding: 0 16px; box-sizing: border-box; z-index: 10; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
+    <span class="material-symbols-rounded" style="color: #4b5563; font-size: 19px; margin-right: 10px;">search</span>
+    <input type="text" id="inputBuscadorColeccion" placeholder="Buscar juego en tu colección..." oninput="window.ejecutarBusquedaColeccion(this.value)" style="width: 100%; background: transparent; border: none; outline: none; color: #1f2937; font-family: 'Outfit', sans-serif; font-size: 0.9rem;">
+    <span class="material-symbols-rounded" style="color: #4b5563; font-size: 19px; cursor: pointer; margin-left: 10px;" onclick="window.cerrarBuscadorColeccion()">close</span>
+</div>
+</div>
+    <!-- CONTENEDOR EN LÍNEA PARA LOS 3 DESPLEGABLES -->
+    <div style="display: flex; gap: 6px; width: 100%; margin-top: 8px; box-sizing: border-box;">
+        
+        <!-- Desplegable Plataformas -->
+        <div class="filtro-dropdown" id="drop-plataforma" style="flex: 1;">
+            <div class="filtro-btn" onclick="toggleDropdown('drop-plataforma', event)">
+                <span class="material-symbols-rounded">sports_esports</span> Plataformas
+                <span class="material-symbols-rounded flecha-drop">expand_more</span>
+            </div>
+            <div class="dropdown-menu" style="position: absolute; top: 100%; left: 50%; transform: translateX(-50%); width: max-content; min-width: 100%; max-height: 220px; overflow-y: auto; z-index: 1000; box-sizing: border-box;">
+                <div class="drop-item" onclick="filtrarColeccion('plataforma', 'PlayStation', this)"><span class="material-symbols-rounded">desktop_windows</span> PlayStation</div>
+                <div class="drop-item" onclick="filtrarColeccion('plataforma', 'Xbox', this)"><span class="material-symbols-rounded">sports_esports</span> Xbox</div>
+                <div class="drop-item" onclick="filtrarColeccion('plataforma', 'Nintendo', this)"><span class="material-symbols-rounded">videogame_asset</span> Nintendo</div>
+                <div class="drop-item" onclick="filtrarColeccion('plataforma', 'PC', this)"><span class="material-symbols-rounded">computer</span> PC</div>
+            </div>
+        </div>
+
+        <!-- Desplegable Estados -->
+        <div class="filtro-dropdown" id="drop-estado" style="flex: 1;">
+            <div class="filtro-btn" onclick="toggleDropdown('drop-estado', event)">
+                <span class="material-symbols-rounded">bookmark</span> Estados
+                <span class="material-symbols-rounded flecha-drop">expand_more</span>
+            </div>
+            <div class="dropdown-menu" style="position: absolute; top: 100%; left: 50%; transform: translateX(-50%); width: max-content; min-width: 100%; max-height: 220px; overflow-y: auto; z-index: 1000; box-sizing: border-box;">
+                <div class="drop-item" onclick="filtrarColeccion('estado', 'JUGANDO', this)"><span class="material-symbols-rounded" style="color: #3b82f6;">play_circle</span> Jugando</div>
+                <div class="drop-item" onclick="filtrarColeccion('estado', 'TERMINADO', this)"><span class="material-symbols-rounded" style="color: #10b981;">check_circle</span> Terminado</div>
+                <div class="drop-item" onclick="filtrarColeccion('estado', 'PENDIENTE', this)"><span class="material-symbols-rounded" style="color: #f59e0b;">schedule</span> Pendiente</div>
+                <div class="drop-item" onclick="filtrarColeccion('estado', 'MITAD', this)"><span class="material-symbols-rounded" style="color: #8b5cf6;">hourglass_bottom</span> A Mitad</div>
+            </div>
+        </div>
+
+        <!-- Desplegable Género (Alineado hacia la izquierda para que no se salga) -->
+        <div class="filtro-dropdown" id="drop-genero" style="flex: 1; position: relative;">
+            <div class="filtro-btn" onclick="toggleDropdown('drop-genero', event)">
+                <span class="material-symbols-rounded">category</span> Género
+                <span class="material-symbols-rounded flecha-drop">expand_more</span>
+            </div>
+            <!-- AQUÍ ESTÁ EL CAMBIO: right: 0 y left: auto para que despliegue hacia adentro -->
+            <div class="dropdown-menu" style="position: absolute; top: 100%; left: 50%; transform: translateX(-50%); width: max-content; min-width: 100%; max-height: 220px; overflow-y: auto; z-index: 1000; box-sizing: border-box;">
+                <div class="drop-item" onclick="filtrarColeccion('genero', 'RPG', this)"><span class="material-symbols-rounded">swords</span> RPG</div>
+                <div class="drop-item" onclick="filtrarColeccion('genero', 'Adventure', this)"><span class="material-symbols-rounded">explore</span> Aventura</div>
+                <div class="drop-item" onclick="filtrarColeccion('genero', 'Action', this)"><span class="material-symbols-rounded">sports_martial_arts</span> Acción</div>
+                <div class="drop-item" onclick="filtrarColeccion('genero', 'Shooter', this)"><span class="material-symbols-rounded">my_location</span> Shooter</div>
+                <div class="drop-item" onclick="filtrarColeccion('genero', 'Platform', this)"><span class="material-symbols-rounded">sports_gymnastics</span> Plataformas</div>
+                <div class="drop-item" onclick="filtrarColeccion('genero', 'Puzzle', this)"><span class="material-symbols-rounded">extension</span> Puzle</div>
+                <div class="drop-item" onclick="filtrarColeccion('genero', 'Racing', this)"><span class="material-symbols-rounded">sports_motorsports</span> Carreras</div>
+                <div class="drop-item" onclick="filtrarColeccion('genero', 'Sport', this)"><span class="material-symbols-rounded">sports_soccer</span> Deportes</div>
+                <div class="drop-item" onclick="filtrarColeccion('genero', 'Strategy', this)"><span class="material-symbols-rounded">chess</span> Estrategia</div>
+                <div class="drop-item" onclick="filtrarColeccion('genero', 'Fighting', this)"><span class="material-symbols-rounded">sports_kabaddi</span> Lucha</div>
+            </div>
+        </div>
+
+    </div>
+
+<!-- Contenedor donde el Script dibuja la colección -->
+<div id="realCollection" style="padding-bottom: 20px;"></div>
+
+</div> <!-- Cierra tab-coleccion -->
+
+<!-- Pestaña de Reseñas -->
+<div id="tab-resenasPerfil" style="display: none; animation: fadeIn 0.3s ease; padding: 20px 0;">
+    <div id="perfilResenasContainer" style="width: 100%; min-height: 200px;">
+        <!-- El JS pintará las reseñas aquí -->
+    </div>
+</div>
+
+<!-- Pestaña de Listas (CON SU CONTENEDOR RECUPERADO) -->
+<div id="tab-listas" style="display: none; animation: fadeIn 0.3s ease; padding: 15px 10px;">
+    
+    <!-- BOTÓN CREAR LISTA (Fino de arriba a abajo) -->
+    <div style="display: flex; justify-content: center; margin-bottom: 30px; margin-top: 10px;">
+        <button onclick="window.abrirCreadorListas()" style="width: 100%; max-width: 260px; background: #111111; color: #ffffff; border: none; border-radius: 30px; padding: 10px 20px; display: flex; justify-content: center; align-items: center; gap: 8px; font-family: 'Outfit', sans-serif; font-size: 0.85rem; font-weight: 700; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.1); transition: transform 0.2s; outline: none;">
+            <span class="material-symbols-rounded" style="font-size: 18px;">add_circle</span>
+            CREAR LISTA
+        </button>
+    </div>
+
+    <!-- Contenedor donde se pintarán las listas creadas -->
+    <div id="perfilListasContainer" style="text-align: center; margin-top: 20px;">
+        <p style="color: #888; font-family: 'Outfit', sans-serif; font-size: 0.85rem; line-height: 1.5; margin: 0;">
+            <em>Por ahora no hay nada que ver aquí... Ni una lista. Suponemos que organizar tus juegos te da demasiada pereza y abrazas el caos.</em>
+        </p>
+    </div>
+
+</div>
+
+<!-- Pestaña de Temas -->
+<div id="tab-temas" style="display: none; animation: fadeIn 0.3s ease;">
+    <em>Por ahora no hay nada que ver aquí... Ni un tema creado. Eres de los que observan desde las sombras sin hacer ruido, ¿verdad, ninja?</em>
+</div>
             </div>
             
         </div>
@@ -874,7 +970,7 @@
                 <div style="display: flex; justify-content: space-between; background: rgba(255,255,255,0.04); border-radius: 14px; padding: 12px; margin-bottom: 22px; border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 4px 10px rgba(0,0,0,0.2);">
                     <div style="text-align: center;"><div id="pcStatCol" style="font-family: 'Cinzel', serif; font-size: 1.3rem; font-weight: 700; text-shadow: 0 2px 4px rgba(0,0,0,0.8);">0</div><div style="font-family: 'Outfit', sans-serif; font-size: 0.55rem; color: #bbb; text-transform: uppercase;">Colección</div></div>
                     <div style="text-align: center;"><div id="pcStatRes" style="font-family: 'Cinzel', serif; font-size: 1.3rem; font-weight: 700; text-shadow: 0 2px 4px rgba(0,0,0,0.8);">0</div><div style="font-family: 'Outfit', sans-serif; font-size: 0.55rem; color: #bbb; text-transform: uppercase;">Reseñas</div></div>
-                    <div style="text-align: center;"><div id="pcStatLis" style="font-family: 'Cinzel', serif; font-size: 1.3rem; font-weight: 700; text-shadow: 0 2px 4px rgba(0,0,0,0.8);">0</div><div style="font-family: 'Outfit', sans-serif; font-size: 0.55rem; color: #bbb; text-transform: uppercase;">Listas</div></div>
+                    <div style="text-align: center;" id="pcStatLis"><span id="numListasPerfil" style="font-family: 'Cinzel', serif; font-size: 1.3rem; font-weight: 700; text-shadow: 0 2px 4px rgba(0,0,0,0.8);">0</span><div style="font-family: 'Outfit', sans-serif; font-size: 0.55rem; color: #bbb; text-transform: uppercase;">Listas</div></div>
                     <div style="text-align: center;"><div id="pcStatTem" style="font-family: 'Cinzel', serif; font-size: 1.3rem; font-weight: 700; text-shadow: 0 2px 4px rgba(0,0,0,0.8);">0</div><div style="font-family: 'Outfit', sans-serif; font-size: 0.55rem; color: #bbb; text-transform: uppercase;">Temas</div></div>
                 </div>
 
@@ -1122,7 +1218,7 @@
     <!-- Título y Nota -->
     <h1 id="gdTitle" class="game-title"></h1>
     <div class="game-rating">
-<span style="margin: 0 8px; opacity: 0.5;">|</span>
+
 <span id="gdCommunityRating" style="color: #ffffff; font-weight: 700;">0 VOTOS</span>
 </div>
     
@@ -1355,6 +1451,67 @@
             <!-- El JS meterá aquí los juegos -->
         </div>
         
+    </div>
+</div>
+
+<!-- PANTALLA: CREAR LISTAS NUEVAS (ESTILO BLANCO) -->
+<div id="crearListaOverlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fdfdfd; z-index: 999999999; overflow-y: auto; padding-bottom: 50px;">
+    
+    <!-- Cabecera con la X y el Check negros -->
+    <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; background: rgba(253, 253, 253, 0.9); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 10; border-bottom: 1px solid #f0f0f0;">
+        <span class="material-symbols-rounded" onclick="window.cerrarCreadorListas()" style="color: #111; font-size: 24px; cursor: pointer; padding: 4px; background: #f3f4f6; border-radius: 50%;">close</span>
+        <h2 style="color: #111; font-family: 'Cinzel', serif; margin: 0; font-size: 1.2rem; font-weight: 700;">NUEVA LISTA</h2>
+        <span class="material-symbols-rounded" onclick="window.guardarNuevoLista()" style="color: #111; font-size: 24px; cursor: pointer; padding: 4px; background: #f3f4f6; border-radius: 50%;">check</span>
+    </div>
+
+    <!-- Subir Banner -->
+    <div id="bannerListaVisual" onclick="document.getElementById('inputBannerLista').click()" style="position: relative; width: 100%; height: 180px; background: #f3f4f6; display: flex; justify-content: center; align-items: center; background-size: cover; background-position: center; cursor: pointer; border-bottom: 1px solid #f0f0f0;">
+        <div id="bannerListaContenido" style="text-align: center; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(4px); padding: 12px 20px; border-radius: 12px; transition: all 0.3s; border: 1px solid rgba(0,0,0,0.06);">
+            <span class="material-symbols-rounded" style="color: #333; font-size: 36px; margin-bottom: 4px; display: block;">add_photo_alternate</span>
+            <div style="color: #444; font-family: 'Outfit', sans-serif; font-size: 0.8rem; font-weight: 600;">Añadir banner de la lista</div>
+        </div>
+    </div>
+    
+    <!-- Input oculto que llama a la función al elegir archivo -->
+    <input type="file" id="inputBannerLista" accept="image/*" style="display: none;" onchange="window.cargarPrevisualizacionBanner(this)">
+
+    <!-- Textos: Título y Descripción -->
+    <div style="padding: 20px; max-width: 600px; margin: 0 auto;">
+        <input type="text" id="inputTituloLista" placeholder="Nombre de la lista..." style="width: 100%; background: transparent; border: none; border-bottom: 2px solid #e5e7eb; color: #111; font-family: 'Cinzel', serif; font-size: 1.4rem; font-weight: 700; outline: none; padding-bottom: 8px; margin-bottom: 20px; box-sizing: border-box;">
+        
+        <textarea id="inputDescLista" placeholder="Añade una descripción (opcional)..." rows="3" style="width: 100%; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 12px; color: #333; font-family: 'Outfit', sans-serif; font-size: 0.9rem; padding: 14px; outline: none; resize: none; box-sizing: border-box; margin-bottom: 25px;"></textarea>
+
+        <!-- Buscador y Selección de Juegos -->
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 15px;">
+            <span class="material-symbols-rounded" style="color: #e67e22; font-size: 20px;">videogame_asset</span>
+            <h3 style="color: #111; font-family: 'Outfit', sans-serif; font-size: 1rem; font-weight: 700; margin: 0;">Añadir Juegos</h3>
+        </div>
+
+        <!-- Buscador en tiempo real -->
+        <div style="position: relative; margin-bottom: 20px;">
+            <input type="text" id="buscadorJuegosLista" placeholder="Buscar en tu colección..." oninput="window.filtrarJuegosCreadorLista()" style="width: 100%; background: #f3f4f6; border: 1px solid #e5e7eb; border-radius: 14px; padding: 12px 16px; color: #111; font-family: 'Outfit', sans-serif; font-size: 0.9rem; outline: none; box-sizing: border-box;">
+        </div>
+
+        <!-- Cuadrícula de juegos de la colección -->
+        <div id="contenedorCrearListaJuegos" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 12px;">
+            <!-- Se llena dinámicamente -->
+        </div>
+    </div>
+</div>
+
+<!-- ========================================== -->
+<!-- PANTALLA: DETALLE DE LISTA (ESTILO GLASS)  -->
+<!-- ========================================== -->
+<div id="detalleListaOverlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(17,17,17,0.85); backdrop-filter: blur(15px); z-index: 999999999; overflow-y: auto; padding-bottom: 50px;">
+    
+    <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; position: sticky; top: 0; z-index: 10;">
+    <span class="material-symbols-rounded" onclick="window.cerrarDetalleLista()" style="color: #fff; font-size: 20px; cursor: pointer; background: rgba(0,0,0,0.6); padding: 6px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">close</span>
+    <span id="btnBorrarListaContainer"></span>
+</div>
+
+    <!-- Contenido del detalle -->
+    <div id="detalleListaContenido" style="padding: 0 20px 20px 20px; max-width: 600px; margin: 0 auto;">
+        <!-- El JS inyectará aquí el banner grande, título, descripción y todos los juegos -->
     </div>
 </div>
 
