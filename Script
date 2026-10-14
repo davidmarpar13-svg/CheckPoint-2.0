@@ -85,11 +85,10 @@
         });
         console.log("Colección cargada al iniciar sesión:", window.miColeccionActiva);
         
-        // --- AÑADE ESTA LÍNEA ---
+// Pintamos la colección y cargamos las listas del perfil
         window.pintarColeccionPerfil();
-        
-        switchPanel('dashboardPanel');
-        
+        window.cargarListasDelPerfil();
+
         // Cambiamos al panel principal
         switchPanel('dashboardPanel');
     }).catch((error) => {
@@ -812,66 +811,67 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
             
             if (!isEditingProfile) {
-                // ENTRAR EN MODO EDICIÓN
-                isEditingProfile = true;
-                
-                bannerEditOverlay.classList.remove('hidden');
-                avatarEditOverlay.classList.remove('hidden');
-                
-                pUser.classList.add('hidden');
-                inName.classList.remove('hidden');
-                inName.value = pUser.textContent;
-                
-                pBio.classList.add('hidden');
-                inBio.classList.remove('hidden');
-                inBio.value = (pBio.textContent === 'Sin descripción.') ? '' : pBio.textContent;
-                
-                bioCounterCont.classList.remove('hidden');
-                if (bioCounter) bioCounter.textContent = `${inBio.value.length}/150`;
-                
-                inName.focus(); // El teclado del móvil se abrirá solo
+                /// ENTRAR EN MODO EDICIÓN
+    isEditingProfile = true;
 
-                finalBtn.style.color = '#00ff88'; // Tick Verde
-                finalIcon.innerHTML = '<polyline points="20 6 9 17 4 12"></polyline>'; 
+    bannerEditOverlay.classList.remove('hidden');
+    avatarEditOverlay.classList.remove('hidden');
+
+    pUser.classList.add('hidden');
+    inName.classList.remove('hidden');
+    inName.value = pUser.textContent;
+
+    pBio.classList.add('hidden');
+    inBio.classList.remove('hidden');
+    inBio.value = (pBio.textContent === 'Sin descripción.') ? '' : pBio.textContent;
+
+    bioCounterCont.classList.remove('hidden');
+
+    // AQUÍ ESTÁ EL CAMBIO: Botón en negro con el icono de Guardar (save) en vez de verde
+    finalBtn.style.background = '#1e1e1e'; // Fondo negro/gris oscuro
+    finalBtn.style.color = '#ffffff';      // Texto e iconos en blanco/negro
+    finalBtn.style.borderColor = '#1e1e1e';
+    finalBtn.innerHTML = '<span class="material-symbols-rounded" style="font-size: 16px;">save</span> <span style="margin-top: 1px;">Guardar</span>';
                 
             } else {
-                // GUARDAR CAMBIOS Y SALIR
-                const user = auth.currentUser;
-                const newName = inName.value.trim();
-                const newBio = inBio.value.trim();
-                
-                if (!user || !newName) {
-                    alert("El nombre no puede estar vacío");
-                    return;
-                }
-                
-                finalBtn.style.color = '#f1c40f'; // Tick Amarillo (Cargando)
-                
+                // 2. SALIR DEL MODO EDICIÓN Y GUARDAR
+                isEditingProfile = false;
+
+                // 2.1 Ocultamos los botones de subir fotos
+                bannerEditOverlay.classList.add('hidden');
+                avatarEditOverlay.classList.add('hidden');
+
+                // 2.2 Actualizamos el nombre en la pantalla al instante
+                const nuevoNombre = inName.value.trim();
+                if (nuevoNombre !== '') pUser.textContent = nuevoNombre;
+                pUser.classList.remove('hidden');
+                inName.classList.add('hidden');
+
+                // 2.3 Actualizamos la biografía en la pantalla
+                const nuevaBio = inBio.value.trim();
+                pBio.textContent = nuevaBio === '' ? 'Sin descripción.' : nuevaBio;
+                pBio.classList.remove('hidden');
+                inBio.classList.add('hidden');
+                bioCounterCont.classList.add('hidden');
+
+                // 2.4 Devolvemos el botón a su estado normal ("Editar Perfil")
+                finalBtn.style.background = 'rgba(0,0,0,0.04)';
+                finalBtn.style.color = '#111111';
+                finalBtn.style.border = '1px solid rgba(0,0,0,0.1)'; // <- ESTA ES LA LÍNEA QUE QUITA EL BORDE NEGRO
+                finalBtn.innerHTML = '<span class="material-symbols-rounded" style="font-size: 16px;">edit</span> <span style="margin-top: 1px;">Editar Perfil</span>';
+
+                // 2.5 Guardamos en Firebase en segundo plano sin recargar nada
                 try {
-                    await updateProfile(user, { displayName: newName });
-                    await setDoc(doc(db, "users", user.uid), { username: newName, bio: newBio }, { merge: true });
-                    
-                    pUser.textContent = newName;
-                    pBio.textContent = newBio || 'Sin descripción.';
-                    
-                    // Apagar modo edición
-                    isEditingProfile = false;
-                    bannerEditOverlay.classList.add('hidden');
-                    avatarEditOverlay.classList.add('hidden');
-                    
-                    pUser.classList.remove('hidden');
-                    inName.classList.add('hidden');
-                    
-                    pBio.classList.remove('hidden');
-                    inBio.classList.add('hidden');
-                    bioCounterCont.classList.add('hidden');
-                    
-                    finalBtn.style.color = 'white'; // Vuelta al Lápiz Blanco
-                    finalIcon.innerHTML = '<path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>';
-                    
+                    const usuarioActual = auth.currentUser;
+                    if (usuarioActual && typeof setDoc !== 'undefined') {
+                        const userRef = doc(db, 'users', usuarioActual.uid);
+                        setDoc(userRef, { 
+                            nombre: nuevoNombre, 
+                            bio: nuevaBio 
+                        }, { merge: true });
+                    }
                 } catch (error) {
-                    alert("Error al guardar: " + error.message);
-                    finalBtn.style.color = '#00ff88'; // Vuelve al verde si falla
+                    console.error("Error al guardar perfil: ", error);
                 }
             }
         });
@@ -1516,7 +1516,7 @@ window.openGameDetail = function(id, estado = 'not_owned') {
 // Limpiamos el texto residual al instante y calculamos la nota real del juego abierto
     const ratingContainer = document.getElementById('gdCommunityRating');
     if (ratingContainer) {
-        ratingContainer.innerHTML = `<span style="color: rgba(255,255,255,0.4); font-family: 'Outfit', sans-serif; font-size: 0.9em;">Calculando...</span>`;
+        ratingContainer.innerHTML = `<div class="game-votes-text" style="opacity: 0.5;">Calculando...</div>`;
     }
 
     if (typeof window.calcularMediaComunidad === 'function') {
@@ -1666,100 +1666,136 @@ window.openGameDetail = function(id, estado = 'not_owned') {
         if (statusNotOwned) statusNotOwned.style.display = 'none';
         
         const estadoActual = window.miColeccionActiva[game.id].estado || "jugando";
+let esFavorito = window.miColeccionActiva[game.id] && window.miColeccionActiva[game.id].favorito === true;
         
         iconsContainer.innerHTML = `
-            <div style="display: flex; flex-direction: column; align-items: center; gap: 24px; width: 100%;">
-                
-                <div style="display: flex; align-items: center; justify-content: center; gap: 15px;">
-                    
-                    <!-- 1. TEXTO FLOTANTE CON EL TRUCO DEL SELECT NATIVO INVISIBLE PARA MÓVIL -->
-                    <div style="position: relative; display: flex; align-items: center; gap: 8px; cursor: pointer; transition: transform 0.2s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'" ontouchstart="this.style.transform='scale(0.95)'" ontouchend="this.style.transform='scale(1)'">
-                        <svg style="stroke: #2ecc71; width: 16px; height: 16px; fill: none" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2" ry="2"></rect><path d="M6 12h4m-2-2v4m10-2h.01M15 10h.01"></path></svg>
-                        <span id="textoEstadoCentral" style="color: #2ecc71; font-weight: 800; font-size: 12px; letter-spacing: 1px; text-transform: uppercase;">
-                            ${estadoActual}
-                        </span>
-                        <svg style="stroke: #2ecc71; width: 14px; height: 14px; fill: none" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
-                        
-                        <!-- EL SELECT INVISIBLE -->
-                        <select id="selectorEstadoNativo" onchange="window.actualizarEstadoJuego('${game.id}', this.value)" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; appearance: none; cursor: pointer;">
-                            <option value="jugando" ${estadoActual === 'jugando' ? 'selected' : ''}>JUGANDO</option>
-                            <option value="terminado" ${estadoActual === 'terminado' ? 'selected' : ''}>TERMINADO</option>
-                            <option value="pendiente" ${estadoActual === 'pendiente' ? 'selected' : ''}>PENDIENTE</option>
-                            <option value="mitad" ${estadoActual === 'mitad' ? 'selected' : ''}>A MITAD</option>
-                        </select>
-                    </div>
-
-                    <span style="color: rgba(255,255,255,0.3);">|</span>
-
-                    <div onclick="window.open('https://www.google.com/search?q=${queryComprar}', '_blank')" style="display: flex; align-items: center; gap: 6px; cursor: pointer; transition: transform 0.2s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'" ontouchstart="this.style.transform='scale(0.95)'" ontouchend="this.style.transform='scale(1)'">
-                        <svg style="stroke: #9b59b6; width: 15px; height: 15px; fill: none;" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
-                        <span style="color: white; font-size: 11px; font-weight: 700; letter-spacing: 1px;">COMPRAR</span>
-                    </div>
-
-                    <span style="color: rgba(255,255,255,0.3);">|</span>
-
-                    <button onclick="window.borrarJuegoDeColeccion('${game.id}')" title="Eliminar de mi colección" style="background: transparent; border: none; padding: 0; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: transform 0.2s;" onmousedown="this.style.transform='scale(0.90)'" onmouseup="this.style.transform='scale(1)'" ontouchstart="this.style.transform='scale(0.90)'" ontouchend="this.style.transform='scale(1)'">
-                        <svg style="stroke: #e74c3c; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; width: 18px; height: 18px;" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                    </button>
+    <!-- CONTENEDOR MAESTRO DE BOTONES (Sin gap gigante) -->
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; width: 100%; margin-top: -5px;">
+        
+        <!-- FILA SUPERIOR: ESTADO, FAVORITO Y BORRAR -->
+        <div style="display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; max-width: 320px; padding: 0 5px; box-sizing: border-box;">
+            <!-- DESPLEGABLE DE ESTADO -->
+            <div style="position: relative;" id="contenedor-estado-custom">
+                <div onclick="const menu = document.getElementById('menu-estado-custom'); menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex';" style="display: flex; align-items: center; gap: 4px; cursor: pointer; padding: 4px 10px; border-radius: 20px; transition: background 0.2s;" onmouseover="this.style.background='rgba(0,188,212,0.1)'" onmouseout="this.style.background='transparent'">
+                    <span class="material-symbols-rounded" style="color: #00bcd4; font-size: 15px;">sports_esports</span>
+                    <span id="textoEstadoCentral" style="color: #00bcd4; font-weight: 800; font-size: 10px; letter-spacing: 0.5px; text-transform: uppercase;">
+                        ${estadoActual}
+                    </span>
+                    <span class="material-symbols-rounded" style="color: #00bcd4; font-size: 16px;">expand_more</span>
                 </div>
 
-                <div style="display: flex; justify-content: space-evenly; width: 100%;">
-                    <button class="action-icon-btn" style="color: white; background: transparent !important; border: none !important; box-shadow: none !important;">
-                        <svg style="stroke: #3498db !important; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;" viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
-                        <span>SAGA</span>
-                    </button>
-                    <button onclick="window.abrirModalReseña('${game.id}')" class="action-icon-btn" style="color: white; background: transparent !important; border: none !important; box-shadow: none !important; cursor: pointer;">
-    <!-- Estrella engrosada con stroke-width: 3 y color amarillo forzado -->
-    <svg style="margin-bottom: 5px; stroke: #f1c40f !important; stroke-width: 3 !important; fill: none;" width="22" height="22" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
-        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-    </svg>
-    <span style="font-size: 10px; font-weight: 700; letter-spacing: 1px;">RESEÑAR</span>
-</button>
-                    <button class="action-icon-btn" style="color: white; background: transparent !important; border: none !important; box-shadow: none !important;">
-                        <svg style="stroke: #fd79a8 !important; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;" viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
-                        <span>COMUNIDAD</span>
-                    </button>
+                <div id="menu-estado-custom" style="display: none; position: absolute; top: 120%; left: 50%; transform: translateX(-50%); background: rgba(20, 20, 20, 0.95); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 8px; flex-direction: column; gap: 4px; z-index: 1000; min-width: 130px; box-shadow: 0 10px 30px rgba(0,0,0,0.8);">
+                    <div onclick="window.actualizarEstadoJuego('${game.id}', 'jugando')" style="color: white; padding: 8px; font-size: 11px; font-weight: 700; text-align: center; border-radius: 8px; cursor: pointer; text-transform: uppercase;">Jugando</div>
+                    <div onclick="window.actualizarEstadoJuego('${game.id}', 'terminado')" style="color: white; padding: 8px; font-size: 11px; font-weight: 700; text-align: center; border-radius: 8px; cursor: pointer; text-transform: uppercase;">Terminado</div>
+                    <div onclick="window.actualizarEstadoJuego('${game.id}', 'pendiente')" style="color: white; padding: 8px; font-size: 11px; font-weight: 700; text-align: center; border-radius: 8px; cursor: pointer; text-transform: uppercase;">Pendiente</div>
+                    <div onclick="window.actualizarEstadoJuego('${game.id}', 'mitad')" style="color: white; padding: 8px; font-size: 11px; font-weight: 700; text-align: center; border-radius: 8px; cursor: pointer; text-transform: uppercase;">A Mitad</div>
                 </div>
             </div>
-        `;
+
+            <span style="color: rgba(255,255,255,0.2);">|</span>
+
+            <!-- FAVORITO -->
+<div onclick="window.marcarComoFavoritoDesdeFicha('${game.id}')" id="btn-fav-ficha" style="display: flex; align-items: center; gap: 4px; cursor: pointer; padding: 4px 6px;">
+    <!-- AQUÍ ESTÁ EL TRUCO DEL FILL -->
+    <span class="material-symbols-rounded" style="color: #fbbf24; font-size: 19px; transform: translateY(-1px); font-variation-settings: 'FILL' ${esFavorito ? '1' : '0'};">star</span>
+    <span style="color: ${esFavorito ? '#fbbf24' : 'white'}; font-size: 10px; font-weight: 700; letter-spacing: 0.5px;">FAVORITO</span>
+</div>
+
+            <span style="color: rgba(255,255,255,0.2);">|</span>
+
+            <!-- PAPELERA NUEVA -->
+            <button onclick="window.borrarJuegoDeColeccion('${game.id}')" title="Eliminar" style="background: transparent; border: none; padding: 4px; display: flex; align-items: center; justify-content: center; cursor: pointer; outline: none;">
+                <span class="material-symbols-rounded" style="color: rgba(255,255,255,0.4); font-size: 18px; transition: color 0.2s;" onmouseover="this.style.color='#e74c3c'" onmouseout="this.style.color='rgba(255,255,255,0.4)'">delete</span>
+            </button>
+        </div>
+
+        <!-- BOTÓN RESEÑAR (Con la clase CSS que arregla los bordes) -->
+        <button class="btn-redactar-premium" style="outline: none;" onclick="window.abrirModalReseña('${game.id}')">
+            <span class="material-symbols-rounded" style="color: #10b981; font-size: 1.2rem;">edit</span>
+            REDACTAR RESEÑA
+        </button>
+
+        <!-- FILA INFERIOR: SAGA, COMUNIDAD, LISTAS, COMPRAR (Estilo Redactar Premium) -->
+<div class="action-buttons-row" style="display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 10px; width: 100%; margin-top: 15px; margin-bottom: 15px; padding: 0 10px; box-sizing: border-box;">
+    
+    <!-- 1. SAGA -->
+    <button class="btn-redactar-premium" onclick="window.tuFuncionDeSaga(${game.id})" style="flex: 1; min-width: 130px; margin: 0; outline: none;">
+        <span class="material-symbols-rounded" style="color: #3b82f6; font-size: 16px;">layers</span>
+        <span style="font-weight: normal; letter-spacing: 0px; text-transform: none;">Saga</span>
+    </button>
+
+    <!-- 2. COMUNIDAD -->
+    <button class="btn-redactar-premium" onclick="window.tuFuncionDeComunidad(${game.id})" style="flex: 1; min-width: 130px; margin: 0; outline: none;">
+        <span class="material-symbols-rounded" style="color: #ec4899; font-size: 16px;">chat_bubble</span>
+        <span style="font-weight: normal; letter-spacing: 0px; text-transform: none;">Comunidad</span>
+    </button>
+
+    <!-- 3. LISTAS -->
+    <button class="btn-redactar-premium" onclick="window.abrirListasJuego()" style="flex: 1; min-width: 130px; margin: 0; outline: none;">
+        <span class="material-symbols-rounded" style="color: #f7b733; font-size: 16px;">format_list_bulleted</span>
+        <span style="font-weight: normal; letter-spacing: 0px; text-transform: none;">Listas</span>
+    </button>
+
+    <!-- 4. COMPRAR -->
+    <button class="btn-redactar-premium" onclick="window.open('https://www.google.com/search?q=${queryComprar}', '_blank')" style="flex: 1; min-width: 130px; margin: 0; outline: none;">
+        <span class="material-symbols-rounded" style="color: #9b59b6; font-size: 16px;">shopping_cart</span>
+        <span style="font-weight: normal; letter-spacing: 0px; text-transform: none;">Comprar</span>
+    </button>
+
+</div>
+    </div>`;
         
+// (Cierre del innerHTML de la zona 'owned')
     } else {
         if (statusOwned) statusOwned.style.display = 'none';
         if (statusNotOwned) statusNotOwned.style.display = 'none'; 
         
         iconsContainer.innerHTML = `
-            <div style="display: flex; flex-direction: column; align-items: center; gap: 24px; width: 100%;">
-                <div style="display: flex; align-items: center; justify-content: center; gap: 15px;">
-                    <span style="color: #bdc3c7; font-weight: 800; font-size: 11px; letter-spacing: 1px; text-transform: uppercase;">
-                        NO LO TIENES
-                    </span>
-                    <span style="color: rgba(255,255,255,0.3);">|</span>
-                    <div onclick="window.open('https://www.google.com/search?q=${queryComprar}', '_blank')" style="display: flex; align-items: center; gap: 6px; cursor: pointer; transition: transform 0.2s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'" ontouchstart="this.style.transform='scale(0.95)'" ontouchend="this.style.transform='scale(1)'">
-                        <svg style="stroke: #9b59b6; width: 15px; height: 15px; fill: none;" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
-                        <span style="color: white; font-size: 11px; font-weight: 700; letter-spacing: 1px;">COMPRAR</span>
-                    </div>
-                </div>
-                <div style="display: flex; justify-content: space-evenly; width: 100%;">
-                    <button class="action-icon-btn" style="color: white; background: transparent !important; border: none !important; box-shadow: none !important;">
-                        <svg style="stroke: #3498db !important; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;" viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
-                        <span>SAGA</span>
-                    </button>
-                    <button onclick="window.añadirAlInventario('${game.id}')" class="action-icon-btn" style="color: white; background: transparent !important; border: none !important; box-shadow: none !important; cursor: pointer;">
-    <!-- Le forzamos el stroke-width a 3 para que sea más grueso -->
-    <svg style="margin-bottom: 5px; stroke: #2ecc71 !important; stroke-width: 3 !important;" width="22" height="22" fill="none" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
-        <line x1="12" y1="5" x2="12" y2="19"></line>
-        <line x1="5" y1="12" x2="19" y2="12"></line>
-    </svg>
-    <span style="font-size: 10px; font-weight: 700; letter-spacing: 1px;">AÑADIR</span>
-</button>
-                    <button class="action-icon-btn" style="color: white; background: transparent !important; border: none !important; box-shadow: none !important;">
-                        <svg style="stroke: #fd79a8 !important; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;" viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
-                        <span>COMUNIDAD</span>
-                    </button>
-                </div>
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 24px; width: 100%;">
+            
+            <!-- FILA SUPERIOR: SOLO ESTADO (Sin favoritos) -->
+            <div style="display: flex; align-items: center; justify-content: center; gap: 15px;">
+                <span style="color: #bdc3c7; font-weight: 800; font-size: 11px; letter-spacing: 1px; text-transform: uppercase;">
+                    NO LO TIENES
+                </span>
             </div>
-        `;
-    }
+
+            <!-- BOTÓN AÑADIR (Destacado y centrado en el lugar de las reseñas) -->
+            <button class="btn-action-premium" onclick="window.añadirAlInventario('${game.id}')" style="background: rgba(255,255,255,0.05) !important; border: 1px solid rgba(255,255,255,0.1) !important; border-radius: 30px; padding: 12px 40px; margin-top: 5px;">
+                <span class="material-symbols-rounded" style="color: #10b981; font-size: 1.5rem;">add_circle</span>
+                Añadir a mi colección
+            </button>
+
+            <!-- FILA INFERIOR: SAGA, COMUNIDAD, LISTAS, COMPRAR (Estilo Redactar Premium) -->
+<div class="action-buttons-row" style="display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 10px; width: 100%; margin-top: 15px; margin-bottom: 15px; padding: 0 10px; box-sizing: border-box;">
+    
+    <!-- 1. SAGA -->
+    <button class="btn-redactar-premium" onclick="window.tuFuncionDeSaga(${game.id})" style="flex: 1; min-width: 130px; margin: 0; outline: none;">
+        <span class="material-symbols-rounded" style="color: #3b82f6; font-size: 16px;">layers</span>
+        <span style="font-weight: normal; letter-spacing: 0px; text-transform: none;">Saga</span>
+    </button>
+
+    <!-- 2. COMUNIDAD -->
+    <button class="btn-redactar-premium" onclick="window.tuFuncionDeComunidad(${game.id})" style="flex: 1; min-width: 130px; margin: 0; outline: none;">
+        <span class="material-symbols-rounded" style="color: #ec4899; font-size: 16px;">chat_bubble</span>
+        <span style="font-weight: normal; letter-spacing: 0px; text-transform: none;">Comunidad</span>
+    </button>
+
+    <!-- 3. LISTAS -->
+    <button class="btn-redactar-premium" onclick="window.abrirListasJuego()" style="flex: 1; min-width: 130px; margin: 0; outline: none;">
+        <span class="material-symbols-rounded" style="color: #f7b733; font-size: 16px;">format_list_bulleted</span>
+        <span style="font-weight: normal; letter-spacing: 0px; text-transform: none;">Listas</span>
+    </button>
+
+    <!-- 4. COMPRAR -->
+    <button class="btn-redactar-premium" onclick="window.open('https://www.google.com/search?q=${queryComprar}', '_blank')" style="flex: 1; min-width: 130px; margin: 0; outline: none;">
+        <span class="material-symbols-rounded" style="color: #9b59b6; font-size: 16px;">shopping_cart</span>
+        <span style="font-weight: normal; letter-spacing: 0px; text-transform: none;">Comprar</span>
+    </button>
+
+</div>
+        </div>`;
+}
 };
 
 window.añadirAlInventario = function(gameId) {
@@ -1881,52 +1917,142 @@ window.switchGameTab = function(tabName, btnElement) {
 };
 
 window.pintarColeccionPerfil = function() {
+    window.actualizarContadoresPerfil(); // <--- AHORA SÍ ESTÁ EN SU SITIO
     const contenedor = document.getElementById('realCollection');
-    const contadorRef = document.getElementById('statCollection'); // Referencia a tu número 0
-    
-    // 1. Contamos cuántos juegos tienes en memoria
+    const contadorRef = document.getElementById('statCollection');
+
+    // --- NUEVO: FORZAR QUE "TODOS" ESTÉ MARCADO AL ENTRAR AL PERFIL ---
+    const botonesFiltro = document.querySelectorAll('.filtros-container .filtro-btn');
+    if (botonesFiltro.length > 0) {
+        // Comprobamos si hay alguno activo ya
+        const hayActivo = Array.from(botonesFiltro).some(btn => btn.classList.contains('activo'));
+        // Si no hay ninguno (cuando acabas de entrar), activamos el primero ("Todos")
+        if (!hayActivo) {
+            botonesFiltro[0].classList.add('activo');
+        }
+    }
+    // ----------------------------------------------------------------
+
+    // ... (el resto de tu función pintarColeccionPerfil sigue normal aquí abajo)
     let totalJuegos = 0;
     if (window.miColeccionActiva) {
         totalJuegos = Object.keys(window.miColeccionActiva).length;
     }
 
-    // 2. Actualizamos el número en la pestaña superior
+    // 2. Actualizamos el número grande de arriba
     if (contadorRef) {
         contadorRef.innerText = totalJuegos;
     }
 
     if (!contenedor) return;
-    
-    // Si no hay juegos guardados
+
+    // 3. Si no hay juegos en la colección
     if (totalJuegos === 0) {
-        contenedor.innerHTML = '<div style="text-align: center; color: #888; padding: 40px; font-style: italic; font-size: 14px;">Por ahora no hay nada que ver aquí... salvo una colección más vacía que la taberna de un pueblo fantasma. ¿Seguro que juegas a algo o solo miras los menús?</div>';
+        contenedor.innerHTML = '<div style="text-align: center; color: #888; padding: 40px; font-style: italic; font-size: 14px;">Por ahora no hay nada que ver aquí...</div>';
         return;
     }
 
-    // Si hay juegos, forzamos 3 columnas y quitamos el texto del estado inferior
-    let html = '<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 5px 10px; width: 100%; box-sizing: border-box;">';
-    
-    // Recorremos todos los juegos
-    Object.values(window.miColeccionActiva).forEach(juego => {
-        
-        // Carátula
-        const coverUrl = juego.caratula ? `https://images.igdb.com/igdb/image/upload/t_cover_big/${juego.caratula}.jpg` : 'https://images.igdb.com/igdb/image/upload/t_cover_big/nocover.png';
-            
-        // HTML de la carátula sin el div del estado
-       html += '<div onclick="window.openGameDetail(\'' + juego.id + '\', \'' + juego.estado + '\')" style="cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform=\'scale(1.05)\'" onmouseout="this.style.transform=\'scale(1)\'">';
-html += '<img src="' + coverUrl + '" style="width: 100%; aspect-ratio: 3/4; object-fit: cover; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.15); display: block;">';
-html += '</div>';
-    });
-    
-    html += '</div>';
-    
-    // Inyectamos el HTML
-    contenedor.innerHTML = html;
-
-    // Dibujar el Top 3 favoritos arriba del todo
-    if (typeof window.pintarTop3 === 'function') {
-        window.pintarTop3();
+    // 4. Aseguramos que haya un botón activo visualmente
+    let botonActivo = document.querySelector('.filtros-container .filtro-btn.activo');
+    if (!botonActivo) {
+        const btnTodos = document.querySelector('.filtros-container .filtro-btn:first-child');
+        if (btnTodos) {
+            btnTodos.classList.add('activo');
+            botonActivo = btnTodos;
+        }
     }
+
+    // 5. FILTRAMOS Y PINTAMOS LOS JUEGOS (CÓDIGO A PRUEBA DE FALLOS)
+    let htmlFinal = '';
+    let juegosAMostrar = Object.values(window.miColeccionActiva || {});
+    let esPestanaFavoritos = false;
+    let filtroActual = botonActivo ? botonActivo.textContent.trim().toLowerCase() : "todos";
+
+    if (filtroActual.includes('favorito')) {
+        esPestanaFavoritos = true;
+        juegosAMostrar = juegosAMostrar.filter(juego => juego.favorito === true);
+    } 
+    else if (!filtroActual.includes('todos')) {
+        const estadosValidos = ['jugando', 'terminado', 'pendiente', 'mitad'];
+        const estadoDetectado = estadosValidos.find(est => filtroActual.includes(est));
+        if (estadoDetectado) {
+            juegosAMostrar = juegosAMostrar.filter(juego => juego.estado && juego.estado.toLowerCase() === estadoDetectado);
+        }
+    }
+
+    // 5.1 EL TOP 3 (Solo en Favoritos)
+    if (esPestanaFavoritos) {
+        htmlFinal += `
+        <div style="width: 100%; margin-bottom: 0px; padding-top: 10px;">
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 0 10px;">`;
+        
+        const top3Array = window.misFavoritos || [null, null, null];
+        
+        for (let i = 0; i < 3; i++) {
+            const gameId = top3Array[i];
+            const juegoTop = gameId && window.miColeccionActiva[gameId] ? window.miColeccionActiva[gameId] : null;
+            
+            if (juegoTop) {
+                const coverUrl = juegoTop.caratula ? `https://images.igdb.com/igdb/image/upload/t_cover_big/${juegoTop.caratula}.jpg` : 'https://via.placeholder.com/90x128/f3f4f6/111111?text=Sin+Portada';
+                htmlFinal += `
+                <div style="position: relative; border-radius: 8px; overflow: hidden; background: transparent;">
+                    <img onclick="window.openGameDetail('${juegoTop.id}')" src="${coverUrl}" style="width: 100%; aspect-ratio: 3/4; object-fit: cover; cursor: pointer; display: block;">
+                    
+                    <!-- Botón de cambiar (swap) arriba a la derecha -->
+                    <div onclick="window.abrirSelectorTop3(${i})" style="position: absolute; top: 6px; right: 6px; background: rgba(0,0,0,0.6); border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px); cursor: pointer; border: 1px solid rgba(255,255,255,0.2);">
+                        <span class="material-symbols-rounded" style="color: white; font-size: 15px;">swap_horiz</span>
+                    </div>
+
+                    <!-- Etiqueta TOP inferior -->
+                    <div style="position: absolute; bottom: 0; left: 0; width: 100%; background: linear-gradient(to top, rgba(0,0,0,0.95), transparent); padding: 15px 5px 5px 5px; text-align: center; pointer-events: none;">
+                        <span style="color: white; font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 0.75rem; text-shadow: 0 2px 4px black;">
+                            <span class="material-symbols-rounded" style="font-size: 13px; vertical-align: -3px; color: #fbbf24; font-variation-settings: 'FILL' 1;">star</span> TOP ${i + 1}
+                        </span>
+                    </div>
+                </div>`;
+            } else {
+                htmlFinal += `
+                <div onclick="window.abrirSelectorTop3(${i})" style="aspect-ratio: 3/4; border-radius: 8px; border: 2px dashed rgba(255,255,255,0.25); display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(0,0,0,0.1); cursor: pointer;">
+                    <span class="material-symbols-rounded" style="color: rgba(255,255,255,0.4); font-size: 28px; margin-bottom: 5px;">add_circle</span>
+                    <span style="color: rgba(255,255,255,0.4); font-family: 'Outfit', sans-serif; font-size: 0.7rem; font-weight: 700;">TOP ${i + 1}</span>
+                </div>`;
+            }
+        }
+        
+        htmlFinal += `
+            </div>
+        </div>
+        <div style="font-family: 'Outfit', sans-serif; color: rgba(255,255,255,0.4); font-size: 0.4rem; text-align: center; letter-spacing: 1.5px; margin: 0px 0 0px 0; text-transform: uppercase;">Todos mis favoritos</div>`;
+    }
+    // 5.2 MENSAJES DE VACÍO (Evita que se rompa el HTML)
+    if (juegosAMostrar.length === 0) {
+        if (esPestanaFavoritos) {
+            htmlFinal += '<div style="text-align: center; color: rgba(255,255,255,0.5); padding: 30px; font-style: italic; font-size: 13px;">Aún no has marcado ningún juego con la estrella.</div>';
+        } else {
+            htmlFinal += '<div style="text-align: center; color: #888; padding: 40px; font-style: italic; font-size: 14px;">Nada por aquí con este filtro...</div>';
+        }
+        contenedor.innerHTML = htmlFinal;
+        return; 
+    }
+
+    // 5.3 EL GRID INFERIOR (Todos o Favoritos)
+    htmlFinal += '<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 10px 10px; width: 100%; box-sizing: border-box;">';
+    
+    juegosAMostrar.forEach(juego => {
+        const coverUrl = juego.caratula ? `https://images.igdb.com/igdb/image/upload/t_cover_big/${juego.caratula}.jpg` : 'https://via.placeholder.com/90x128/f3f4f6/111111?text=Sin+Portada';
+        const starIcon = juego.favorito ? `<span class="material-symbols-rounded" style="position: absolute; top: 5px; right: 5px; color: #fbbf24; font-size: 18px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.8)); font-variation-settings: 'FILL' 1;">star</span>` : '';
+        
+        htmlFinal += `
+        <div onclick="window.openGameDetail('${juego.id}')" style="cursor: pointer; position: relative; border-radius: 8px; overflow: hidden; box-shadow: none; background: transparent;">
+            <img src="${coverUrl}" style="width: 100%; aspect-ratio: 3/4; object-fit: cover; display: block; background: transparent;">
+            ${starIcon}
+        </div>`;
+    });
+
+    htmlFinal += '</div>';
+    
+    // 5.4 INYECTAR EN LA PANTALLA
+    contenedor.innerHTML = htmlFinal;
 };
 
 window.borrarJuegoDeColeccion = function(gameId) {
@@ -1978,6 +2104,10 @@ window.borrarJuegoDeColeccion = function(gameId) {
     });
 };
 window.actualizarEstadoJuego = function(gameId, nuevoEstado) {
+    // Ocultar el menú desplegable de estados inmediatamente al hacer clic
+    const menuDesplegable = document.getElementById('menu-estado-custom');
+    if (menuDesplegable) menuDesplegable.style.display = 'none';
+
     const usuarioActual = auth.currentUser;
     if (!usuarioActual || !window.miColeccionActiva[gameId]) return;
 
@@ -2154,7 +2284,7 @@ window.pintarContenidoReseñas = function(gameId) {
     const game = window.miColeccionActiva ? window.miColeccionActiva[gameId] : null;
     
     if (!game || (!game.reseña && (!game.puntuacion || game.puntuacion === 0))) {
-        contenedor.innerHTML = `<div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: rgba(255,255,255,0.4); font-family: 'Outfit', sans-serif; padding: 40px 0;"><svg style="width: 50px; height: 50px; margin-bottom: 15px; fill: none; stroke: currentColor; stroke-width: 1.5;" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10z"></path></svg><p style="margin:0; font-size: 1.1rem; letter-spacing: 0.5px;">Aún no hay reseñas de este juego.</p><p style="margin:5px 0 0 0; font-size: 0.9rem; color: rgba(255,255,255,0.3);">Haz clic en el botón de la estrella para ser el primero en opinar.</p></div>`;
+        contenedor.innerHTML = `<div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: rgba(255,255,255,0.4); font-family: 'Outfit', sans-serif; padding: 0px 0;"><svg style="width: 50px; height: 50px; margin-bottom: 15px; fill: none; stroke: currentColor; stroke-width: 1.5;" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10z"></path></svg><p style="margin:0; font-size: 1.1rem; letter-spacing: 0.5px;">Aún no hay reseñas de este juego.</p><p style="margin:5px 0 0 0; font-size: 0.9rem; color: rgba(255,255,255,0.3);">Haz clic en el botón de la estrella para ser el primero en opinar.</p></div>`;
     } else {
         const unicaEstrellaHTML = `<svg style="width: 22px; height: 22px; fill: #ffd700; filter: drop-shadow(0 0 5px rgba(255,215,0,0.6)); margin-right: 8px;" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`;
         let nombreUsuario = auth.currentUser?.displayName || document.getElementById('profileUsername')?.innerText || "Usuario";
@@ -2197,30 +2327,37 @@ window.calcularMediaComunidad = async function(gameId) {
             }
         }
         
-        // El SVG de tu estrella para cuando HAYA votos
-        const estrellaAmarilla = `<svg width="16" height="16" viewBox="0 0 24 24" fill="#f1c40f" stroke="#f1c40f" stroke-width="2" style="margin-right: 5px; vertical-align: middle;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>`;
+        // El SVG de tu estrella para cuando HAYA votos (Más pequeña y sutil)
+const estrellaAmarilla = `<svg width="14" height="14" viewBox="0 0 24 24" fill="#fbbf24" style="margin-right: 4px; vertical-align: -2px;"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`;
 
-        if (totalVotos > 0) {
-            const notaMedia = (totalPuntuacion / totalVotos).toFixed(1);
-            const textoVotos = totalVotos === 1 ? 'VOTO' : 'VOTOS';
-            
-            ratingContainer.innerHTML = `
-                <div style="display: inline-flex; align-items: center; color: #ffd700; font-weight: bold; text-shadow: 0 0 5px rgba(255,215,0,0.5);">
-                    ${estrellaAmarilla}
-                    ${notaMedia}
-                </div> 
-                <span style="opacity: 0.5; margin-left: 5px; margin-right: 5px; color: white;">|</span> 
-                <span style="color: white; font-weight: 700;">${totalVotos} ${textoVotos}</span>
-            `;
-        } else {
-            // Diseño limpio sin estrella si no hay votos
-            ratingContainer.innerHTML = `0 VOTOS`;
-        }
-        
-    } catch (error) {
-        console.error("Error al calcular media:", error);
-        ratingContainer.innerHTML = `0 VOTOS`;
-    }
+if (totalVotos > 0) {
+    const notaMedia = (totalPuntuacion / totalVotos).toFixed(1);
+    const textoVotos = totalVotos === 1 ? 'VOTO' : 'VOTOS';
+
+    ratingContainer.innerHTML = `
+        <div class="game-votes-text" style="display: flex; justify-content: center; align-items: center; gap: 8px;">
+            <div style="display: flex; align-items: center; color: #fbbf24; font-weight: 800;">
+                ${estrellaAmarilla}
+                <span>${notaMedia}</span>
+            </div>
+            <span style="font-weight: 700; color: #bdc3c7;">${totalVotos} ${textoVotos}</span>
+        </div>
+    `;
+} else {
+    // Diseño súper limpio y centrado si no hay votos (Sin la barra vertical)
+    ratingContainer.innerHTML = `
+        <div class="game-votes-text" style="display: flex; justify-content: center; align-items: center;">
+            <span style="font-weight: 700; color: #bdc3c7;">0 VOTOS</span>
+        </div>`;
+}
+
+} catch (error) {
+    console.error("Error al calcular media:", error);
+    ratingContainer.innerHTML = `
+        <div class="game-votes-text" style="display: flex; justify-content: center; align-items: center;">
+            <span style="font-weight: 700; color: #bdc3c7;">0 VOTOS</span>
+        </div>`;
+}
 };
 
 // ==========================================
@@ -2561,7 +2698,7 @@ if (!Array.isArray(favoritos)) return; // Evita que explote si algo va mal
             html += `
             <div class="fav-card-container">
                 <!-- 1. IMAGEN (Al pulsar lleva a la ficha del juego en el modal/visor) -->
-                <img src="${caratulaUrl}" class="fav-card-image" onclick="window.abrirDetalleJuego(${juego.id})" alt="${juego.nombre}">
+                <img src="${caratulaUrl}" class="fav-card-image" onclick="window.openGameDetail(${juego.id})" alt="${juego.nombre}">
             
                 <!-- 2. BOTÓN DE CAMBIAR (Abre el buscador de favoritos para ese hueco) -->
                 <div class="fav-edit-btn" onclick="window.abrirSelectorFavorito(${i})" title="Cambiar juego favorito">
@@ -3025,5 +3162,1828 @@ setTimeout(() => {
         });
     }
 }, 1000);
+
+// 1. ABRIR / CERRAR DESPLEGABLES CON ANIMACIÓN
+window.toggleDropdown = function(id, event) {
+    if(event) event.stopPropagation(); // Evita que se cierre instantáneamente
+    
+    // Primero, cerramos todos los que estén abiertos
+    document.querySelectorAll('.filtro-dropdown').forEach(drop => {
+        if (drop.id !== id) {
+            drop.classList.remove('open');
+            drop.querySelector('.dropdown-menu').classList.remove('show');
+        }
+    });
+
+    // Luego, abrimos o cerramos el que hemos clicado
+    const dropdown = document.getElementById(id);
+    if(dropdown) {
+        dropdown.classList.toggle('open');
+        dropdown.querySelector('.dropdown-menu').classList.toggle('show');
+    }
+};
+
+// 2. CERRAR SI HACES CLIC FUERA DEL MENÚ (Cualquier parte de la pantalla)
+document.addEventListener('click', function(event) {
+    if (!event.target.closest('.filtro-dropdown')) {
+        document.querySelectorAll('.filtro-dropdown').forEach(drop => {
+            drop.classList.remove('open');
+            drop.querySelector('.dropdown-menu').classList.remove('show');
+        });
+    }
+});
+
+// Objeto global para acumular los filtros activos
+if (!window.filtrosActivosColeccion) {
+    window.filtrosActivosColeccion = {
+        pestana: 'todos',
+        plataforma: null,
+        estado: null,
+        genero: null
+    };
+}
+
+window.filtrarColeccion = function(tipo, valor, elementoDiv) {
+    // 1. GESTIÓN VISUAL Y DE TEXTOS EN LOS BOTONES
+    if (tipo === 'todos' || tipo === 'favoritos') {
+        window.filtrosActivosColeccion.pestana = tipo;
+        window.filtrosActivosColeccion.plataforma = null;
+        window.filtrosActivosColeccion.estado = null;
+        window.filtrosActivosColeccion.genero = null;
+
+        // Limpiamos los botones de los desplegables y restauramos sus textos originales
+        document.querySelectorAll('.filtro-dropdown').forEach(drop => {
+            const btn = drop.querySelector('.filtro-btn');
+            if (btn) {
+                btn.classList.remove('activo');
+                if (drop.id === 'drop-plataforma') btn.innerHTML = '<span class="material-symbols-rounded">sports_esports</span> Plataformas <span class="material-symbols-rounded flecha-drop">expand_more</span>';
+                if (drop.id === 'drop-estado') btn.innerHTML = '<span class="material-symbols-rounded">bookmark</span> Estados <span class="material-symbols-rounded flecha-drop">expand_more</span>';
+                if (drop.id === 'drop-genero') btn.innerHTML = '<span class="material-symbols-rounded">category</span> Género <span class="material-symbols-rounded flecha-drop">expand_more</span>';
+            }
+        });
+
+        // Activamos el botón principal (Todos/Favoritos)
+        document.querySelectorAll('.filtros-container > .filtro-btn').forEach(b => b.classList.remove('activo'));
+        if (elementoDiv) elementoDiv.classList.add('activo');
+    } 
+    else {
+        window.filtrosActivosColeccion[tipo] = valor;
+
+        if (elementoDiv) {
+            const dropdown = elementoDiv.closest('.filtro-dropdown');
+            if (dropdown) {
+                const btnDropdown = dropdown.querySelector('.filtro-btn');
+                if (btnDropdown) {
+                    btnDropdown.classList.add('activo');
+                    let icono = 'sports_esports';
+                    if (tipo === 'estado') icono = 'bookmark';
+                    if (tipo === 'genero') icono = 'category';
+
+                    btnDropdown.innerHTML = `<span class="material-symbols-rounded">${icono}</span> ${valor} <span class="material-symbols-rounded flecha-drop">expand_more</span>`;
+                }
+                dropdown.classList.remove('open');
+                const menu = dropdown.querySelector('.dropdown-menu');
+                if (menu) menu.classList.remove('show');
+            }
+        }
+    }
+
+    // 2. MOTOR DE FILTRADO ACUMULATIVO
+    const contenedor = document.getElementById('realCollection');
+    if (!contenedor || !window.miColeccionActiva) return;
+
+    contenedor.innerHTML = '';
+
+    let juegosAMostrar = Object.values(window.miColeccionActiva);
+    let esPestanaFavoritos = (window.filtrosActivosColeccion.pestana === 'favoritos');
+
+    // --- PASO 3: FILTRO DE BÚSQUEDA POR TEXTO (LUPA) ---
+    if (window.filtroBusquedaTexto) {
+        const query = window.filtroBusquedaTexto;
+        juegosAMostrar = juegosAMostrar.filter(juego => {
+            const nombre = (juego.nombre || juego.title || '').toLowerCase();
+            return nombre.includes(query);
+        });
+    }
+
+    if (esPestanaFavoritos) {
+        juegosAMostrar = juegosAMostrar.filter(juego => juego.favorito === true);
+    }
+
+    if (window.filtrosActivosColeccion.plataforma) {
+        const valPlat = window.filtrosActivosColeccion.plataforma.toLowerCase();
+        juegosAMostrar = juegosAMostrar.filter(juego => {
+            const infoPlat = JSON.stringify(juego.plataformas || juego.plataforma || '').toLowerCase();
+            return infoPlat.includes(valPlat);
+        });
+    }
+
+    if (window.filtrosActivosColeccion.estado) {
+        const valEst = window.filtrosActivosColeccion.estado.toUpperCase().trim();
+        juegosAMostrar = juegosAMostrar.filter(juego => {
+            const estadoActual = (juego.estado || '').toUpperCase().trim();
+            return estadoActual === valEst;
+        });
+    }
+
+    if (window.filtrosActivosColeccion.genero) {
+        const valGen = window.filtrosActivosColeccion.genero.toLowerCase();
+        juegosAMostrar = juegosAMostrar.filter(juego => {
+            const infoGen = JSON.stringify(juego.generos || juego.genres || '').toLowerCase();
+            return infoGen.includes(valGen);
+        });
+    }
+
+    let htmlFinal = '';
+
+    if (esPestanaFavoritos) {
+        htmlFinal += `
+        <div style="width: 100%; margin-bottom: 20px; padding-top: 5px;">
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 0 10px; max-width: 450px; margin: 0 auto;">`;
+        
+        const top3Array = window.misFavoritos || [null, null, null];
+        for (let i = 0; i < 3; i++) {
+            const gameId = top3Array[i];
+            const juegoTop = (gameId && window.miColeccionActiva[gameId]) ? window.miColeccionActiva[gameId] : null;
+            
+            if (juegoTop) {
+                const coverUrl = juegoTop.caratula ? `https://images.igdb.com/igdb/image/upload/t_cover_big/${juegoTop.caratula}.jpg` : 'https://via.placeholder.com/90x128';
+                htmlFinal += `
+                <div style="position: relative; border-radius: 8px; overflow: hidden; background: transparent;">
+                    <img onclick="window.openGameDetail('${juegoTop.id}')" src="${coverUrl}" style="width: 100%; aspect-ratio: 3/4; object-fit: cover; cursor: pointer; display: block;">
+                    <div onclick="window.abrirSelectorTop3(${i})" style="position: absolute; top: 6px; right: 6px; background: rgba(0,0,0,0.6); border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px); cursor: pointer; border: 1px solid rgba(255,255,255,0.2);">
+                        <span class="material-symbols-rounded" style="color: white; font-size: 15px;">swap_horiz</span>
+                    </div>
+                    <div style="position: absolute; bottom: 0; left: 0; width: 100%; background: linear-gradient(to top, rgba(0,0,0,0.95), transparent); padding: 15px 5px 5px 5px; text-align: center; pointer-events: none;">
+                        <span style="color: white; font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 0.75rem; text-shadow: 0 2px 4px black;">
+                            <span class="material-symbols-rounded" style="font-size: 13px; vertical-align: -3px; color: #fbbf24; font-variation-settings: 'FILL' 1;">star</span> TOP ${i + 1}
+                        </span>
+                    </div>
+                </div>`;
+            } else {
+                htmlFinal += `
+                <div onclick="window.abrirSelectorTop3(${i})" style="aspect-ratio: 3/4; border-radius: 8px; border: 2px dashed rgba(255,255,255,0.25); display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(0,0,0,0.1); cursor: pointer;">
+                    <span class="material-symbols-rounded" style="color: rgba(255,255,255,0.4); font-size: 28px; margin-bottom: 5px;">add_circle</span>
+                    <span style="color: rgba(255,255,255,0.4); font-family: 'Outfit', sans-serif; font-size: 0.7rem; font-weight: 700;">TOP ${i + 1}</span>
+                </div>`;
+            }
+        }
+        
+        htmlFinal += `
+            </div>
+        </div>
+        <div style="font-family: 'Outfit', sans-serif; color: rgba(255,255,255,0.4); font-size: 0.7rem; text-align: center; letter-spacing: 1.5px; margin: 4px 0 6px 0; text-transform: uppercase;">Todos mis favoritos</div>`;
+    }
+
+    if (juegosAMostrar.length === 0) {
+        contenedor.innerHTML = htmlFinal + '<div style="text-align: center; color: #888; padding: 40px; font-style: italic; font-size: 14px;">Ningún juego coincide con la búsqueda o filtros.</div>';
+        return;
+    }
+
+    htmlFinal += '<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 5px 10px; width: 100%; box-sizing: border-box;">';
+    
+    juegosAMostrar.forEach(juego => {
+        const coverUrl = juego.caratula ? `https://images.igdb.com/igdb/image/upload/t_cover_big/${juego.caratula}.jpg` : 'https://via.placeholder.com/90x128/f3f4f6/111111?text=Sin+Portada';
+        const starIcon = juego.favorito ? `<span class="material-symbols-rounded" style="position: absolute; top: 5px; right: 5px; color: #fbbf24; font-size: 18px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.8)); font-variation-settings: 'FILL' 1;">star</span>` : '';
+        
+        htmlFinal += `
+        <div onclick="window.openGameDetail('${juego.id}')" style="cursor: pointer; position: relative; border-radius: 8px; overflow: hidden; background: transparent;">
+            <img src="${coverUrl}" style="width: 100%; aspect-ratio: 3/4; object-fit: cover; display: block; background: transparent;">
+            ${starIcon}
+        </div>`;
+    });
+
+    htmlFinal += '</div>';
+    contenedor.innerHTML = htmlFinal;
+};
+window.marcarComoFavoritoDesdeFicha = function(gameId) {
+    // 1. Verificamos que el juego esté en tu colección
+    if (!window.miColeccionActiva || !window.miColeccionActiva[gameId]) {
+        alert("Primero debes añadir el juego a tu colección para marcarlo como favorito.");
+        return;
+    }
+
+    // Buscamos el icono de la estrella dentro del botón de la ficha y la palabra "FAVORITO"
+    const btnIcon = document.querySelector('#btn-fav-ficha .material-symbols-rounded');
+    const btnText = document.querySelector('#btn-fav-ficha span:nth-child(2)'); 
+    
+    if (!btnIcon) return;
+
+    // 2. Averiguamos si ya era favorito y lo invertimos (Toggle)
+    let esFavActualmente = window.miColeccionActiva[gameId].favorito === true;
+    let nuevoEstadoFav = !esFavActualmente;
+
+    // 3. Lo actualizamos en la memoria local al instante
+    window.miColeccionActiva[gameId].favorito = nuevoEstadoFav;
+
+    // ==========================================
+    // 4. ANIMACIÓN Y CAMBIO VISUAL INMEDIATO
+    // ==========================================
+    
+    // Primero, hacemos un pequeño 'zoom' para que se vea que lo has tocado
+    btnIcon.style.transition = 'transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+    btnIcon.style.transform = 'scale(0.5)'; // Se encoge rápido
+
+    setTimeout(() => {
+        if (nuevoEstadoFav) {
+            btnIcon.style.fontVariationSettings = "'FILL' 1"; // Rellena la estrella
+            btnIcon.style.color = '#fbbf24'; 
+            btnIcon.style.filter = 'drop-shadow(0 0 8px rgba(251, 191, 36, 0.6))';
+            if(btnText) btnText.style.color = '#fbbf24';
+        } else {
+            btnIcon.style.fontVariationSettings = "'FILL' 0"; // Vacía la estrella
+            btnIcon.style.color = '#fbbf24'; 
+            btnIcon.style.filter = 'none'; 
+            if(btnText) btnText.style.color = 'white';
+        }
+        
+        btnIcon.style.transform = 'scale(1.2)';
+        setTimeout(() => { btnIcon.style.transform = 'scale(1) translateY(-1px)'; }, 150);
+    }, 100);
+
+    // ==========================================
+    // 5. GUARDAMOS EN FIREBASE Y REPINTAMOS PERFIL
+    // ==========================================
+    const usuarioActual = auth.currentUser;
+    if (usuarioActual) {
+        const juegoRef = doc(db, 'users', usuarioActual.uid, 'coleccion', gameId.toString());
+        
+        setDoc(juegoRef, { favorito: nuevoEstadoFav }, { merge: true })
+            .then(() => {
+                // AQUÍ ES DONDE SUCEDE LA MAGIA PARA EL PERFIL:
+                // Llamamos a pintarColeccionPerfil para que el Top 3 (o la pestaña) se actualice en segundo plano
+                if (typeof window.pintarColeccionPerfil === "function") {
+                    window.pintarColeccionPerfil();
+                }
+            })
+            .catch(error => console.error("Error al guardar favorito en Firebase:", error));
+    }
+};
+
+window.abrirSelectorTop3 = function(index) {
+    const juegosFavoritos = Object.values(window.miColeccionActiva || {}).filter(j => j.favorito === true);
+
+    if (juegosFavoritos.length === 0) {
+        alert("¡Primero debes marcar algunos juegos con la estrella de favorito en tu colección para poder añadirlos al Top 3.");
+        return;
+    }
+
+    let modalOverlay = document.getElementById('modalSelectorTop3');
+    if (!modalOverlay) {
+        modalOverlay = document.createElement('div');
+        modalOverlay.id = 'modalSelectorTop3';
+        modalOverlay.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); z-index: 10000; display: flex; align-items: center; justify-content: center; padding: 20px; box-sizing: border-box;';
+        document.body.appendChild(modalOverlay);
+    }
+
+    // DISEÑO COMPLETO EN BLANCO Y LIMPIO
+    let contenidoHTML = `
+        <div style="background: #ffffff; border: 1px solid rgba(0,0,0,0.1); border-radius: 20px; width: 100%; max-width: 380px; max-height: 85vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 15px 35px rgba(0,0,0,0.2);">
+            <div style="padding: 16px 20px; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center; background: #fafafa;">
+                <span style="color: #111111; font-family: 'Cinzel', serif; font-size: 1.1rem; font-weight: 700;">Seleccionar para TOP ${index + 1}</span>
+                <span onclick="document.getElementById('modalSelectorTop3').style.display='none'" class="material-symbols-rounded" style="color: #555; cursor: pointer; font-size: 22px;">close</span>
+            </div>
+            
+            <!-- CAJA DE BÚSQUEDA BLANCA -->
+            <div style="padding: 14px 16px; box-sizing: border-box; background: #ffffff;">
+                <div style="position: relative; display: flex; align-items: center; width: 100%;">
+                    <span class="material-symbols-rounded" style="position: absolute; left: 12px; color: #888; font-size: 18px; pointer-events: none;">search</span>
+                    <input type="text" id="inputFiltroTopModal" placeholder="Buscar en tus favoritos..." oninput="window.filtrarJuegosModalTop(this.value)" style="width: 100%; padding: 11px 12px 11px 38px; border: 1.5px solid #e5e7eb; border-radius: 12px; font-family: 'Outfit', sans-serif; font-size: 0.85rem; color: #111111; background: #f9fafb; outline: none; box-sizing: border-box;">
+                </div>
+            </div>
+
+            <div id="contenedorListaJuegosTopModal" style="padding: 0 16px 16px 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; background: #ffffff;">
+    `;
+
+    juegosFavoritos.forEach(juego => {
+        const coverUrl = juego.caratula ? `https://images.igdb.com/igdb/image/upload/t_cover_big/${juego.caratula}.jpg` : 'https://via.placeholder.com/90x128/f3f4f6/111111?text=Sin+Portada';
+        const nombreJuego = juego.nombre || 'Juego sin nombre';
+        
+        contenidoHTML += `
+            <div class="item-juego-top-modal" data-nombre="${nombreJuego.toLowerCase()}" onclick="window.asignarJuegoTop3(${index}, '${juego.id}')" style="cursor: pointer; display: flex; align-items: center; gap: 12px; background: #f9fafb; padding: 8px 10px; border-radius: 12px; border: 1.5px solid #f0f0f0; transition: all 0.15s;">
+                <img src="${coverUrl}" style="width: 40px; height: 54px; object-fit: cover; border-radius: 6px; flex-shrink: 0;">
+                <span style="color: #222222; font-family: 'Outfit', sans-serif; font-size: 0.85rem; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${nombreJuego}</span>
+            </div>
+        `;
+    });
+
+    contenidoHTML += `
+            </div>
+        </div>
+    `;
+
+    modalOverlay.innerHTML = contenidoHTML;
+    modalOverlay.style.display = 'flex';
+};
+
+// Función que filtra instantáneamente al escribir en la caja blanca
+window.filtrarJuegosModalTop = function(texto) {
+    const filtro = (texto || '').toLowerCase().trim();
+    const items = document.querySelectorAll('#contenedorListaJuegosTopModal .item-juego-top-modal');
+
+    items.forEach(item => {
+        const nombre = item.getAttribute('data-nombre') || '';
+        if (!filtro || nombre.includes(filtro)) {
+            item.style.setProperty('display', 'flex', 'important');
+        } else {
+            item.style.setProperty('display', 'none', 'important');
+        }
+    });
+};
+
+// Función para guardar la selección en memoria y en Firebase
+window.asignarJuegoTop3 = function(index, gameId) {
+    if (!window.misFavoritos) window.misFavoritos = [null, null, null];
+    window.misFavoritos[index] = gameId;
+
+    // Ocultamos el modal
+    const modal = document.getElementById('modalSelectorTop3');
+    if (modal) modal.style.display = 'none';
+
+    // Repintamos el perfil para ver el cambio al instante
+    if (typeof window.pintarColeccionPerfil === "function") {
+        window.pintarColeccionPerfil();
+    }
+
+    // Guardamos en Firebase (en el documento del usuario)
+    const usuarioActual = auth.currentUser;
+    if (usuarioActual) {
+        const userRef = doc(db, 'users', usuarioActual.uid);
+        setDoc(userRef, { misFavoritos: window.misFavoritos }, { merge: true })
+            .catch(err => console.error("Error al guardar Top 3 en Firebase:", err));
+    }
+};
+
+window.alternarBuscadorColeccion = function() {
+    const contenedorBuscador = document.getElementById('contenedorBuscadorColeccion');
+    const input = document.getElementById('inputBuscadorColeccion');
+    const btnTodos = document.getElementById('btnTabTodos');
+    const btnFav = document.getElementById('btnTabFavoritos');
+    const btnLupa = document.getElementById('btnToggleBuscador');
+
+    if (btnLupa) btnLupa.style.transform = 'scale(1.1)';
+
+    setTimeout(() => {
+        if (btnLupa) btnLupa.style.transform = 'scale(1)';
+        if (btnTodos) {
+            btnTodos.style.opacity = '0';
+            btnTodos.style.transform = 'scaleX(0.5)';
+            btnTodos.style.pointerEvents = 'none';
+        }
+        if (btnFav) {
+            btnFav.style.opacity = '0';
+            btnFav.style.transform = 'scaleX(0.5)';
+            btnFav.style.pointerEvents = 'none';
+        }
+
+        if (contenedorBuscador) {
+            contenedorBuscador.style.display = 'flex';
+            setTimeout(() => {
+                contenedorBuscador.style.opacity = '1';
+                contenedorBuscador.style.transform = 'scale(1)';
+            }, 10);
+            if (input) {
+                input.value = '';
+                input.focus();
+            }
+        }
+    }, 150);
+};
+
+window.cerrarBuscadorColeccion = function() {
+    const contenedorBuscador = document.getElementById('contenedorBuscadorColeccion');
+    const btnTodos = document.getElementById('btnTabTodos');
+    const btnFav = document.getElementById('btnTabFavoritos');
+
+    if (contenedorBuscador) {
+        contenedorBuscador.style.opacity = '0';
+        contenedorBuscador.style.transform = 'scale(0.9)';
+        setTimeout(() => {
+            contenedorBuscador.style.display = 'none';
+        }, 300);
+    }
+
+    if (btnTodos) {
+        btnTodos.style.opacity = '1';
+        btnTodos.style.transform = 'scaleX(1)';
+        btnTodos.style.pointerEvents = 'auto';
+    }
+    if (btnFav) {
+        btnFav.style.opacity = '1';
+        btnFav.style.transform = 'scaleX(1)';
+        btnFav.style.pointerEvents = 'auto';
+    }
+
+    window.filtroBusquedaTexto = '';
+    if (typeof window.pintarColeccionPerfil === "function") {
+        window.pintarColeccionPerfil();
+    } else {
+        window.filtrarColeccion('todos', null, document.getElementById('btnTabTodos'));
+    }
+};
+
+window.ejecutarBusquedaColeccion = function(texto) {
+    window.filtroBusquedaTexto = (texto || '').toLowerCase().trim();
+    
+    // Si la función de filtrado principal está disponible, la invocamos para que repinte al vuelo
+    if (typeof window.filtrarColeccion === "function") {
+        // Mantenemos el tipo de filtro actual (todos o favoritos) y ejecutamos
+        const tipoActual = window.filtrosActivosColeccion ? window.filtrosActivosColeccion.pestana : 'todos';
+        window.filtrarColeccion(tipoActual, null, null);
+    } else if (typeof window.pintarColeccionPerfil === "function") {
+        window.pintarColeccionPerfil();
+    }
+};
+
+window.actualizarContadoresPerfil = function() {
+    if (!window.miColeccionActiva) return;
+
+    const juegos = Object.values(window.miColeccionActiva);
+
+    // 1. Actualizar el número total de la Colección
+    const statColeccion = document.getElementById('statCollection');
+    if (statColeccion) {
+        statColeccion.textContent = juegos.length;
+    }
+
+    // 2. Calcular y actualizar el número de Reseñas
+    const totalResenas = juegos.filter(juego => {
+        const tieneNota = (juego.puntuacion && Number(juego.puntuacion) > 0);
+        const tieneTexto = (juego.reseña && typeof juego.reseña === 'string' && juego.reseña.trim() !== "");
+        return tieneNota || tieneTexto; // Cuenta como reseña si tiene nota o texto
+    }).length;
+
+    const statReviews = document.getElementById('statReviews');
+    if (statReviews) {
+        statReviews.textContent = totalResenas;
+    }
+
+    // 3. Actualizar dinámicamente tu Tarjeta de Jugador
+    const pcReviewFilled = document.getElementById('pcReviewFilled');
+    const pcReviewEmpty = document.getElementById('pcReviewEmpty');
+    if (pcReviewFilled && pcReviewEmpty) {
+        pcReviewFilled.style.display = totalResenas > 0 ? 'block' : 'none';
+        pcReviewEmpty.style.display = totalResenas > 0 ? 'none' : 'block';
+    }
+};
+
+// Abrir la pantalla de Listas del juego (con creación automática de HTML si no existe)
+window.abrirListasJuego = async function(idJuegoParam) {
+    console.log("📂 Abriendo listas que contienen este juego...");
+    
+    let overlay = document.getElementById('listasJuegoOverlay');
+    
+    // Si el overlay no existe en el HTML, lo creamos dinámicamente al vuelo
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'listasJuegoOverlay';
+        document.body.appendChild(overlay);
+    }
+
+    // Inyectamos o reparamos la estructura limpia estilo blanco
+    overlay.style.cssText = 'display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fdfdfd; z-index: 999999999; overflow-y: auto; padding: 20px; box-sizing: border-box; flex-direction: column;';
+    overlay.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; max-width: 600px; width: 100%; margin-left: auto; margin-right: auto;">
+            <span class="material-symbols-rounded" onclick="window.cerrarListasJuego()" style="color: #111; font-size: 26px; cursor: pointer; padding: 6px; background: #f3f4f6; border-radius: 50%;">arrow_back</span>
+            <h2 style="color: #111; font-family: 'Cinzel', serif; margin: 0; font-size: 1.3rem; font-weight: 700; letter-spacing: 1px;">Listas del Juego</h2>
+            <div style="width: 38px;"></div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; align-items: center; margin-bottom: 22px; width: 100%; max-width: 600px; margin-left: auto; margin-right: auto;">
+            <button type="button" onclick="window.toggleSelectorListasJuego()" style="width: fit-content; background: #222222; border: none; border-radius: 20px; padding: 8px 18px; color: #ffffff; font-family: 'Outfit', sans-serif; font-size: 0.8rem; font-weight: 500; display: flex; justify-content: center; align-items: center; gap: 6px; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.08); outline: none;">
+                <span class="material-symbols-rounded" style="color: #ffffff; font-size: 17px;">playlist_add</span>
+                Añadir a mi lista
+            </button>
+        </div>
+
+        <div id="contenedorListasJuego" style="display: flex; flex-direction: column; gap: 15px; max-width: 600px; width: 100%; margin: 0 auto;"></div>
+    `;
+
+    const contenedor = document.getElementById('contenedorListasJuego');
+    const selectorDesplegable = document.getElementById('selectorListasExistentes');
+    if (selectorDesplegable) selectorDesplegable.style.display = 'none';
+
+    // Forzamos que se muestre en pantalla por encima de todo
+    document.body.appendChild(overlay);
+    overlay.style.setProperty('display', 'flex', 'important');
+    overlay.style.setProperty('z-index', '999999999', 'important');
+    overlay.style.setProperty('opacity', '1', 'important');
+
+    if (contenedor) {
+        contenedor.innerHTML = '<p style="color: #888; font-family: \'Outfit\', sans-serif; text-align: center; margin-top: 20px;">Buscando listas...</p>';
+    }
+
+    if (!window.misListasCache || Object.keys(window.misListasCache).length === 0) {
+        if (typeof window.cargarListasDelPerfil === 'function') {
+            await window.cargarListasDelPerfil();
+        }
+    }
+
+    // 1. Detectamos qué juego está abierto en la ficha actual
+    let idJuegoActual = idJuegoParam ? String(idJuegoParam) : null;
+
+    if (!idJuegoActual) {
+        idJuegoActual = window.currentGameId || window.juegoActualId || (window.currentGame && window.currentGame.id) || (window.juegoActual && window.juegoActual.id) || null;
+        if (idJuegoActual) idJuegoActual = String(idJuegoActual);
+    }
+
+    if (!idJuegoActual && window.miColeccionActiva) {
+        const textosPantalla = Array.from(document.querySelectorAll('h1, h2, h3, div, span')).map(el => el.textContent.trim().toLowerCase());
+        const imgsPantalla = Array.from(document.querySelectorAll('img'));
+
+        for (const [id, info] of Object.entries(window.miColeccionActiva)) {
+            if (info.nombre && textosPantalla.includes(info.nombre.trim().toLowerCase())) {
+                idJuegoActual = String(id);
+                break;
+            }
+        }
+
+        if (!idJuegoActual) {
+            for (const [id, info] of Object.entries(window.miColeccionActiva)) {
+                if (info.caratula && imgsPantalla.some(img => img.src && img.src.includes(info.caratula))) {
+                    idJuegoActual = String(id);
+                    break;
+                }
+            }
+        }
+    }
+
+    window.idJuegoEnFichaActual = idJuegoActual;
+    console.log("🎮 ID del juego detectado en la ficha:", idJuegoActual);
+
+    // 2. Filtramos las listas que contienen este juego
+    const todasLasListas = window.misListasCache || {};
+    let htmlListasEncontradas = '';
+    let contadorEncontradas = 0;
+
+    Object.entries(todasLasListas).forEach(([idLista, data]) => {
+        const juegosIds = (data.juegos || []).map(String);
+
+        if (idJuegoActual && juegosIds.includes(String(idJuegoActual))) {
+            contadorEncontradas++;
+            const titulo = data.titulo || 'Sin título';
+            const descripcion = data.descripcion || '';
+            const bannerUrl = data.banner || 'linear-gradient(135deg, #2b5876 0%, #4e4376 100%)';
+
+            let caratulasHTML = '';
+            juegosIds.forEach(idJ => {
+                const juegoInfo = (window.miColeccionActiva && window.miColeccionActiva[idJ]) ? window.miColeccionActiva[idJ] : null;
+                if (juegoInfo && juegoInfo.caratula) {
+                    caratulasHTML += `<img src="https://images.igdb.com/igdb/image/upload/t_cover_small/${juegoInfo.caratula}.jpg" style="width: 45px; height: 60px; object-fit: cover; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); flex-shrink: 0;">`;
+                }
+            });
+
+            htmlListasEncontradas += `
+                <div onclick="window.abrirDetalleLista('${idLista}')" style="width: 100%; border-radius: 16px; margin-bottom: 15px; overflow: hidden; background: #ffffff; box-shadow: 0 4px 15px rgba(0,0,0,0.08); border: 1px solid rgba(0,0,0,0.05); cursor: pointer; display: flex; flex-direction: column; text-align: left;">
+                    <div style="position: relative; width: 100%; height: 90px; background-image: ${bannerUrl}; background-size: cover; background-position: center;">
+                        <div style="position: absolute; top:0; left:0; width:100%; height:100%; background: linear-gradient(to right, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.1) 100%);"></div>
+                        <div style="position: relative; z-index: 1; padding: 15px; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; box-sizing: border-box;">
+                            <h3 style="color: #fff; font-family: 'Cinzel', serif; margin: 0; font-size: 1.2rem; text-shadow: 0 2px 4px rgba(0,0,0,0.8); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${titulo}</h3>
+                            ${descripcion ? `<span style="color: #ddd; font-family: 'Outfit', sans-serif; font-size: 0.75rem; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; opacity: 0.9;">${descripcion}</span>` : ''}
+                        </div>
+                    </div>
+                    <div style="padding: 12px 15px; display: flex; gap: 12px; align-items: center; border-top: 1px solid #f0f0f0;">
+                        <div style="background: #f3f4f6; color: #333; padding: 4px 10px; border-radius: 12px; font-size: 0.8rem; font-family: 'Outfit', sans-serif; font-weight: 700; border: 1px solid #e5e7eb; display: flex; align-items: center; height: fit-content; flex-shrink: 0;">
+                            ${juegosIds.length} <span class="material-symbols-rounded" style="font-size: 14px; margin-left: 4px;">sports_esports</span>
+                        </div>
+                        <div style="display: flex; gap: 8px; overflow: hidden; width: 100%; align-items: center;">
+                            ${caratulasHTML}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+    });
+
+    if (contenedor) {
+        if (contadorEncontradas > 0) {
+            contenedor.innerHTML = htmlListasEncontradas;
+        } else {
+            contenedor.innerHTML = `
+                <div style="background: #f3f4f6; border: 1px solid #e5e7eb; border-radius: 16px; padding: 30px 20px; text-align: center;">
+                    <span class="material-symbols-rounded" style="font-size: 40px; color: #aaa; margin-bottom: 10px;">folder_off</span>
+                    <p style="color: #666; font-family: 'Outfit', sans-serif; margin: 0; font-size: 0.9rem;">Este juego no está incluido en ninguna lista todavía.</p>
+                </div>
+            `;
+        }
+    }
+};
+
+// Abrir el menú emergente y pintar las listas instantáneamente desde la caché disponible
+window.toggleSelectorListasJuego = async function() {
+    console.log("🔽 Ventana emergente de selección de listas abierta");
+
+    let modalListas = document.getElementById('modalSelectorListasJuego');
+    if (!modalListas) {
+        modalListas = document.createElement('div');
+        modalListas.id = 'modalSelectorListasJuego';
+        modalListas.style.cssText = 'display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); z-index: 9999999999; align-items: center; justify-content: center; padding: 20px; box-sizing: border-box;';
+        modalListas.innerHTML = `
+            <div style="background: #ffffff; width: 100%; max-width: 380px; border-radius: 20px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); box-sizing: border-box; display: flex; flex-direction: column; text-align: left;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #f0f0f0;">
+                    <span style="font-family: 'Cinzel', serif; font-size: 1rem; font-weight: 700; color: #111;">Añadir a mi lista</span>
+                    <span class="material-symbols-rounded" onclick="document.getElementById('modalSelectorListasJuego').style.display = 'none'" style="cursor: pointer; color: #666; font-size: 22px;">close</span>
+                </div>
+                
+                <div id="listaOpcionesParaAnadir" style="display: flex; flex-direction: column; gap: 10px; max-height: 260px; overflow-y: auto; margin-bottom: 15px;">
+                    <p style="color: #888; font-family: 'Outfit', sans-serif; font-size: 0.85rem; text-align: center; margin: 10px 0;">Cargando tus listas...</p>
+                </div>
+
+                <button type="button" onclick="document.getElementById('modalSelectorListasJuego').style.display = 'none'; document.getElementById('listasJuegoOverlay').style.display = 'none'; window.abrirCreadorListas();" style="background: #f3f4f6; color: #111; border: 1px solid #e5e7eb; border-radius: 14px; padding: 10px; font-family: 'Outfit', sans-serif; font-size: 0.8rem; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer; width: 100%;">
+                    <span class="material-symbols-rounded" style="font-size: 18px;">add_circle</span>
+                    Crear lista nueva
+                </button>
+            </div>
+        `;
+        document.body.appendChild(modalListas);
+    }
+
+    modalListas.style.display = 'flex';
+const contenedorOpciones = modalListas.querySelector('#listaOpcionesParaAnadir');
+    if (contenedorOpciones) {
+        contenedorOpciones.innerHTML = `<p style="color: #888; font-family: 'Outfit', sans-serif; font-size: 0.85rem; text-align: center; margin: 10px 0;">Cargando tus listas...</p>`;
+    }
+
+    // Si por lo que sea la caché estuviera vacía, hacemos una consulta rápida a Firebase
+    if (!window.misListasCache || Object.keys(window.misListasCache).length === 0) {
+        const usuarioActual = (typeof auth !== 'undefined' && auth.currentUser) ? auth.currentUser : null;
+        if (usuarioActual && typeof db !== 'undefined') {
+            try {
+                const snapshot = await getDocs(collection(db, 'users', usuarioActual.uid, 'listas'));
+                if (!window.misListasCache) window.misListasCache = {};
+                snapshot.forEach(docSnap => {
+                    window.misListasCache[docSnap.id] = docSnap.data();
+                });
+            } catch (err) {
+                console.error("Error recuperando listas:", err);
+            }
+        }
+    }
+
+    const todasLasListas = window.misListasCache || {};
+    const idJuego = window.idJuegoEnFichaActual ? String(window.idJuegoEnFichaActual) : null;
+
+    if (Object.keys(todasLasListas).length === 0) {
+        if (contenedorOpciones) {
+            contenedorOpciones.innerHTML = `<p style="color: #888; font-family: 'Outfit', sans-serif; font-size: 0.85rem; text-align: center; margin: 15px 0;">Aún no tienes listas creadas.</p>`;
+        }
+        return;
+    }
+
+    let html = '';
+    Object.entries(todasLasListas).forEach(([idLista, data]) => {
+        const juegosIds = (data.juegos || []).map(String);
+        const yaEsta = idJuego && juegosIds.includes(idJuego);
+        const bannerUrl = data.banner || 'linear-gradient(135deg, #2b5876 0%, #4e4376 100%)';
+        const tituloLista = data.titulo || 'Sin título';
+
+        if (yaEsta) {
+            html += `
+                <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; border-radius: 12px; background: #f9fafb; border: 1px solid #f0f0f0; opacity: 0.55; cursor: not-allowed;">
+                    <div style="display: flex; align-items: center; gap: 10px; overflow: hidden;">
+                        <div style="width: 36px; height: 36px; border-radius: 8px; background-image: ${bannerUrl}; background-size: cover; background-position: center; flex-shrink: 0;"></div>
+                        <div style="overflow: hidden; text-align: left;">
+                            <div style="font-family: 'Cinzel', serif; font-size: 0.85rem; font-weight: 700; color: #333; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${tituloLista}</div>
+                            <div style="font-family: 'Outfit', sans-serif; font-size: 0.7rem; color: #888;">Ya está en esta lista</div>
+                        </div>
+                    </div>
+                    <span class="material-symbols-rounded" style="color: #10b981; font-size: 20px; flex-shrink: 0;">check_circle</span>
+                </div>
+            `;
+        } else {
+            html += `
+                <div onclick="document.getElementById('modalSelectorListasJuego').style.display = 'none'; window.anadirJuegoAListaExistente('${idLista}')" style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; border-radius: 12px; background: #ffffff; border: 1px solid #e5e7eb; cursor: pointer; transition: background 0.15s;">
+                    <div style="display: flex; align-items: center; gap: 10px; overflow: hidden;">
+                        <div style="width: 36px; height: 36px; border-radius: 8px; background-image: ${bannerUrl}; background-size: cover; background-position: center; flex-shrink: 0;"></div>
+                        <div style="overflow: hidden; text-align: left;">
+                            <div style="font-family: 'Cinzel', serif; font-size: 0.85rem; font-weight: 700; color: #111; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${tituloLista}</div>
+                            <div style="font-family: 'Outfit', sans-serif; font-size: 0.7rem; color: #666;">${juegosIds.length} juegos</div>
+                        </div>
+                    </div>
+                    <span class="material-symbols-rounded" style="color: #111; font-size: 20px; flex-shrink: 0;">add_circle</span>
+                </div>
+            `;
+        }
+    });
+
+    if (contenedorOpciones) {
+        contenedorOpciones.innerHTML = html;
+    }
+};
+
+// Añadir el juego a la lista seleccionada
+window.anadirJuegoAListaExistente = async function(idLista) {
+    const idJuego = window.idJuegoEnFichaActual ? String(window.idJuegoEnFichaActual) : null;
+    if (!idJuego) {
+        alert("No se pudo detectar el ID del juego actual.");
+        return;
+    }
+
+    const usuarioActual = (typeof auth !== 'undefined' && auth.currentUser) ? auth.currentUser : null;
+    if (!usuarioActual || typeof db === 'undefined') return;
+
+    const infoLista = window.misListasCache ? window.misListasCache[idLista] : null;
+    if (!infoLista) return;
+
+    const juegosActuales = (infoLista.juegos || []).map(String);
+    if (juegosActuales.includes(idJuego)) return;
+
+    juegosActuales.push(idJuego);
+
+    try {
+        const listaRef = doc(db, 'users', usuarioActual.uid, 'listas', idLista);
+        await setDoc(listaRef, { juegos: juegosActuales }, { merge: true });
+
+        window.misListasCache[idLista].juegos = juegosActuales;
+        window.abrirListasJuego(idJuego);
+
+        if (typeof window.cargarListasDelPerfil === 'function') {
+            window.cargarListasDelPerfil();
+        }
+    } catch (error) {
+        console.error("❌ Error al añadir el juego a la lista:", error);
+    }
+};
+
+// Cerrar la pantalla de listas del juego
+window.cerrarListasJuego = function() {
+    const overlay = document.getElementById('listasJuegoOverlay');
+    if (overlay) {
+        overlay.style.setProperty('display', 'none', 'important');
+    }
+};
+
+// ==========================================
+// FUNCIONES DEL CREADOR DE LISTAS
+// ==========================================
+
+window.abrirCreadorListas = function() {
+    console.log("🔥 Botón pulsado: Intentando abrir el creador de listas...");
+    // OJO: Con 'L' mayúscula, tal como está en Index.html (línea 1458)
+    const overlay = document.getElementById('crearListaOverlay') || document.getElementById('crearlistaOverlay');
+
+    if (overlay) {
+        console.log("✅ Pantalla encontrada. Rescatándola y abriendo...");
+        document.body.appendChild(overlay);
+
+        overlay.style.setProperty('display', 'block', 'important');
+        overlay.style.setProperty('z-index', '2147483647', 'important');
+        overlay.style.setProperty('opacity', '1', 'important');
+
+        // Limpiamos el buscador si tenía texto escrito de antes
+        const inputBuscador = document.getElementById('buscadorJuegosLista');
+        if (inputBuscador) inputBuscador.value = '';
+
+        // Pintamos todos los juegos de tu colección
+        window.pintarColeccionEnCreadorListas();
+    } else {
+        console.error("❌ ERROR: El HTML de la pantalla crearListaOverlay no está.");
+    }
+};
+
+window.cerrarCreadorListas = function() {
+    const overlay = document.getElementById('crearListaOverlay') || document.getElementById('crearlistaOverlay');
+    if (overlay) {
+        overlay.style.setProperty('display', 'none', 'important');
+    }
+};
+
+// Pinta los juegos de tu colección en #contenedorCrearListaJuegos (línea 1496 de Index.html)
+window.pintarColeccionEnCreadorListas = function() {
+    const container = document.getElementById('contenedorCrearListaJuegos') || document.getElementById('coleccionParaListaContainer');
+    if (!container) return;
+
+    const coleccion = window.miColeccionActiva || {};
+    const ids = Object.keys(coleccion);
+
+    if (ids.length === 0) {
+        container.innerHTML = '<p style="color: #888; font-family: \'Outfit\', sans-serif; font-size: 0.85rem; grid-column: 1 / -1; text-align: center; padding: 15px 0;">No tienes juegos en tu colección todavía.</p>';
+        return;
+    }
+
+    let html = '';
+    ids.forEach(idJuego => {
+        const juego = coleccion[idJuego];
+        if (!juego) return;
+
+        const nombre = juego.nombre || juego.name || 'Juego';
+        const caratula = juego.caratula
+            ? `https://images.igdb.com/igdb/image/upload/t_cover_big/${juego.caratula}.jpg`
+            : 'https://via.placeholder.com/150x200?text=Sin+Imagen';
+
+        // Usa las clases exactas (.juego-crear-lista-item y .check-overlay) que lee tu función guardarNuevaLista
+        html += `
+            <div class="juego-crear-lista-item" data-id="${idJuego}" data-nombre="${nombre.toLowerCase().replace(/"/g, '&quot;')}" onclick="window.toggleSeleccionJuegoNuevaLista(this)" style="position: relative; cursor: pointer; border-radius: 12px; overflow: hidden; background: #ffffff; box-shadow: 0 4px 10px rgba(0,0,0,0.06); border: 2px solid transparent; transition: all 0.15s ease; display: flex; flex-direction: column;">
+                <div style="aspect-ratio: 3/4; width: 100%; position: relative;">
+                    <img src="${caratula}" style="width: 100%; height: 100%; object-fit: cover; display: block;">
+                    <div class="check-overlay" style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(22, 163, 74, 0.55); align-items: center; justify-content: center; backdrop-filter: blur(1px);">
+                        <span class="material-symbols-rounded" style="color: #ffffff; font-size: 34px; font-weight: bold; text-shadow: 0 2px 6px rgba(0,0,0,0.3);">check_circle</span>
+                    </div>
+                </div>
+                <div style="padding: 8px; text-align: center; background: #ffffff;">
+                    <span style="color: #222; font-family: 'Outfit', sans-serif; font-size: 0.78rem; font-weight: 600; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${nombre}</span>
+                </div>
+            </div>
+        `;
+    });
+
+    container.innerHTML = html;
+};
+
+// Marca o desmarca un juego al hacer clic sobre su carátula
+window.toggleSeleccionJuegoNuevaLista = function(elemento) {
+    const check = elemento.querySelector('.check-overlay');
+    if (!check) return;
+
+    const estaSeleccionado = check.style.display === 'flex';
+    if (estaSeleccionado) {
+        check.style.display = 'none';
+        elemento.style.border = '2px solid transparent';
+        elemento.style.transform = 'scale(1)';
+    } else {
+        check.style.display = 'flex';
+        elemento.style.border = '2px solid #16a34a';
+        elemento.style.transform = 'scale(0.97)';
+    }
+};
+
+// Filtra los juegos en tiempo real desde el input #buscadorJuegosLista (línea 1492 de Index.html)
+window.filtrarJuegosCreadorLista = function() {
+    const input = document.getElementById('buscadorJuegosLista');
+    const filtro = input ? input.value.toLowerCase().trim() : '';
+    const items = document.querySelectorAll('#contenedorCrearListaJuegos .juego-crear-lista-item');
+
+    items.forEach(item => {
+        const nombre = item.getAttribute('data-nombre') || '';
+        item.style.display = (!filtro || nombre.includes(filtro)) ? 'flex' : 'none';
+    });
+};
+
+// Previsualización del banner al subir foto (línea 1476 de Index.html)
+window.cargarPrevisualizacionBanner = function(input) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const bannerDiv = document.getElementById('bannerListaVisual');
+            const contenidoBanner = document.getElementById('bannerListaContenido');
+            if (bannerDiv) {
+                bannerDiv.style.backgroundImage = `url('${e.target.result}')`;
+                bannerDiv.style.backgroundSize = 'cover';
+                bannerDiv.style.backgroundPosition = 'center';
+            }
+            if (contenidoBanner) {
+                contenidoBanner.style.background = 'rgba(0, 0, 0, 0.45)';
+                contenidoBanner.innerHTML = `
+                    <span class="material-symbols-rounded" style="color: #fff; font-size: 28px; margin-bottom: 4px; display: block;">edit</span>
+                    <div style="color: #fff; font-family: 'Outfit', sans-serif; font-size: 0.8rem; font-weight: 600;">Cambiar banner</div>
+                `;
+            }
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+};
+
+window.guardarNuevaLista = window.guardarNuevoLista = async function() {
+    console.log("💾 Intentando guardar la nueva lista...");
+
+    const tituloInput = document.getElementById('inputTituloLista');
+    const descInput = document.getElementById('inputDescLista');
+    const inputArchivo = document.getElementById('inputBannerLista');
+
+    const titulo = tituloInput ? tituloInput.value.trim() : '';
+    const descripcion = descInput ? descInput.value.trim() : '';
+
+    if (!titulo) {
+        alert("¡Por favor, ponle un título a tu lista!");
+        return;
+    }
+
+    const ejecutarGuardado = async (bannerFinalUrl) => {
+        const juegosSeleccionados = [];
+        const items = document.querySelectorAll('#contenedorCrearListaJuegos .juego-crear-lista-item');
+
+        items.forEach(item => {
+            const check = item.querySelector('.check-overlay');
+            if (check && check.style.display === 'flex') {
+                juegosSeleccionados.push(item.getAttribute('data-id'));
+            }
+        });
+
+        const idLista = 'lista_' + Date.now();
+        const nuevaListaData = {
+            id: idLista,
+            titulo: titulo,
+            descripcion: descripcion,
+            banner: bannerFinalUrl,
+            juegos: juegosSeleccionados,
+            fechaCreacion: Date.now()
+        };
+
+        // 1. Guardamos en caché local al instante
+        if (!window.misListasCache) window.misListasCache = {};
+        window.misListasCache[idLista] = nuevaListaData;
+
+        // 2. Limpiamos el formulario y CERRAMOS LA VENTANA DE INMEDIATO
+        if (tituloInput) tituloInput.value = '';
+        if (descInput) descInput.value = '';
+        if (inputArchivo) inputArchivo.value = '';
+        
+        const bannerDiv = document.getElementById('bannerListaVisual');
+        if (bannerDiv) bannerDiv.style.backgroundImage = '';
+
+        const contenidoBanner = document.getElementById('bannerListaContenido');
+        if (contenidoBanner) {
+            contenidoBanner.style.background = 'rgba(255, 255, 255, 0.85)';
+            contenidoBanner.innerHTML = '<span class="material-symbols-rounded" style="color: #333; font-size: 36px; margin-bottom: 4px; display: block;">add_photo_alternate</span><div style="color: #444; font-family: \'Outfit\', sans-serif; font-size: 0.8rem; font-weight: 600;">Añadir banner de la lista</div>';
+        }
+
+        document.querySelectorAll('#contenedorCrearListaJuegos .juego-crear-lista-item').forEach(item => {
+            const check = item.querySelector('.check-overlay');
+            if (check) check.style.display = 'none';
+            item.style.border = '2px solid transparent';
+            item.style.transform = 'scale(1)';
+        });
+
+        window.cerrarCreadorListas();
+
+        // 3. Guardamos en Firebase con el banner ya comprimido y ligero
+        try {
+            const usuarioActual = (typeof auth !== 'undefined' && auth.currentUser) ? auth.currentUser : null;
+            if (usuarioActual && typeof db !== 'undefined') {
+                const listaRef = doc(db, 'users', usuarioActual.uid, 'listas', idLista);
+                await setDoc(listaRef, nuevaListaData);
+                console.log("✅ Lista y banner ligero guardados en Firebase correctamente.");
+            }
+        } catch (error) {
+            console.error("❌ Error al guardar en Firebase:", error);
+        }
+
+        if (typeof window.cargarListasDelPerfil === 'function') {
+            window.cargarListasDelPerfil();
+        }
+    };
+
+    // Si hay imagen subida, la comprimimos automáticamente a JPEG ligero (máx 800px) para no saturar Firebase
+    if (inputArchivo && inputArchivo.files && inputArchivo.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const img = new Image();
+            img.onload = function() {
+                const canvas = document.createElement('canvas');
+                const maxWidth = 800;
+                const scale = img.width > maxWidth ? (maxWidth / img.width) : 1;
+                canvas.width = Math.round(img.width * scale);
+                canvas.height = Math.round(img.height * scale);
+
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+                // Exportamos comprimido al 70% de calidad (reduce varios MB a unos ~40 KB)
+                const dataUrlComprimido = canvas.toDataURL('image/jpeg', 0.7);
+                ejecutarGuardado(`url('${dataUrlComprimido}')`);
+            };
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(inputArchivo.files[0]);
+    } else {
+        ejecutarGuardado('linear-gradient(135deg, #2b5876 0%, #4e4376 100%)');
+    }
+};
+
+window.cargarListasDelPerfil = async function() {
+    const usuarioActual = (typeof auth !== 'undefined' && auth.currentUser) ? auth.currentUser : null;
+    if (!usuarioActual || typeof db === 'undefined') return;
+
+    const contenedorPerfil = document.getElementById('perfilListasContainer');
+    if (!contenedorPerfil) return;
+
+    try {
+        const listasRef = collection(db, 'users', usuarioActual.uid, 'listas');
+        const querySnapshot = await getDocs(listasRef);
+        const totalListas = querySnapshot.size;
+
+        // 🚀 1. Actualiza el contador principal de la pestaña "LISTAS" en el perfil
+        const tabContador = document.getElementById('statLists');
+        if (tabContador) {
+            tabContador.textContent = totalListas;
+        }
+
+        // 🚀 2. Actualiza también el contador en la Tarjeta de Jugador
+        const numListasSpan = document.getElementById('numListasPerfil');
+        const pcStatLis = document.getElementById('pcStatLis');
+        if (numListasSpan) {
+            numListasSpan.textContent = totalListas;
+        } else if (pcStatLis) {
+            pcStatLis.textContent = totalListas;
+        }
+
+        // Si no hay listas, mostramos el texto vacío
+        if (querySnapshot.empty) {
+            contenedorPerfil.innerHTML = '<p style="color: #888; font-family: \'Outfit\', sans-serif; font-size: 0.85rem; line-height: 1.5; margin: 0; text-align: center;"><em>Por ahora no hay nada que ver aquí... Ni una lista. Suponemos que organizar tus juegos te da demasiada pereza y abrazas el caos.</em></p>';
+            return; 
+        }
+
+        let htmlListas = '';
+        if (!window.misListasCache) window.misListasCache = {};
+
+        querySnapshot.forEach((docSnap) => {
+            const data = docSnap.data();
+            const idLista = docSnap.id;
+            const titulo = data.titulo || 'Sin título';
+            const descripcion = data.descripcion || '';
+            const bannerUrl = data.banner || 'linear-gradient(135deg, #2b5876 0%, #4e4376 100%)';
+            const juegosIds = data.juegos || [];
+
+            window.misListasCache[idLista] = {
+                titulo: titulo,
+                descripcion: descripcion,
+                banner: bannerUrl,
+                juegos: juegosIds
+            };
+
+            let caratulasHTML = '';
+            juegosIds.forEach(idJuego => {
+                const juegoInfo = (window.miColeccionActiva && window.miColeccionActiva[idJuego]) ? window.miColeccionActiva[idJuego] : null;
+                if (juegoInfo && juegoInfo.caratula) {
+                    caratulasHTML += `<img src="https://images.igdb.com/igdb/image/upload/t_cover_small/${juegoInfo.caratula}.jpg" style="width: 45px; height: 60px; object-fit: cover; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); flex-shrink: 0;">`;
+                }
+            });
+
+            htmlListas += `
+                <div onclick="window.abrirDetalleLista('${idLista}')" style="width: 100%; border-radius: 16px; margin-bottom: 20px; overflow: hidden; background: #ffffff; box-shadow: 0 4px 15px rgba(0,0,0,0.08); border: 1px solid rgba(0,0,0,0.05); cursor: pointer; display: flex; flex-direction: column; text-align: left;">
+                    <div style="position: relative; width: 100%; height: 90px; background-image: ${bannerUrl}; background-size: cover; background-position: center;">
+                        <div style="position: absolute; top:0; left:0; width:100%; height:100%; background: linear-gradient(to right, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.1) 100%);"></div>
+                        <div style="position: relative; z-index: 1; padding: 15px; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; box-sizing: border-box;">
+                            <h3 style="color: #fff; font-family: 'Cinzel', serif; margin: 0; font-size: 1.2rem; text-shadow: 0 2px 4px rgba(0,0,0,0.8); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${titulo}</h3>
+                            ${descripcion ? `<span style="color: #ddd; font-family: 'Outfit', sans-serif; font-size: 0.75rem; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; opacity: 0.9;">${descripcion}</span>` : ''}
+                        </div>
+                    </div>
+                    <div style="padding: 12px 15px; display: flex; gap: 12px; align-items: center; border-top: 1px solid #f0f0f0;">
+                        <div style="background: #f3f4f6; color: #333; padding: 4px 10px; border-radius: 12px; font-size: 0.8rem; font-family: 'Outfit', sans-serif; font-weight: 700; border: 1px solid #e5e7eb; display: flex; align-items: center; height: fit-content; flex-shrink: 0;">
+                            ${juegosIds.length} <span class="material-symbols-rounded" style="font-size: 14px; margin-left: 4px;">sports_esports</span>
+                        </div>
+                        <div style="display: flex; gap: 8px; overflow: hidden; width: 100%; align-items: center;">
+                            ${caratulasHTML || '<span style="color: #999; font-size: 0.8rem; font-family: \'Outfit\', sans-serif; font-style: italic;">Cargando juegos...</span>'}
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+
+        contenedorPerfil.innerHTML = htmlListas;
+        console.log("✅ Listas del perfil cargadas desde Firebase con éxito. Total:", totalListas);
+    } catch (error) {
+        console.error("❌ Error cargando las listas de Firebase:", error);
+    }
+};
+window.abrirDetalleLista = function(idLista) {
+    console.log("🔍 Abriendo detalle de lista con ID:", idLista);
+    const overlay = document.getElementById('detalleListaOverlay');
+    const contenedor = document.getElementById('detalleListaContenido');
+    const btnBorrarContainer = document.getElementById('btnBorrarListaContainer');
+    
+    if (!overlay || !contenedor) return;
+    document.body.appendChild(overlay);
+
+    const infoLista = window.misListasCache ? window.misListasCache[idLista] : null;
+    if (!infoLista) {
+        console.error("❌ No se encontró la información de la lista.");
+        return;
+    }
+
+    const titulo = infoLista.titulo;
+    const descripcion = infoLista.descripcion;
+    const bannerUrl = infoLista.banner;
+    const juegosIds = infoLista.juegos;
+
+    // Solo dejamos el botón de borrar (papelera) arriba a la derecha
+    if (btnBorrarContainer) {
+        btnBorrarContainer.style.display = 'flex';
+        btnBorrarContainer.innerHTML = `
+            <span class="material-symbols-rounded" onclick="window.borrarLista('${idLista}')" style="color: #ff4d4d; font-size: 20px; cursor: pointer; background: rgba(0,0,0,0.5); padding: 6px; border-radius: 50%; display: flex; align-items: center; justify-content: center;" title="Eliminar lista">delete</span>
+        `;
+    }
+
+    let juegosGridHTML = '';
+    juegosIds.forEach(idJuego => {
+        const juegoInfo = (window.miColeccionActiva && window.miColeccionActiva[idJuego]) ? window.miColeccionActiva[idJuego] : null;
+        if (juegoInfo) {
+            const caratula = juegoInfo.caratula ? `https://images.igdb.com/igdb/image/upload/t_cover_big/${juegoInfo.caratula}.jpg` : 'https://via.placeholder.com/150x200?text=Sin+Imagen';
+            const nombreJuego = juegoInfo.nombre || 'Juego';
+
+            juegosGridHTML += `
+                <div onclick="const m1 = document.getElementById('detalleListaOverlay'); if(m1) m1.style.display='none'; const m2 = document.getElementById('listasJuegoOverlay'); if(m2) m2.style.display='none'; window.openGameDetail('${idJuego}');" style="cursor: pointer; background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.06); border: 1px solid #f0f0f0; display: flex; flex-direction: column;">
+                    <div style="aspect-ratio: 3/4; width: 100%;">
+                        <img src="${caratula}" style="width: 100%; height: 100%; object-fit: cover;">
+                    </div>
+                    <div style="padding: 10px; text-align: center;">
+                        <span style="color: #333; font-family: 'Outfit', sans-serif; font-size: 0.8rem; font-weight: 600; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${nombreJuego}</span>
+                    </div>
+                </div>
+            `;
+        }
+    });
+
+    // Montamos la vista con fondo BLANCO (#fdfdfd) y cabecera con botón de editar
+    contenedor.innerHTML = `
+        <div style="position: absolute; top: 0; left: 0; width: 100%; min-height: 100%; background: #fdfdfd; z-index: 0; padding-bottom: 65px;">
+            
+            <!-- Banner superior estático con imagen nítida -->
+            <div style="position: sticky; top: 0; z-index: 3; width: 100%; height: 210px; background-image: ${bannerUrl}; background-size: cover; background-position: center; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.45); display: flex; flex-direction: column; justify-content: flex-end; padding: 20px; box-sizing: border-box;">
+                    <h1 style="color: #fff; font-family: 'Cinzel', serif; margin: 0 0 4px 0; font-size: 1.8rem; text-shadow: 0 2px 8px rgba(0,0,0,0.9);">${titulo}</h1>
+                    <span style="color: rgba(255,255,255,0.9); font-family: 'Outfit', sans-serif; font-size: 0.8rem; font-weight: 600;">
+                        ${juegosIds.length} Juegos en total
+                    </span>
+                </div>
+            </div>
+
+            <!-- Contenido sobre fondo blanco -->
+            <div style="padding: 20px; max-width: 600px; margin: 0 auto; position: relative; z-index: 2;">
+                ${descripcion ? `
+                    <div style="margin-bottom: 25px; padding: 0 5px; text-align: left;">
+                        <p style="color: #555; font-family: 'Outfit', sans-serif; font-size: 0.95rem; line-height: 1.5; margin: 0;">${descripcion}</p>
+                    </div>
+                ` : ''}
+
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h3 style="color: #222; font-family: 'Outfit', sans-serif; font-size: 1rem; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; font-weight: 700;">
+                    <span class="material-symbols-rounded" style="color: #e67e22; font-size: 18px;">sports_esports</span>
+                    Juegos de la lista
+                </h3>
+                    <button type="button" onclick="window.abrirEditorJuegosLista('${idLista}')" style="background: #f3f4f6; color: #222; border: 1px solid #e5e7eb; border-radius: 20px; padding: 6px 14px; font-family: 'Outfit', sans-serif; font-size: 0.78rem; font-weight: 600; display: flex; align-items: center; gap: 5px; cursor: pointer;">
+                        <span class="material-symbols-rounded" style="font-size: 16px;">edit</span>
+                        Editar lista
+                    </button>
+                </div>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 12px;">
+                    ${juegosGridHTML || '<p style="color: #888; font-family: \'Outfit\', sans-serif; text-align: center;">Esta lista no tiene juegos todavía.</p>'}
+                </div>
+            </div>
+        </div>
+    `;
+
+    overlay.style.setProperty('display', 'block', 'important');
+    overlay.style.setProperty('z-index', '999999999', 'important');
+    overlay.style.setProperty('opacity', '1', 'important');
+};
+
+// Función para borrar la lista de Firebase y del perfil
+window.borrarLista = async function(idLista) {
+    if (!confirm("¿Seguro que quieres eliminar esta lista para siempre?")) return;
+
+    const usuarioActual = (typeof auth !== 'undefined' && auth.currentUser) ? auth.currentUser : null;
+    if (!usuarioActual) {
+        alert("Debes iniciar sesión.");
+        return;
+    }
+
+    try {
+        const listaRef = doc(db, 'users', usuarioActual.uid, 'listas', idLista);
+        await deleteDoc(listaRef);
+        console.log("🗑️ Lista eliminada de Firebase con éxito.");
+
+        // Cerramos el panel de detalle
+        window.cerrarDetalleLista();
+
+        // Recargamos el perfil para que desaparezca la tarjeta
+        if (typeof window.cargarListasDelPerfil === 'function') {
+            window.cargarListasDelPerfil();
+        }
+    } catch (error) {
+        console.error("❌ Error al borrar la lista:", error);
+        alert("Hubo un error al intentar borrar la lista.");
+    }
+};
+
+window.cerrarDetalleLista = function() {
+    const overlay = document.getElementById('detalleListaOverlay');
+    if (overlay) {
+        overlay.style.setProperty('display', 'none', 'important');
+    }
+};
+
+// Abrir modal para añadir o quitar juegos (SIEMPRE por delante de todo y con buscador)
+window.abrirEditorJuegosLista = function(idLista) {
+    const infoLista = window.misListasCache ? window.misListasCache[idLista] : null;
+    if (!infoLista) return;
+
+    let modalEditor = document.getElementById('modalEditorJuegosLista');
+    if (!modalEditor) {
+        modalEditor = document.createElement('div');
+        modalEditor.id = 'modalEditorJuegosLista';
+    }
+    // CRÍTICO: Lo movemos al final del body cada vez que se abre para que SIEMPRE quede por delante de detalleListaOverlay
+    document.body.appendChild(modalEditor);
+
+    const coleccion = window.miColeccionActiva || {};
+    const juegosEnLista = new Set((infoLista.juegos || []).map(String));
+
+    // Unimos los juegos que ya están en la lista + los de tu colección para pintarlos todos
+    const todosIds = Array.from(new Set([...juegosEnLista, ...Object.keys(coleccion)]));
+
+    let itemsHTML = '';
+    todosIds.forEach(idJuego => {
+        const j = coleccion[idJuego];
+        if (!j) return;
+        const marcado = juegosEnLista.has(String(idJuego));
+        const caratula = j.caratula ? `https://images.igdb.com/igdb/image/upload/t_cover_small/${j.caratula}.jpg` : 'https://via.placeholder.com/45x60?text=Sin+Img';
+        const nombre = j.nombre || 'Juego';
+
+        itemsHTML += `
+            <div class="item-juego-editor" onclick="window.toggleJuegoEnEditor(this, '${idJuego}')" data-id="${idJuego}" data-nombre="${nombre.toLowerCase().replace(/"/g, '&quot;')}" data-selected="${marcado ? 'true' : 'false'}" style="display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; border-radius: 12px; background: ${marcado ? '#f0fdf4' : '#f9fafb'}; border: 1px solid ${marcado ? '#86efac' : '#e5e7eb'}; cursor: pointer; transition: all 0.15s;">
+                <div style="display: flex; align-items: center; gap: 12px; overflow: hidden;">
+                    <img src="${caratula}" style="width: 38px; height: 50px; object-fit: cover; border-radius: 6px; flex-shrink: 0;">
+                    <span style="color: #222; font-family: 'Outfit', sans-serif; font-size: 0.85rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${nombre}</span>
+                </div>
+                <span class="material-symbols-rounded icon-check" style="color: ${marcado ? '#16a34a' : '#ccc'}; font-size: 22px;">
+                    ${marcado ? 'check_circle' : 'radio_button_unchecked'}
+                </span>
+            </div>
+        `;
+    });
+
+    modalEditor.style.cssText = 'display: flex !important; position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; background: rgba(0,0,0,0.6) !important; backdrop-filter: blur(4px) !important; z-index: 2147483647 !important; align-items: center !important; justify-content: center !important; padding: 20px !important; box-sizing: border-box !important;';
+    modalEditor.innerHTML = `
+        <div style="background: #ffffff; width: 100%; max-width: 420px; border-radius: 20px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.35); display: flex; flex-direction: column; max-height: 82vh;">
+            <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 12px; border-bottom: 1px solid #f0f0f0; margin-bottom: 12px;">
+                <h3 style="margin: 0; font-family: 'Cinzel', serif; font-size: 1.05rem; color: #111;">Editar Juegos de la Lista</h3>
+                <span class="material-symbols-rounded" onclick="document.getElementById('modalEditorJuegosLista').style.display='none'" style="cursor: pointer; color: #666;">close</span>
+            </div>
+
+            <!-- Barra de búsqueda de juegos dentro del editor -->
+            <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+                <div style="position: relative; flex: 1; display: flex; align-items: center;">
+                    <span class="material-symbols-rounded" style="position: absolute; left: 10px; color: #888; font-size: 18px; pointer-events: none;">search</span>
+                    <input type="text" id="inputBuscarJuegoEditor" placeholder="Buscar juego en colección..." oninput="window.filtrarJuegosEditorLista(this.value)" onkeydown="if(event.key==='Enter') window.buscarJuegosIGDBParaLista()" style="width: 100%; padding: 9px 12px 9px 34px; border: 1px solid #e5e7eb; border-radius: 12px; font-family: 'Outfit', sans-serif; font-size: 0.85rem; color: #222; background: #f9fafb; outline: none; box-sizing: border-box;">
+                </div>
+                <button type="button" onclick="window.buscarJuegosIGDBParaLista()" style="background: #222; color: #fff; border: none; border-radius: 12px; padding: 0 14px; font-family: 'Outfit', sans-serif; font-size: 0.8rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 4px; flex-shrink: 0;" title="Buscar en toda la base de datos">
+                    Buscar
+                </button>
+            </div>
+
+            <div id="listaJuegosEditorContainer" style="display: flex; flex-direction: column; gap: 8px; overflow-y: auto; flex: 1; padding-right: 4px; margin-bottom: 16px;">
+                ${itemsHTML || '<p style="color:#888; text-align:center; font-family:\'Outfit\',sans-serif;">Usa el buscador para encontrar y añadir juegos.</p>'}
+            </div>
+
+            <button type="button" id="btnGuardarEdicionLista" onclick="window.guardarJuegosEditadosLista('${idLista}')" style="background: #111111; color: #ffffff; border: none; border-radius: 14px; padding: 12px; font-family: 'Outfit', sans-serif; font-size: 0.9rem; font-weight: 700; cursor: pointer; width: 100%;">
+                Guardar cambios
+            </button>
+        </div>
+    `;
+};
+
+// Filtra al instante los juegos que ya están en pantalla mientras escribes
+window.filtrarJuegosEditorLista = function(texto) {
+    const filtro = (texto || '').toLowerCase().trim();
+    const filas = document.querySelectorAll('#listaJuegosEditorContainer .item-juego-editor');
+    filas.forEach(fila => {
+        const nombre = fila.getAttribute('data-nombre') || '';
+        fila.style.display = (!filtro || nombre.includes(filtro)) ? 'flex' : 'none';
+    });
+};
+
+// Busca juegos nuevos en IGDB si pulsas el botón "Buscar" o Enter
+window.buscarJuegosIGDBParaLista = async function() {
+    const input = document.getElementById('inputBuscarJuegoEditor');
+    const contenedor = document.getElementById('listaJuegosEditorContainer');
+    if (!input || !contenedor) return;
+    const query = input.value.trim();
+    if (!query) return;
+
+    // Si existen juegos nuevos en IGDB mediante Google Apps Script (buscarJuegos / searchGames)
+    if (typeof google !== 'undefined' && google.script && google.script.run) {
+        const avisoCarga = document.createElement('p');
+        avisoCarga.id = 'avisoBuscandoIGDB';
+        avisoCarga.style.cssText = 'color:#666; font-size:0.8rem; text-align:center; font-family:"Outfit",sans-serif; margin: 6px 0;';
+        avisoCarga.textContent = 'Buscando más juegos en IGDB...';
+        contenedor.prepend(avisoCarga);
+
+        google.script.run
+            .withSuccessHandler(function(res) {
+                const aviso = document.getElementById('avisoBuscandoIGDB');
+                if (aviso) aviso.remove();
+                const lista = (res && res.data) ? res.data : (Array.isArray(res) ? res : []);
+                lista.forEach(juego => {
+                    const idJuego = String(juego.id);
+                    if (contenedor.querySelector(`[data-id="${idJuego}"]`)) return; // Ya está en la lista visual
+                    const imgHash = (juego.cover && juego.cover.image_id) ? juego.cover.image_id : (juego.caratula || '');
+                    const caratula = imgHash ? `https://images.igdb.com/igdb/image/upload/t_cover_small/${imgHash}.jpg` : 'https://via.placeholder.com/45x60?text=Sin+Img';
+                    const nombre = juego.name || juego.nombre || 'Juego';
+
+                    // Lo guardamos también en memoria para que tenga carátula y título al pintarse en la lista
+                    window.miColeccionActiva = window.miColeccionActiva || {};
+                    if (!window.miColeccionActiva[idJuego]) {
+                        window.miColeccionActiva[idJuego] = { nombre: nombre, caratula: imgHash };
+                    }
+
+                    const div = document.createElement('div');
+                    div.className = 'item-juego-editor';
+                    div.setAttribute('onclick', `window.toggleJuegoEnEditor(this, '${idJuego}')`);
+                    div.setAttribute('data-id', idJuego);
+                    div.setAttribute('data-nombre', nombre.toLowerCase());
+                    div.setAttribute('data-selected', 'false');
+                    div.style.cssText = 'display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; border-radius: 12px; background: #f9fafb; border: 1px solid #e5e7eb; cursor: pointer; transition: all 0.15s;';
+                    div.innerHTML = `
+                        <div style="display: flex; align-items: center; gap: 12px; overflow: hidden;">
+                            <img src="${caratula}" style="width: 38px; height: 50px; object-fit: cover; border-radius: 6px; flex-shrink: 0;">
+                            <span style="color: #222; font-family: 'Outfit', sans-serif; font-size: 0.85rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${nombre}</span>
+                        </div>
+                        <span class="material-symbols-rounded icon-check" style="color: #ccc; font-size: 22px;">radio_button_unchecked</span>
+                    `;
+                    contenedor.prepend(div);
+                });
+            })
+            .withFailureHandler(function() {
+                const aviso = document.getElementById('avisoBuscandoIGDB');
+                if (aviso) aviso.remove();
+            })
+            .buscarJuegosIGDB ? google.script.run.buscarJuegosIGDB(query) : (
+                google.script.run.searchGames ? google.script.run.searchGames(query) : null
+            );
+    }
+};
+
+window.toggleJuegoEnEditor = function(el) {
+    const activo = el.getAttribute('data-selected') === 'true';
+    const nuevoEstado = !activo;
+    el.setAttribute('data-selected', nuevoEstado ? 'true' : 'false');
+    el.style.background = nuevoEstado ? '#f0fdf4' : '#f9fafb';
+    el.style.borderColor = nuevoEstado ? '#86efac' : '#e5e7eb';
+    const icon = el.querySelector('.icon-check');
+    if (icon) {
+        icon.textContent = nuevoEstado ? 'check_circle' : 'radio_button_unchecked';
+        icon.style.color = nuevoEstado ? '#16a34a' : '#ccc';
+    }
+};
+
+window.guardarJuegosEditadosLista = async function(idLista) {
+    const modalEditor = document.getElementById('modalEditorJuegosLista');
+    const contenedor = document.getElementById('listaJuegosEditorContainer');
+    const btn = document.getElementById('btnGuardarEdicionLista');
+    if (!contenedor) return;
+
+    const seleccionados = Array.from(contenedor.querySelectorAll('[data-selected="true"]')).map(el => el.getAttribute('data-id'));
+    if (btn) btn.textContent = 'Guardando...';
+
+    // 1. Actualizamos la caché local de inmediato
+    if (window.misListasCache && window.misListasCache[idLista]) {
+        window.misListasCache[idLista].juegos = seleccionados;
+    }
+
+    // 2. Cerramos el modal de edición inmediatamente (igual que al darle a la X)
+    if (modalEditor) {
+        modalEditor.style.setProperty('display', 'none', 'important');
+    }
+
+    // 3. Refrescamos la vista de la lista que está debajo para ver los juegos añadidos/quitados al instante
+    window.abrirDetalleLista(idLista);
+    if (typeof window.cargarListasPerfil === 'function') window.cargarListasPerfil();
+
+    // 4. Guardamos en segundo plano en Firebase
+    try {
+        const uid = (window.auth && window.auth.currentUser) ? window.auth.currentUser.uid : (window.usuarioActual ? window.usuarioActual.uid : null);
+        if (uid && window.db) {
+            await window.db.collection('usuarios').doc(uid).collection('listas').doc(idLista).update({
+                juegos: seleccionados
+            });
+        }
+    } catch (e) {
+        console.error('Error sincronizando lista con Firebase:', e);
+    }
+};
+// =========================================================
+// PESTAÑAS DESLIZABLES CON ICONOS Y CAJÓN GLASS BLANCO
+// =========================================================
+window.moverSliderPestanaLupa = function(btnActivo) {
+    const fila = document.getElementById('barraPestanasLupa');
+    const slider = document.getElementById('sliderPestanaLupa');
+    if (!fila || !slider || !btnActivo) return;
+
+    slider.style.width = btnActivo.offsetWidth + 'px';
+    slider.style.transform = `translateX(${btnActivo.offsetLeft}px)`;
+
+    // Desliza suavemente la barra para centrar la pestaña tocada
+    try {
+        btnActivo.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    } catch (e) {}
+};
+
+window.aplicarDisenoBuscadorLupa = function() {
+    const searchPanel = document.getElementById('searchPanel');
+    const raiz = searchPanel || document;
+
+    // Mapa de iconos para cada pestaña
+    const iconosPorPestana = {
+        'juegos': 'sports_esports',
+        'listas': 'format_list_bulleted',
+        'temas': 'forum',
+        'usuarios': 'group'
+    };
+
+    // 1. Localizamos la barra de pestañas (o la recuperamos si ya la marcamos antes)
+    let filaPestanas = document.getElementById('barraPestanasLupa');
+    if (!filaPestanas) {
+        const candidatos = Array.from(raiz.querySelectorAll('button, div, span')).filter(el => {
+            if (el.children.length > 1) return false;
+            const txt = (el.textContent || '').trim().toLowerCase();
+            return Object.prototype.hasOwnProperty.call(iconosPorPestana, txt);
+        });
+        if (candidatos.length >= 2) {
+            filaPestanas = candidatos[0].parentElement;
+            if (filaPestanas) filaPestanas.id = 'barraPestanasLupa';
+        }
+    }
+
+    if (filaPestanas) {
+        filaPestanas.classList.add('header-pestanas-lupa');
+
+        // Evitamos que cualquier contenedor padre encoja las pestañas al mostrar resultados
+        let ancestro = filaPestanas.parentElement;
+        while (ancestro && ancestro !== document.body) {
+            if (ancestro.id !== 'searchPanel') {
+                ancestro.style.setProperty('flex-shrink', '0', 'important');
+            } else {
+                ancestro.style.setProperty('justify-content', 'flex-start', 'important');
+            }
+            ancestro = ancestro.parentElement;
+        }
+
+        // Creamos la píldora deslizante si aún no existe
+        let slider = document.getElementById('sliderPestanaLupa');
+        const botonesHijos = Array.from(filaPestanas.children).filter(el => el.id !== 'sliderPestanaLupa');
+
+        if (!slider) {
+            slider = document.createElement('div');
+            slider.id = 'sliderPestanaLupa';
+            slider.className = 'slider-pestana-lupa';
+            filaPestanas.appendChild(slider);
+        }
+
+        botonesHijos.forEach((btn, idx) => {
+            btn.classList.add('btn-pestana-lupa');
+
+            // Guardamos el nombre limpio de la pestaña y le inyectamos su icono
+            if (!btn.dataset.nombrePestana) {
+                const textoOriginal = (btn.textContent || '').trim();
+                const clave = textoOriginal.toLowerCase();
+                btn.dataset.nombrePestana = clave;
+                const nombreIcono = iconosPorPestana[clave] || 'star';
+
+                btn.innerHTML = `
+                    <span class="material-symbols-rounded icono-pestana-lupa">${nombreIcono}</span>
+                    <span>${textoOriginal}</span>
+                `;
+            }
+
+            // Detectamos si era la pestaña activa
+            const bgInline = (btn.getAttribute('style') || '').toLowerCase();
+            const bgComp = window.getComputedStyle(btn).backgroundColor;
+            const eraOscuro = bgInline.includes('#111') || bgInline.includes('#000') || bgComp === 'rgb(17, 17, 17)';
+
+            if (eraOscuro && !filaPestanas.dataset.initDone) {
+                botonesHijos.forEach(b => b.classList.remove('activa-lupa'));
+                btn.classList.add('activa-lupa');
+            }
+
+            // Evento para deslizar la píldora al tocar la pestaña
+            if (!btn.dataset.lupaSliderBound) {
+                btn.dataset.lupaSliderBound = 'true';
+                btn.addEventListener('click', function() {
+                    botonesHijos.forEach(b => b.classList.remove('activa-lupa'));
+                    this.classList.add('activa-lupa');
+                    window.moverSliderPestanaLupa(this);
+                });
+            }
+        });
+
+        if (!filaPestanas.dataset.initDone) {
+            filaPestanas.dataset.initDone = 'true';
+            if (!filaPestanas.querySelector('.activa-lupa') && botonesHijos[0]) {
+                botonesHijos[0].classList.add('activa-lupa');
+            }
+        }
+
+        const btnActivoActual = filaPestanas.querySelector('.btn-pestana-lupa.activa-lupa') || botonesHijos[0];
+        setTimeout(() => window.moverSliderPestanaLupa(btnActivoActual), 30);
+    }
+
+    // 2. Unificamos el cajón de búsqueda en Glass Blanco (sobre el contenedor padre)
+    const inputBusqueda = searchPanel
+        ? searchPanel.querySelector('input[type="text"], input[type="search"], input:not([type="file"])')
+        : document.querySelector('input[placeholder*="Buscar"], input[placeholder*="buscar"]');
+
+    if (inputBusqueda) {
+        inputBusqueda.classList.remove('cajon-glass-blanco');
+        inputBusqueda.classList.add('input-interno-glass');
+
+        const contenedorPadre = inputBusqueda.parentElement;
+        if (contenedorPadre && contenedorPadre !== searchPanel) {
+            contenedorPadre.classList.add('cajon-glass-blanco');
+        } else {
+            inputBusqueda.classList.add('cajon-glass-blanco');
+        }
+    }
+};
+
+// Ejecutamos de inmediato, al cambiar de pestaña inferior y al redimensionar
+setTimeout(window.aplicarDisenoBuscadorLupa, 100);
+setTimeout(window.aplicarDisenoBuscadorLupa, 500);
+window.addEventListener('resize', () => {
+    const activo = document.querySelector('#barraPestanasLupa .btn-pestana-lupa.activa-lupa');
+    if (activo) window.moverSliderPestanaLupa(activo);
+});
+document.addEventListener('click', (e) => {
+    if (e.target.closest('#globalBottomNav') || e.target.closest('#searchPanel')) {
+        setTimeout(window.aplicarDisenoBuscadorLupa, 40);
+    }
+});
+
+// =========================================================
+// FILTRO ESTRICTO: MOSTRAR SOLO LISTAS QUE CONTENGAN EL JUEGO ACTUAL
+// =========================================================
+
+// Guardamos siempre el ID del juego que se abre en la ficha técnica
+(function() {
+    const originalOpenGameDetail = window.openGameDetail;
+    if (typeof originalOpenGameDetail === 'function' && !window._openGameDetailHooked) {
+        window._openGameDetailHooked = true;
+        window.openGameDetail = function(idJuego) {
+            window.juegoActualEnFichaId = String(idJuego);
+            return originalOpenGameDetail.apply(this, arguments);
+        };
+    }
+})();
+
+// Función que filtra en #listasJuegoOverlay las tarjetas que NO contienen el juego actual
+window.filtrarTarjetasListasPorJuegoActual = function(idJuegoExplicito) {
+    const idJuego = String(
+        idJuegoExplicito ||
+        window.juegoActualEnFichaId ||
+        window.currentGameId ||
+        window.idJuegoActual ||
+        window.juegoSeleccionadoId ||
+        ''
+    ).trim();
+
+    const overlay = document.getElementById('listasJuegoOverlay');
+    if (!overlay || !idJuego) return;
+
+    const cacheListas = window.misListasCache || {};
+    const tarjetas = overlay.querySelectorAll('[onclick*="abrirDetalleLista"]');
+
+    let visibles = 0;
+    tarjetas.forEach(tarjeta => {
+        const attrOnclick = tarjeta.getAttribute('onclick') || '';
+        const match = attrOnclick.match(/abrirDetalleLista\(['"]([^'"]+)['"]\)/);
+        if (match && match[1]) {
+            const idLista = match[1];
+            const datosLista = cacheListas[idLista];
+            const juegosEnLista = (datosLista && Array.isArray(datosLista.juegos))
+                ? datosLista.juegos.map(String)
+                : [];
+
+            // SOLO se muestra si la lista contiene este juego
+            if (juegosEnLista.includes(idJuego)) {
+                tarjeta.style.display = 'flex';
+                visibles++;
+            } else {
+                tarjeta.style.display = 'none';
+            }
+        }
+    });
+
+    // Mensaje cuando el juego no pertenece a ninguna lista todavía
+    let msgVacio = document.getElementById('msgSinListasParaEsteJuego');
+    if (visibles === 0 && tarjetas.length > 0) {
+        if (!msgVacio) {
+            msgVacio = document.createElement('p');
+            msgVacio.id = 'msgSinListasParaEsteJuego';
+            msgVacio.style.cssText = 'color: #888; font-family: "Outfit", sans-serif; font-size: 0.88rem; text-align: center; margin: 30px 20px; line-height: 1.5;';
+            msgVacio.textContent = 'Este juego aún no está en ninguna de tus listas.';
+            tarjetas[0].parentElement.appendChild(msgVacio);
+        }
+        msgVacio.style.display = 'block';
+    } else if (msgVacio) {
+        msgVacio.style.display = 'none';
+    }
+};
+
+// Interceptamos la apertura de "Listas del juego" para aplicar el filtro automáticamente
+['abrirListasJuego', 'abrirListasDelJuego', 'verListasJuego', 'mostrarListasJuego'].forEach(nombreFn => {
+    if (typeof window[nombreFn] === 'function' && !window['_' + nombreFn + 'Hooked']) {
+        window['_' + nombreFn + 'Hooked'] = true;
+        const fnOriginal = window[nombreFn];
+        window[nombreFn] = async function(idParam) {
+            if (idParam && (typeof idParam === 'string' || typeof idParam === 'number')) {
+                window.juegoActualEnFichaId = String(idParam);
+            }
+            const res = await fnOriginal.apply(this, arguments);
+            setTimeout(() => window.filtrarTarjetasListasPorJuegoActual(window.juegoActualEnFichaId), 50);
+            setTimeout(() => window.filtrarTarjetasListasPorJuegoActual(window.juegoActualEnFichaId), 250);
+            return res;
+        };
+    }
+});
+
+// Observador automático sobre #listasJuegoOverlay por si las listas tardan unos milisegundos en cargarse de Firebase
+document.addEventListener('DOMContentLoaded', () => {
+    const overlayListasJuego = document.getElementById('listasJuegoOverlay');
+    if (overlayListasJuego && typeof MutationObserver !== 'undefined') {
+        const observer = new MutationObserver(() => {
+            if (overlayListasJuego.style.display !== 'none') {
+                window.filtrarTarjetasListasPorJuegoActual();
+            }
+        });
+        observer.observe(overlayListasJuego, { childList: true, subtree: true, attributes: true, attributeFilter: ['style'] });
+    }
+});
+
+// =========================================================
+// BUSCADOR DE LISTAS ESTABLE Y ANTI-BUCLES (LUPA)
+// =========================================================
+window._buscandoListasLock = false;
+
+window.ejecutarBusquedaListasGlobal = async function(textoFiltro) {
+    if (window._buscandoListasLock) return;
+    window._buscandoListasLock = true;
+
+    try {
+        const filtro = (textoFiltro || '').toLowerCase().trim();
+        const searchPanel = document.getElementById('searchPanel') || document;
+        
+        // Localizamos o creamos el contenedor único de resultados
+        let contenedorResultados = searchPanel.querySelector('#listasResultadosBusquedaContainer');
+        if (!contenedorResultados) {
+            const buscadorEl = searchPanel.querySelector('input[type="text"], input[type="search"]');
+            if (buscadorEl && buscadorEl.parentElement) {
+                contenedorResultados = document.createElement('div');
+                contenedorResultados.id = 'listasResultadosBusquedaContainer';
+                contenedorResultados.style.cssText = 'display: flex; flex-direction: column; gap: 16px; margin-top: 15px; width: 100%; box-sizing: border-box;';
+                buscadorEl.parentElement.insertAdjacentElement('afterend', contenedorResultados);
+            }
+        }
+
+        if (!contenedorResultados) {
+            window._buscandoListasLock = false;
+            return;
+        }
+
+        // Si el campo está vacío, vaciamos resultados y salimos
+        if (!filtro) {
+            contenedorResultados.innerHTML = '';
+            const msgVacio = searchPanel.querySelector('#msgBusquedaListasVacio');
+            if (msgVacio) msgVacio.style.display = 'none';
+            window._buscandoListasLock = false;
+            return;
+        }
+
+        contenedorResultados.innerHTML = '<p style="color: #888; font-family: \'Outfit\', sans-serif; font-size: 0.85rem; text-align: center; padding: 20px;">Buscando listas...</p>';
+
+        // Recopilamos todas las listas asegurando que no se dupliquen por ID
+        const mapaUnicas = new Map();
+        if (window.misListasCache) {
+            Object.values(window.misListasCache).forEach(l => {
+                if (l && l.id) mapaUnicas.set(String(l.id), l);
+            });
+        }
+
+        // Fallback de seguridad en Firebase si la caché está vacía
+        if (mapaUnicas.size === 0 && typeof db !== 'undefined' && typeof auth !== 'undefined' && auth.currentUser) {
+            try {
+                const userListsRef = collection(db, 'users', auth.currentUser.uid, 'listas');
+                const snap = await getDocs(userListsRef);
+                snap.forEach(docSnap => {
+                    if (docSnap.exists()) {
+                        const dat = docSnap.data();
+                        if (dat && dat.id) mapaUnicas.set(String(dat.id), dat);
+                    }
+                });
+            } catch (err) {}
+        }
+
+        const coleccionGlobal = window.miColeccionActiva || {};
+        const listaTotalListas = Array.from(mapaUnicas.values());
+
+        // Filtramos las listas de forma segura
+        const resultadosFiltrados = listaTotalListas.filter(infoLista => {
+            if (!infoLista || typeof infoLista !== 'object') return false;
+            
+            const titulo = String(infoLista.titulo || '').toLowerCase();
+            const desc = String(infoLista.descripcion || '').toLowerCase();
+            
+            let coincideTexto = titulo.includes(filtro) || desc.includes(filtro);
+            let coincideJuego = false;
+
+            if (Array.isArray(infoLista.juegos)) {
+                coincideJuego = infoLista.juegos.some(idJuego => {
+                    const datosJuego = coleccionGlobal[String(idJuego)];
+                    if (datosJuego && datosJuego.nombre) {
+                        return String(datosJuego.nombre).toLowerCase().includes(filtro);
+                    }
+                    return false;
+                });
+            }
+
+            return coincideTexto || coincideJuego;
+        });
+
+        // Ocultamos el aviso original de "Búsqueda no disponible"
+        const divsMensaje = Array.from(searchPanel.querySelectorAll('div, p, span')).filter(el => 
+            (el.textContent || '').includes('Búsqueda no disponible')
+        );
+        divsMensaje.forEach(msg => { msg.style.display = 'none'; });
+
+        if (resultadosFiltrados.length === 0) {
+            contenedorResultados.innerHTML = '<p id="msgBusquedaListasVacio" style="color: #888; font-family: \'Outfit\', sans-serif; font-size: 0.85rem; text-align: center; padding: 20px;">No se encontraron listas con ese nombre o juego.</p>';
+            window._buscandoListasLock = false;
+            return;
+        }
+
+        // Pintamos las tarjetas únicas encontradas
+        let htmlResultados = '';
+        const idsPintados = new Set();
+
+        resultadosFiltrados.forEach(infoLista => {
+            const idLista = String(infoLista.id || ('lista_' + Math.random()));
+            if (idsPintados.has(idLista)) return; // Evita duplicados estrictamente
+            idsPintados.add(idLista);
+
+            const titulo = String(infoLista.titulo || 'Sin título');
+            const descripcion = String(infoLista.descripcion || '');
+            const banner = String(infoLista.banner || 'linear-gradient(135deg, #2b5876 0%, #4e4376 100%)');
+            const juegosIds = Array.isArray(infoLista.juegos) ? infoLista.juegos : [];
+
+            let caratulasHTML = '';
+            juegosIds.slice(0, 6).forEach(idJuego => {
+                const jInfo = coleccionGlobal[String(idJuego)];
+                if (jInfo && jInfo.caratula) {
+                    caratulasHTML += `<img src="https://images.igdb.com/igdb/image/upload/t_cover_small/${jInfo.caratula}.jpg" style="width: 38px; height: 50px; object-fit: cover; border-radius: 6px; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">`;
+                }
+            });
+
+            htmlResultados += `
+                <div onclick="if(typeof window.abrirDetalleLista==='function') window.abrirDetalleLista('${idLista}')" style="width: 100%; border-radius: 16px; overflow: hidden; background: #ffffff; box-shadow: 0 4px 15px rgba(0,0,0,0.06); cursor: pointer; border: 1px solid rgba(0,0,0,0.04);">
+                    <div style="position: relative; width: 100%; height: 95px; background: ${banner}; background-size: cover; background-position: center;">
+                        <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.35); backdrop-filter: blur(1px);"></div>
+                        <div style="position: relative; z-index: 1; padding: 14px; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; box-sizing: border-box;">
+                            <h3 style="color: #ffffff; font-family: 'Cinzel', serif; margin: 0; font-size: 1.05rem; font-weight: 700; text-shadow: 0 2px 4px rgba(0,0,0,0.4);">${titulo}</h3>
+                            ${descripcion ? `<p style="color: #eeeeee; font-family: 'Outfit', sans-serif; margin: 2px 0 0 0; font-size: 0.78rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${descripcion}</p>` : ''}
+                        </div>
+                    </div>
+                    <div style="padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; background: #fafafa; border-top: 1px solid #f0f0f0;">
+                        <div style="display: flex; align-items: center; gap: 6px; font-family: 'Outfit', sans-serif; font-size: 0.8rem; color: #555; font-weight: 600;">
+                            <span class="material-symbols-rounded" style="font-size: 16px; color: #e67e22;">sports_esports</span>
+                            ${juegosIds.length} juegos
+                        </div>
+                        <div style="display: flex; gap: 6px; overflow: hidden;">
+                            ${caratulasHTML || '<span style="color: #999; font-size: 0.75rem; font-style: italic; font-family: \'Outfit\',sans-serif;">Sin carátulas</span>'}
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+
+        contenedorResultados.innerHTML = htmlResultados;
+    } catch (err) {
+        console.error("Error en búsqueda de listas:", err);
+    } finally {
+        window._buscandoListasLock = false;
+    }
+};
+
+// Controladores de eventos seguros con debounce para evitar bucles
+let _timerBusquedaListas = null;
+document.addEventListener('input', (e) => {
+    const target = e.target;
+    if (target && target.tagName === 'INPUT' && target.type !== 'file' && target.closest('#searchPanel')) {
+        const pestanaListasActiva = document.querySelector('#barraPestanasLupa .btn-pestana-lupa.activa-lupa');
+        const textoPestana = pestanaListasActiva ? pestanaListasActiva.textContent.toLowerCase() : '';
+        
+        if (textoPestana.includes('listas')) {
+            clearTimeout(_timerBusquedaListas);
+            _timerBusquedaListas = setTimeout(() => {
+                window.ejecutarBusquedaListasGlobal(target.value);
+            }, 180);
+        }
+    }
+});
+
+document.addEventListener('click', (e) => {
+    const btnPestana = e.target.closest('.btn-pestana-lupa');
+    if (btnPestana && (btnPestana.textContent || '').toLowerCase().includes('listas')) {
+        setTimeout(() => {
+            const inputBusqueda = document.querySelector('#searchPanel input[type="text"], input[placeholder*="Buscar"]');
+            if (inputBusqueda && inputBusqueda.value.trim()) {
+                window.ejecutarBusquedaListasGlobal(inputBusqueda.value);
+            }
+        }, 80);
+    } else if (btnPestana) {
+        const contenedor = document.getElementById('listasResultadosBusquedaContainer');
+        if (contenedor) contenedor.innerHTML = '';
+    }
+});
+
 
     </script>
