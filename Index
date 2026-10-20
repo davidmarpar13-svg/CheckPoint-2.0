@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <!-- Esta línea recupera los iconos de la barra inferior -->
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block" rel="stylesheet" />
 <!-- Esta línea carga las tipografías limpias y épicas que pusimos antes -->
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
     
@@ -1512,6 +1512,201 @@
     <!-- Contenido del detalle -->
     <div id="detalleListaContenido" style="padding: 0 20px 20px 20px; max-width: 600px; margin: 0 auto;">
         <!-- El JS inyectará aquí el banner grande, título, descripción y todos los juegos -->
+    </div>
+</div>
+
+<!-- =========================================================
+     MÓDULO SAGA Y AVISO IRÓNICO DE ESTRENO: PLANTILLA HTML
+     ========================================================= -->
+<div id="sagaJuegoOverlay">
+    <div class="saga-header-bar">
+        <button type="button" onclick="window.SagaApp.cerrar()" style="width: 38px; height: 38px; border-radius: 50%; border: none; background: #f3f4f6; color: #111; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+            <span class="material-symbols-rounded" style="font-size: 22px;">arrow_back</span>
+        </button>
+        <div style="text-align: center; flex: 1; padding: 0 10px; overflow: hidden;">
+            <div id="tituloSagaHeader" style="font-family: 'Cinzel', serif; font-size: 1.05rem; font-weight: 700; color: #111; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">SAGA</div>
+            <div id="subtituloSagaInfo" style="display: none !important;"></div>
+        </div>
+        <div style="width: 38px;"></div>
+    </div>
+
+    <!-- Pestañas deslizables: Principales vs Todo lo asociado -->
+    <div class="saga-tabs-wrapper">
+        <div id="sagaTabSlider" class="saga-tab-slider"></div>
+        <button type="button" id="btnTabSagaPrincipales" class="saga-tab-btn activa" onclick="window.SagaApp.cambiarPestana('principales')">
+            <span class="material-symbols-rounded" style="font-size: 16px;">workspace_premium</span>
+            <span>Principales</span>
+            <span id="badgeCountPrincipales" style="font-size: 0.7rem; padding: 1px 6px; border-radius: 10px; background: rgba(255,255,255,0.2);">0</span>
+        </button>
+        <button type="button" id="btnTabSagaTodo" class="saga-tab-btn" onclick="window.SagaApp.cambiarPestana('todo')">
+            <span class="material-symbols-rounded" style="font-size: 16px;">layers</span>
+            <span>Todo lo asociado</span>
+            <span id="badgeCountTodo" style="font-size: 0.7rem; padding: 1px 6px; border-radius: 10px; background: rgba(0,0,0,0.07);">0</span>
+        </button>
+    </div>
+
+    <!-- Buscador interno Glass Blanco -->
+    <div style="padding: 4px 16px 8px 16px; flex-shrink: 0;">
+        <div class="cajon-glass-blanco" style="display: flex; align-items: center; padding: 0 14px; min-height: 42px; margin: 0 !important;">
+            <span class="material-symbols-rounded" style="color: #888; font-size: 18px; margin-right: 8px;">search</span>
+            <input type="text" id="inputBuscadorInternoSaga" class="input-interno-glass" placeholder="Filtrar dentro de la saga..." oninput="window.SagaApp.renderizarGrid(this.value)" style="width: 100%; font-size: 0.84rem; padding: 8px 0;">
+        </div>
+    </div>
+
+    <!-- Grid de resultados -->
+    <div id="contenedorGridSaga" class="saga-grid-container"></div>
+</div>
+
+<!-- Aviso flotante con las 5 frases irónicas para juegos no estrenados -->
+<div id="avisoIronicoNoEstrenado" onclick="this.classList.remove('visible')">
+    <span class="material-symbols-rounded" style="color: #00e5ff; font-size: 24px; flex-shrink: 0;">hourglass_top</span>
+    <div id="textoAvisoIronico" style="flex: 1; color: #f3f4f6; font-weight: 500;"></div>
+</div>
+
+<!-- =========================================================
+     MÓDULO COMUNIDAD Y FORO POR JUEGO: PLANTILLA HTML
+     ========================================================= -->
+<div id="comunidadJuegoOverlay">
+    <!-- Barra superior de la Comunidad -->
+    <div class="comunidad-top-bar">
+        <button type="button" onclick="window.ComunidadApp.cerrar()" style="width: 36px; height: 36px; border-radius: 50%; border: none; background: #f3f4f6; color: #111; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+            <span class="material-symbols-rounded" style="font-size: 20px;">arrow_back</span>
+        </button>
+        <div style="text-align: center; flex: 1; padding: 0 10px; overflow: hidden;">
+            <div style="font-family: 'Cinzel', serif; font-size: 0.95rem; font-weight: 800; color: #111; letter-spacing: 0.8px;">COMUNIDAD</div>
+        </div>
+        <div style="width: 36px;"></div>
+    </div>
+
+    <!-- Contenido principal desplazable de la Comunidad -->
+    <div class="comunidad-scroll-area" id="comunidadScrollPrincipal">
+        <!-- Banner con Artwork arriba -->
+        <div class="comunidad-banner-box">
+            <img id="comunidadBannerImg" class="comunidad-banner-img" src="" alt="Artwork">
+            <div class="comunidad-banner-gradient"></div>
+        </div>
+
+        <!-- Cabecera con Portada pisando el banner + Título, Fecha sutil y Descripción -->
+        <div class="comunidad-info-header">
+            <div class="comunidad-main-row">
+                <img id="comunidadCoverImg" class="comunidad-cover-img" src="" alt="Portada">
+                <div class="comunidad-meta-box">
+                    <h1 id="comunidadGameTitle" class="comunidad-game-title">JUEGO</h1>
+                    <div class="comunidad-subtle-meta">
+                        <span id="comunidadGameDate"></span>
+                        <span id="comunidadMetaSep" style="display: none;">·</span>
+                        <span id="comunidadGameGenre"></span>
+                    </div>
+                </div>
+            </div>
+            <div id="comunidadGameDesc" class="comunidad-desc-text" onclick="this.classList.toggle('expandida')" title="Toca para leer más"></div>
+        </div>
+
+        <!-- Barra de Crear Tema -->
+        <div class="comunidad-actions-bar">
+            <div style="font-size: 0.82rem; font-weight: 800; color: #111; letter-spacing: 0.4px;">
+                FORO DE TEMAS <span id="badgeTotalTemasComunidad" style="color: #888; font-weight: 600;">(0)</span>
+            </div>
+            <button type="button" class="btn-crear-tema-foro" onclick="window.ComunidadApp.abrirModalCrearTema()">
+                <span class="material-symbols-rounded" style="font-size: 18px;">add_comment</span>
+                <span>Crear tema</span>
+            </button>
+        </div>
+
+        <!-- Lista de Temas de la Comunidad -->
+        <div id="listaTemasComunidad"></div>
+    </div>
+
+    <!-- =====================================================
+         VISTA INTERIOR DEL HILO (TEMA ABIERTO + COMENTARIOS)
+         ===================================================== -->
+    <div id="vistaHiloComunidad">
+        <div class="comunidad-top-bar">
+            <button type="button" onclick="window.ComunidadApp.cerrarHilo()" style="width: 36px; height: 36px; border-radius: 50%; border: none; background: #f3f4f6; color: #111; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+                <span class="material-symbols-rounded" style="font-size: 20px;">arrow_back</span>
+            </button>
+            <div style="text-align: center; flex: 1; padding: 0 10px; overflow: hidden;">
+                <div id="tituloHeaderHilo" style="font-family: 'Outfit', sans-serif; font-size: 0.9rem; font-weight: 800; color: #111; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">HILO DEL TEMA</div>
+            </div>
+            <div style="width: 36px;"></div>
+        </div>
+
+        <div class="hilo-comentarios-scroll" id="contenedorScrollHilo">
+            <!-- Post principal del Tema -->
+            <div id="postOriginalHilo"></div>
+
+            <!-- Cabecera de respuestas -->
+            <div style="font-size: 0.75rem; font-weight: 800; color: #8c7b70; letter-spacing: 0.7px; text-transform: uppercase; margin: 16px 4px 10px 4px;">
+                Respuestas en el hilo (<span id="contadorRespuestasHilo">0</span>)
+            </div>
+
+            <!-- Lista de comentarios -->
+            <div id="listaComentariosHilo"></div>
+        </div>
+
+        <!-- Barra inferior para comentar y adjuntar foto -->
+        <div class="hilo-reply-bar">
+            <div id="previewFotoComentarioBox" style="display: none; align-items: center; gap: 8px; margin-bottom: 8px; background: #f3f4f6; padding: 6px 10px; border-radius: 10px;">
+                <img id="imgPreviewComentario" src="" style="width: 38px; height: 38px; object-fit: cover; border-radius: 6px;">
+                <span style="font-size: 0.74rem; color: #444; flex: 1;">Foto adjunta lista</span>
+                <button type="button" onclick="window.ComunidadApp.quitarFotoComentario()" style="background: none; border: none; color: #ef4444; cursor: pointer;">
+                    <span class="material-symbols-rounded" style="font-size: 18px;">close</span>
+                </button>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <label for="inputFotoComentarioHilo" style="width: 38px; height: 38px; border-radius: 50%; background: #f3f4f6; color: #444; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0;" title="Adjuntar foto">
+                    <span class="material-symbols-rounded" style="font-size: 20px;">add_photo_alternate</span>
+                </label>
+                <input type="file" id="inputFotoComentarioHilo" accept="image/*" style="display: none;" onchange="window.ComunidadApp.seleccionarFotoComentario(this)">
+                <input type="text" id="inputTextoComentarioHilo" placeholder="Escribe un comentario en el hilo..." style="flex: 1; height: 38px; border-radius: 20px; border: 1px solid rgba(0,0,0,0.12); padding: 0 14px; font-family: 'Outfit', sans-serif; font-size: 0.82rem; outline: none;">
+                <button type="button" id="btnEnviarComentarioHilo" onclick="window.ComunidadApp.publicarComentarioEnHilo()" style="width: 38px; height: 38px; border-radius: 50%; border: none; background: #231815; color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0;">
+                    <span class="material-symbols-rounded" style="font-size: 18px;">send</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal emergente para Crear un Tema Nuevo -->
+<div id="modalCrearTemaComunidad">
+    <div class="caja-modal-tema">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
+            <h3 style="font-family: 'Cinzel', serif; font-size: 1.05rem; font-weight: 800; color: #111; margin: 0;">NUEVO TEMA</h3>
+            <button type="button" onclick="window.ComunidadApp.cerrarModalCrearTema()" style="background: #f3f4f6; border: none; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+                <span class="material-symbols-rounded" style="font-size: 18px;">close</span>
+            </button>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+            <div>
+                <label style="font-size: 0.74rem; font-weight: 700; color: #555; display: block; margin-bottom: 4px;">TÍTULO DEL TEMA</label>
+                <input type="text" id="inputTituloNuevoTema" placeholder="Ej: ¿Qué os pareció el final secreto?" style="width: 100%; padding: 10px 12px; border-radius: 12px; border: 1px solid rgba(0,0,0,0.14); font-family: 'Outfit', sans-serif; font-size: 0.85rem; box-sizing: border-box; outline: none;">
+            </div>
+
+            <div>
+                <label style="font-size: 0.74rem; font-weight: 700; color: #555; display: block; margin-bottom: 4px;">DESCRIPCIÓN / MENSAJE</label>
+                <textarea id="inputDescNuevoTema" rows="4" placeholder="Comparte tu teoría, duda o captura con la comunidad..." style="width: 100%; padding: 10px 12px; border-radius: 12px; border: 1px solid rgba(0,0,0,0.14); font-family: 'Outfit', sans-serif; font-size: 0.84rem; box-sizing: border-box; resize: none; outline: none;"></textarea>
+            </div>
+
+            <div>
+                <label for="inputFotoNuevoTema" style="display: flex; align-items: center; justify-content: center; gap: 8px; padding: 10px; border-radius: 12px; border: 1.5px dashed rgba(0,0,0,0.2); background: #f9fafb; color: #374151; font-size: 0.8rem; font-weight: 700; cursor: pointer;">
+                    <span class="material-symbols-rounded" style="font-size: 20px; color: #db2777;">upload_file</span>
+                    <span>Subir foto desde tu dispositivo</span>
+                </label>
+                <input type="file" id="inputFotoNuevoTema" accept="image/*" style="display: none;" onchange="window.ComunidadApp.seleccionarFotoTema(this)">
+
+                <div id="previewFotoNuevoTemaBox" style="display: none; position: relative; margin-top: 8px;">
+                    <img id="imgPreviewNuevoTema" src="" style="width: 100%; max-height: 150px; object-fit: cover; border-radius: 10px; display: block;">
+                    <button type="button" onclick="window.ComunidadApp.quitarFotoTema()" style="position: absolute; top: 6px; right: 6px; width: 28px; height: 28px; border-radius: 50%; border: none; background: rgba(0,0,0,0.7); color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+                        <span class="material-symbols-rounded" style="font-size: 16px;">close</span>
+                    </button>
+                </div>
+            </div>
+
+            <button type="button" id="btnPublicarNuevoTema" onclick="window.ComunidadApp.publicarNuevoTema()" style="width: 100%; height: 44px; border-radius: 22px; border: none; background: #231815; color: #ffffff; font-family: 'Outfit', sans-serif; font-size: 0.84rem; font-weight: 800; letter-spacing: 0.6px; text-transform: uppercase; cursor: pointer; margin-top: 4px;">
+                PUBLICAR EN LA COMUNIDAD
+            </button>
+        </div>
     </div>
 </div>
 
